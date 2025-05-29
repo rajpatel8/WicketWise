@@ -136,8 +136,8 @@ app/
 
 ## 📝 Changelog
 
-### v1.0.0 (May 2025)
-- ✅ Initial release with authentication system
+### v0.0.1 (May 2025)
+- ✅ Internal release with authentication system
 - ✅ Material Design UI implementation
 - ✅ Basic navigation between screens
 - ✅ Input validation and error handling
