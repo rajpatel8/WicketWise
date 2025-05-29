@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/gray_light"
+    tools:context=".DashboardActivity">
+
+    <!-- Fun Animation/Icon -->
+    <TextView
+        android:id="@+id/tvEmoji"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🚧⚡🏏"
+        android:textSize="80sp"
+        android:layout_marginBottom="32dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/tvMainMessage"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <!-- Main Message -->
+    <TextView
+        android:id="@+id/tvMainMessage"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Oops! We're Still Cooking! 👨‍🍳"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:textColor="@color/cricket_green"
+        android:gravity="center"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="16dp"
+        app:layout_constraintTop_toBottomOf="@id/tvEmoji"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/tvSubMessage" />
+
+    <!-- Sub Message -->
+    <TextView
+        android:id="@+id/tvSubMessage"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Our cricket coaching app is under development!\n\nWe're working hard to bring you:\n🎥 Video capture\n📝 Smart annotations\n🏏 Drill recommendations\n🎯 Performance tracking"
+        android:textSize="16sp"
+        android:textColor="@color/gray_dark"
+        android:gravity="center"
+        android:lineSpacingExtra="4dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="32dp"
+        app:layout_constraintTop_toBottomOf="@id/tvMainMessage"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/cardFunFact" />
+
+    <!-- Fun Card -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardFunFact"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="32dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="8dp"
+        app:cardBackgroundColor="@color/cricket_green"
+        app:layout_constraintTop_toBottomOf="@id/tvSubMessage"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/btnBackToLogin">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="💡 Fun Fact: Cricket is the 2nd most popular sport in the world!\n\nStay tuned for the most awesome coaching app! 🌟"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:padding="24dp"
+            android:lineSpacingExtra="2dp" />
+
+    </androidx.cardview.widget.CardView>
+
+    <!-- Back Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnBackToLogin"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:text="← Back to Login"
+        android:textSize="16sp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginBottom="32dp"
+        android:backgroundTint="@color/cricket_accent"
+        app:cornerRadius="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
