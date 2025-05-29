@@ -8,7 +8,7 @@
 
 **Project Title:** Video Annotation Platform for Cricket Coaching  
 **Business Partner:** Become Better  
-**Team Lead:** 
+**Team Lead:**  Rajkumar Patel
 **Date:** May 29th, 2025
 
 ---
