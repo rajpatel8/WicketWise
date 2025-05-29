@@ -187,20 +187,11 @@ flowchart LR
 
 ---
 
-## 📊 Success Metrics
-
-```mermaid
-pie title Week 1-2 Development Focus
-    "Profile CRUD" : 40
-    "Video Upload" : 25
-    "Basic Player" : 20
-    "Drawing Tools" : 15
-```
 
 ### 🎯 **Definition of Done**
 - ✅ Coach can create and edit profile
 - ✅ Coach can add/manage students
-- ✅ Coach can upload video for student
+- ✅ Coach can fetch video of student
 - ✅ Coach can draw basic annotations on video
 - ✅ All data persists locally
 - ✅ Smooth navigation between all screens
@@ -265,17 +256,6 @@ CREATE TABLE videos (
 - App remains crash-free and performant
 
 ---
-
-## 📋 Daily Standup Structure
-
-### 🌅 **Daily Questions**
-1. What did I complete yesterday?
-2. What will I work on today?
-3. Any blockers or challenges?
-
-### 🎯 **Weekly Review Points**
-- **Week 1:** CRUD functionality complete?
-- **Week 2:** Annotation foundation ready?
 
 ---
 
