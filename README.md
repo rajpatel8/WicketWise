@@ -45,7 +45,7 @@ A native Android application designed to revolutionize cricket coaching through 
 ### 1. Clone the Repository
 ```bash
 git clone https://github.com/rajpatel8/WicketWise.git
-cd cricket-coaching-app
+cd WicketWise
 ```
 
 ### 2. Open in Android Studio
@@ -172,7 +172,7 @@ This project is developed as part of COMP 8967 Internship Project at University 
 ```bash
 # Clone and setup
 git clone https://github.com/rajpatel8/WicketWise.git
-cd cricket-coaching-app
+cd WicketWise
 
 # Open in Android Studio and run!
 ```
