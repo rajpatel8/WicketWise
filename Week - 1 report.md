@@ -8,7 +8,7 @@
 
 **Project Title:** Video Annotation Platform for Cricket Coaching  
 **Business Partner:** Become Better  
-**Team Lead:** 
+**Team Lead:**  Rajkumar Patel
 **Date:** May 29th, 2025
 
 ---
@@ -139,8 +139,7 @@ Beyond the core requirements, we've identified several beneficial features for c
 
 ### **Technology Stack**
 - **Frontend:** Native Android (Java/Kotlin)
-- **Backend:** Node.js with Express framework
-- **Database:** MongoDB for flexible cricket data storage
+- **Database:** AWS, Azure, GCP
 - **Cloud Storage:** AWS S3 for video file management
 - **Authentication:** Firebase Authentication
 - **Analytics:** Google Analytics for user behavior insights
