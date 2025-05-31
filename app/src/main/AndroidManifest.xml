@@ -38,6 +38,48 @@
             android:screenOrientation="portrait"
             android:parentActivityName=".MainActivity" />
 
+        <!-- Profile Activities -->
+        <activity
+            android:name=".CoachProfileActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".DashboardActivity" />
+
+        <activity
+            android:name=".StudentProfileActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".DashboardActivity" />
+
+        <!-- Edit Profile Activities (to be implemented) -->
+        <activity
+            android:name=".EditCoachProfileActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".CoachProfileActivity" />
+
+        <activity
+            android:name=".EditStudentProfileActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".StudentProfileActivity" />
+
+        <!-- Find Coach Activity -->
+        <activity
+            android:name=".FindCoachActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".StudentProfileActivity" />
+
+        <!-- Simple Find Coach Activity (for debugging) -->
+        <activity
+            android:name=".SimpleFindCoachActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".StudentProfileActivity" />
+
+
+
     </application>
 
 </manifest>
