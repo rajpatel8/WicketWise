@@ -117,21 +117,27 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     private void viewProfile() {
-        showComingSoonMessage("View Profile");
-        // TODO: Implement profile viewing functionality
-        // Intent intent = new Intent(this, ViewProfileActivity.class);
-        // intent.putExtra("userType", userType);
-        // intent.putExtra("userEmail", userEmail);
-        // startActivity(intent);
+        if ("coach".equals(userType)) {
+            Intent intent = new Intent(this, CoachProfileActivity.class);
+            intent.putExtra("userEmail", userEmail);
+            startActivity(intent);
+        } else {
+            Intent intent = new Intent(this, StudentProfileActivity.class);
+            intent.putExtra("userEmail", userEmail);
+            startActivity(intent);
+        }
     }
 
     private void editProfile() {
-        showComingSoonMessage("Edit Profile");
-        // TODO: Implement profile editing functionality
-        // Intent intent = new Intent(this, EditProfileActivity.class);
-        // intent.putExtra("userType", userType);
-        // intent.putExtra("userEmail", userEmail);
-        // startActivity(intent);
+        if ("coach".equals(userType)) {
+            Intent intent = new Intent(this, EditCoachProfileActivity.class);
+            intent.putExtra("userEmail", userEmail);
+            startActivity(intent);
+        } else {
+            Intent intent = new Intent(this, EditStudentProfileActivity.class);
+            intent.putExtra("userEmail", userEmail);
+            startActivity(intent);
+        }
     }
 
     private void viewStudents() {
@@ -152,11 +158,12 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     private void findCoach() {
-        showComingSoonMessage("Find Coach");
-        // TODO: Implement coach discovery for students
-        // Intent intent = new Intent(this, FindCoachActivity.class);
-        // intent.putExtra("studentEmail", userEmail);
-        // startActivity(intent);
+        // Navigate to SimpleFindCoachActivity for students
+        Intent intent = new Intent(this, SimpleFindCoachActivity.class);
+        intent.putExtra("studentEmail", userEmail);
+        // We need to get the student ID, but for now we can pass 0
+        intent.putExtra("studentId", 0);
+        startActivity(intent);
     }
 
     private void bookSession() {

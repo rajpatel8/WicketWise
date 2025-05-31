@@ -217,4 +217,118 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         return null; // Authentication failed
     }
+
+    // Get coach by email
+    public Coach getCoachByEmail(String email) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_COACHES + " WHERE " + COLUMN_EMAIL + " = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{email});
+
+        Coach coach = null;
+        if (cursor.moveToFirst()) {
+            coach = new Coach();
+            coach.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)));
+            coach.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)));
+            coach.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)));
+            coach.setPassword(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD)));
+            coach.setPhone(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PHONE)));
+            coach.setExperienceYears(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_EXPERIENCE_YEARS)));
+            coach.setSpecialization(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SPECIALIZATION)));
+            coach.setCertification(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CERTIFICATION)));
+            coach.setCreatedAt(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CREATED_AT)));
+        }
+        cursor.close();
+        return coach;
+    }
+
+    // Get student by email
+    public Student getStudentByEmail(String email) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_STUDENTS + " WHERE " + COLUMN_EMAIL + " = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{email});
+
+        Student student = null;
+        if (cursor.moveToFirst()) {
+            student = new Student();
+            student.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)));
+            student.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)));
+            student.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)));
+            student.setPassword(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD)));
+            student.setPhone(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PHONE)));
+            student.setAge(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_AGE)));
+            student.setSkillLevel(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SKILL_LEVEL)));
+            student.setCoachId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_COACH_ID)));
+            student.setCreatedAt(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CREATED_AT)));
+        }
+        cursor.close();
+        return student;
+    }
+
+    // Update coach profile
+    public boolean updateCoach(Coach coach) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_NAME, coach.getName());
+        values.put(COLUMN_PHONE, coach.getPhone());
+        values.put(COLUMN_EXPERIENCE_YEARS, coach.getExperienceYears());
+        values.put(COLUMN_SPECIALIZATION, coach.getSpecialization());
+        values.put(COLUMN_CERTIFICATION, coach.getCertification());
+
+        int result = db.update(TABLE_COACHES, values, COLUMN_ID + " = ?",
+                new String[]{String.valueOf(coach.getId())});
+        return result > 0;
+    }
+
+    // Update student profile
+    public boolean updateStudent(Student student) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_NAME, student.getName());
+        values.put(COLUMN_PHONE, student.getPhone());
+        values.put(COLUMN_AGE, student.getAge());
+        values.put(COLUMN_SKILL_LEVEL, student.getSkillLevel());
+        values.put(COLUMN_COACH_ID, student.getCoachId());
+
+        int result = db.update(TABLE_STUDENTS, values, COLUMN_ID + " = ?",
+                new String[]{String.valueOf(student.getId())});
+        return result > 0;
+    }
+
+    // Get all coaches (for student to choose from)
+    public List<Coach> getAllCoaches() {
+        List<Coach> coaches = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_COACHES + " ORDER BY " + COLUMN_NAME;
+        Cursor cursor = db.rawQuery(query, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                Coach coach = new Coach();
+                coach.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)));
+                coach.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)));
+                coach.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)));
+                coach.setExperienceYears(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_EXPERIENCE_YEARS)));
+                coach.setSpecialization(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SPECIALIZATION)));
+                coaches.add(coach);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return coaches;
+    }
+
+    // Get coach name by ID
+    public String getCoachNameById(int coachId) {
+        if (coachId == 0) return "No coach assigned";
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT " + COLUMN_NAME + " FROM " + TABLE_COACHES + " WHERE " + COLUMN_ID + " = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(coachId)});
+
+        String coachName = "Unknown coach";
+        if (cursor.moveToFirst()) {
+            coachName = cursor.getString(0);
+        }
+        cursor.close();
+        return coachName;
+    }
 }
