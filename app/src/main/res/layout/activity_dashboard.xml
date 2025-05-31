@@ -1,105 +1,312 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/gray_light"
+    android:fillViewport="true"
+    android:background="@color/background_light"
     tools:context=".DashboardActivity">
 
-    <!-- Fun Animation/Icon -->
-    <TextView
-        android:id="@+id/tvEmoji"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="🚧⚡🏏"
-        android:textSize="80sp"
-        android:layout_marginBottom="32dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/tvMainMessage"
-        app:layout_constraintVertical_chainStyle="packed" />
+        android:orientation="vertical">
 
-    <!-- Main Message -->
-    <TextView
-        android:id="@+id/tvMainMessage"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Oops! We're Still Cooking! 👨‍🍳"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        android:textColor="@color/cricket_green"
-        android:gravity="center"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginBottom="16dp"
-        app:layout_constraintTop_toBottomOf="@id/tvEmoji"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/tvSubMessage" />
-
-    <!-- Sub Message -->
-    <TextView
-        android:id="@+id/tvSubMessage"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="Our cricket coaching app is under development!\n\nWe're working hard to bring you:\n🎥 Video capture\n📝 Smart annotations\n🏏 Drill recommendations\n🎯 Performance tracking"
-        android:textSize="16sp"
-        android:textColor="@color/gray_dark"
-        android:gravity="center"
-        android:lineSpacingExtra="4dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginBottom="32dp"
-        app:layout_constraintTop_toBottomOf="@id/tvMainMessage"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/cardFunFact" />
-
-    <!-- Fun Card -->
-    <androidx.cardview.widget.CardView
-        android:id="@+id/cardFunFact"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginBottom="32dp"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="8dp"
-        app:cardBackgroundColor="@color/cricket_green"
-        app:layout_constraintTop_toBottomOf="@id/tvSubMessage"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/btnBackToLogin">
-
-        <TextView
+        <!-- Header Section -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="💡 Fun Fact: Cricket is the 2nd most popular sport in the world!\n\nStay tuned for the most awesome coaching app! 🌟"
-            android:textColor="@color/white"
-            android:textSize="14sp"
-            android:gravity="center"
-            android:padding="24dp"
-            android:lineSpacingExtra="2dp" />
+            android:orientation="vertical"
+            android:background="@color/cricket_green_primary"
+            android:padding="24dp">
 
-    </androidx.cardview.widget.CardView>
+            <!-- Top Bar with Logout -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="24dp">
 
-    <!-- Back Button -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnBackToLogin"
-        android:layout_width="0dp"
-        android:layout_height="56dp"
-        android:text="← Back to Login"
-        android:textSize="16sp"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginBottom="32dp"
-        android:backgroundTint="@color/cricket_accent"
-        app:cornerRadius="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+                <TextView
+                    android:id="@+id/welcomeText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Welcome back!"
+                    android:textColor="@color/white"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+                <Button
+                    android:id="@+id/logoutBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="Logout"
+                    android:textColor="@color/cricket_green_primary"
+                    android:textSize="12sp"
+                    android:background="@drawable/rounded_background"
+                    android:backgroundTint="@color/white"
+                    android:paddingHorizontal="16dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp" />
+
+            </LinearLayout>
+
+            <!-- User Info Card -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:background="@drawable/rounded_background"
+                android:backgroundTint="@color/cricket_green_light"
+                android:padding="16dp"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:src="@drawable/ic_person"
+                    android:background="@drawable/rounded_background"
+                    android:backgroundTint="@color/white"
+                    android:padding="8dp"
+                    android:layout_marginEnd="16dp"
+                    app:tint="@color/cricket_green_primary" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/userNameText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="User Name"
+                        android:textColor="@color/cricket_green_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/userTypeText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Coach/Student"
+                        android:textColor="@color/cricket_green_dark"
+                        android:textSize="14sp"
+                        android:layout_marginTop="4dp" />
+
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_cricket_bat"
+                    app:tint="@color/cricket_green_primary" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Main Content -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <!-- Quick Actions Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Quick Actions"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Action Buttons Grid -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginBottom="32dp">
+
+                <!-- Row 1 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="12dp">
+
+                    <Button
+                        android:id="@+id/viewProfileBtn"
+                        android:layout_width="0dp"
+                        android:layout_height="80dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:text="View Profile"
+                        android:textColor="@color/white"
+                        android:textSize="14sp"
+                        android:background="@drawable/button_background"
+                        android:backgroundTint="@color/cricket_green_primary"
+                        android:drawableTop="@drawable/ic_person"
+                        android:drawableTint="@color/white"
+                        android:drawablePadding="8dp" />
+
+                    <Button
+                        android:id="@+id/editProfileBtn"
+                        android:layout_width="0dp"
+                        android:layout_height="80dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:text="Edit Profile"
+                        android:textColor="@color/cricket_green_primary"
+                        android:textSize="14sp"
+                        android:background="@drawable/button_outline_background"
+                        android:drawableTop="@drawable/ic_person"
+                        android:drawableTint="@color/cricket_green_primary"
+                        android:drawablePadding="8dp" />
+
+                </LinearLayout>
+
+                <!-- Row 2 (Conditional based on user type) -->
+                <LinearLayout
+                    android:id="@+id/coachActionsLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <Button
+                        android:id="@+id/viewStudentsBtn"
+                        android:layout_width="0dp"
+                        android:layout_height="80dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:text="My Students"
+                        android:textColor="@color/white"
+                        android:textSize="14sp"
+                        android:background="@drawable/button_background"
+                        android:backgroundTint="@color/cricket_green_secondary"
+                        android:drawableTop="@drawable/ic_student"
+                        android:drawableTint="@color/white"
+                        android:drawablePadding="8dp" />
+
+                    <Button
+                        android:id="@+id/manageSessionsBtn"
+                        android:layout_width="0dp"
+                        android:layout_height="80dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:text="Sessions"
+                        android:textColor="@color/cricket_green_secondary"
+                        android:textSize="14sp"
+                        android:background="@drawable/button_outline_background"
+                        android:drawableTop="@drawable/ic_calendar"
+                        android:drawableTint="@color/cricket_green_secondary"
+                        android:drawablePadding="8dp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/studentActionsLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <Button
+                        android:id="@+id/findCoachBtn"
+                        android:layout_width="0dp"
+                        android:layout_height="80dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:text="Find Coach"
+                        android:textColor="@color/white"
+                        android:textSize="14sp"
+                        android:background="@drawable/button_background"
+                        android:backgroundTint="@color/cricket_green_secondary"
+                        android:drawableTop="@drawable/ic_coach"
+                        android:drawableTint="@color/white"
+                        android:drawablePadding="8dp" />
+
+                    <Button
+                        android:id="@+id/bookSessionBtn"
+                        android:layout_width="0dp"
+                        android:layout_height="80dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:text="Book Session"
+                        android:textColor="@color/cricket_green_secondary"
+                        android:textSize="14sp"
+                        android:background="@drawable/button_outline_background"
+                        android:drawableTop="@drawable/ic_calendar"
+                        android:drawableTint="@color/cricket_green_secondary"
+                        android:drawablePadding="8dp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Development Status Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/rounded_background"
+                android:backgroundTint="@color/background_secondary"
+                android:padding="20dp"
+                android:layout_marginBottom="24dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="16dp">
+
+                    <ImageView
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/ic_trophy"
+                        android:layout_marginEnd="12dp"
+                        app:tint="@color/cricket_green_primary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🚀 Development Status"
+                        android:textColor="@color/cricket_green_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="✅ Phase 1: Authentication &amp; Registration - Complete!\n📋 Phase 2: CRUD Profile Management - In Progress\n🎥 Phase 3: Video Annotation System - Coming Soon\n📊 Phase 4: Analytics &amp; Progress Tracking - Planned"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="14sp"
+                    android:lineSpacingExtra="4dp" />
+
+            </LinearLayout>
+
+            <!-- Version Info -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Become Better Cricket Academy v1.0\nPhase 2 - CRUD Development"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                android:gravity="center"
+                android:alpha="0.7" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>

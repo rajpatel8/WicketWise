@@ -1,11 +1,109 @@
 <resources>
-    <string name="app_name"></string>
-    <string name="login_title">Welcome Coach</string>
-    <string name="email_hint">Email</string>
+    <!-- App Name -->
+    <string name="app_name">Become Better</string>
+
+    <!-- Login Screen -->
+    <string name="email_hint">Email Address</string>
     <string name="password_hint">Password</string>
-    <string name="login_button">Login</string>
+    <string name="login_button">Sign In</string>
+    <string name="register_button">Create Account</string>
     <string name="forgot_password">Forgot Password?</string>
-    <string name="create_account">Create Account</string>
-    <string name="welcome_message">Ready to coach your players?</string>
-    <string name="title_activity_dashboard">DashboardActivity</string>
+    <string name="no_account">Don\'t have an account?</string>
+
+    <!-- Registration Screen -->
+    <string name="coach_registration">Coach Registration</string>
+    <string name="student_registration">Student Registration</string>
+    <string name="create_account_title">Create Account</string>
+    <string name="join_cricket_academy">Join the Cricket Academy</string>
+    <string name="choose_role">Choose your role to get started</string>
+
+    <!-- Form Fields -->
+    <string name="full_name_hint">Full Name</string>
+    <string name="phone_hint">Phone Number (Optional)</string>
+    <string name="password_min_hint">Password (min 6 characters)</string>
+    <string name="coach_code_hint">6-Digit Coach Code</string>
+    <string name="experience_hint">Years of Experience</string>
+    <string name="age_hint">Age</string>
+    <string name="certification_hint">Certifications (Optional)</string>
+
+    <!-- Spinners -->
+    <string name="select_specialization">Select Specialization</string>
+    <string name="select_skill_level">Select Skill Level</string>
+
+    <!-- Specializations -->
+    <string name="batting_coach">Batting Coach</string>
+    <string name="bowling_coach">Bowling Coach</string>
+    <string name="wicket_keeping_coach">Wicket Keeping Coach</string>
+    <string name="fielding_coach">Fielding Coach</string>
+    <string name="all_rounder_coach">All-Rounder Coach</string>
+    <string name="fitness_conditioning">Fitness &amp; Conditioning</string>
+    <string name="mental_performance">Mental Performance Coach</string>
+    <string name="youth_development">Youth Development</string>
+    <string name="professional_cricket">Professional Cricket</string>
+
+    <!-- Skill Levels -->
+    <string name="beginner">Beginner (Just starting)</string>
+    <string name="basic">Basic (Some experience)</string>
+    <string name="intermediate">Intermediate (Regular player)</string>
+    <string name="advanced">Advanced (Competitive level)</string>
+    <string name="expert">Expert (Professional level)</string>
+
+    <!-- Registration Buttons -->
+    <string name="register_as_coach">Register as Coach</string>
+    <string name="register_as_student">Register as Student</string>
+
+    <!-- Info Messages -->
+    <string name="coach_code_info">Requires special 6-digit coach code</string>
+    <string name="student_free_registration">Free registration for all students</string>
+    <string name="coach_code_contact">Don\'t have a coach code? Contact the academy administrator to get one.</string>
+    <string name="welcome_cricket_academy">🏏 Welcome to the Cricket Academy!</string>
+    <string name="student_benefits">After registration, you\'ll be able to:\n• Book coaching sessions\n• Access training videos\n• Track your progress\n• Connect with coaches</string>
+
+    <!-- Error Messages -->
+    <string name="error_name_required">Name is required</string>
+    <string name="error_email_required">Email is required</string>
+    <string name="error_email_invalid">Please enter a valid email</string>
+    <string name="error_password_required">Password is required</string>
+    <string name="error_password_min_length">Password must be at least 6 characters</string>
+    <string name="error_coach_code_required">Coach code is required</string>
+    <string name="error_coach_code_length">Coach code must be exactly 6 digits</string>
+    <string name="error_coach_code_numeric">Coach code must contain only numbers</string>
+    <string name="error_experience_required">Experience years is required</string>
+    <string name="error_experience_range">Experience must be between 0-50 years</string>
+    <string name="error_experience_numeric">Please enter a valid number</string>
+    <string name="error_age_required">Age is required</string>
+    <string name="error_age_range">Age must be between 5-100 years</string>
+    <string name="error_age_numeric">Please enter a valid age</string>
+    <string name="error_email_exists">Email already exists. Please use a different email.</string>
+    <string name="error_invalid_coach_code">Invalid coach code. Please contact administrator.</string>
+    <string name="error_registration_failed">Registration failed. Please try again.</string>
+    <string name="error_login_failed">Invalid email or password. Please try again.</string>
+
+    <!-- Success Messages -->
+    <string name="success_coach_registered">Coach registered successfully!</string>
+    <string name="success_student_registered">Student registered successfully!</string>
+    <string name="success_login">Login successful! Welcome</string>
+
+    <!-- Navigation -->
+    <string name="back_button">Back</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard_title">Dashboard</string>
+    <string name="under_development">Under Development</string>
+    <string name="development_message">🚀 Exciting features coming soon!</string>
+
+    <!-- Footer -->
+    <string name="copyright">© 2025 Become Better Cricket Academy</string>
+
+    <!-- Development Messages -->
+    <string name="forgot_password_coming_soon">Forgot password feature coming soon!</string>
+
+    <!-- Content Descriptions for Accessibility -->
+    <string name="cricket_logo_description">Cricket Academy Logo</string>
+    <string name="back_arrow_description">Navigate back</string>
+    <string name="coach_icon_description">Coach registration</string>
+    <string name="student_icon_description">Student registration</string>
+    <string name="shield_icon_description">Security shield</string>
+    <string name="cricket_bat_description">Cricket bat icon</string>
+
 </resources>
