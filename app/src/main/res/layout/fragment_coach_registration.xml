@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="@color/background_light">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <!-- Header Info -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="@drawable/rounded_background"
+            android:backgroundTint="@color/cricket_green_light"
+            android:padding="16dp"
+            android:layout_marginBottom="24dp"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_shield"
+                android:layout_marginEnd="12dp"
+                app:tint="@color/cricket_green_primary" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Coach Registration"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/cricket_green_primary" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Requires special 6-digit coach code"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginTop="4dp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Name Input -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/coachNameLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:boxStrokeColor="@color/cricket_green_primary"
+            app:hintTextColor="@color/cricket_green_primary"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/coachNameEdit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Full Name"
+                android:inputType="textPersonName"
+                android:drawableStart="@drawable/ic_person"
+                android:drawablePadding="12dp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Email Input -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/coachEmailLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:boxStrokeColor="@color/cricket_green_primary"
+            app:hintTextColor="@color/cricket_green_primary"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/coachEmailEdit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Email Address"
+                android:inputType="textEmailAddress"
+                android:drawableStart="@drawable/ic_email"
+                android:drawablePadding="12dp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Password Input -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/coachPasswordLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:boxStrokeColor="@color/cricket_green_primary"
+            app:hintTextColor="@color/cricket_green_primary"
+            app:passwordToggleEnabled="true"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/coachPasswordEdit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Password (min 6 characters)"
+                android:inputType="textPassword"
+                android:drawableStart="@drawable/ic_lock"
+                android:drawablePadding="12dp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Phone Input -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/coachPhoneLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:boxStrokeColor="@color/cricket_green_primary"
+            app:hintTextColor="@color/cricket_green_primary"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/coachPhoneEdit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Phone Number (Optional)"
+                android:inputType="phone"
+                android:drawableStart="@drawable/ic_phone"
+                android:drawablePadding="12dp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Coach Code Input -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/coachCodeLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:boxStrokeColor="@color/cricket_green_primary"
+            app:hintTextColor="@color/cricket_green_primary"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/coachCodeEdit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="6-Digit Coach Code"
+                android:inputType="number"
+                android:maxLength="6"
+                android:drawableStart="@drawable/ic_key"
+                android:drawablePadding="12dp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Experience Input -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/coachExperienceLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:boxStrokeColor="@color/cricket_green_primary"
+            app:hintTextColor="@color/cricket_green_primary"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/coachExperienceEdit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Years of Experience"
+                android:inputType="number"
+                android:drawableStart="@drawable/ic_trophy"
+                android:drawablePadding="12dp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Specialization Spinner -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Coaching Specialization"
+            android:textSize="14sp"
+            android:textColor="@color/text_primary"
+            android:layout_marginBottom="8dp" />
+
+        <Spinner
+            android:id="@+id/coachSpecializationSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/spinner_background"
+            android:padding="16dp" />
+
+        <!-- Certification Input -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/coachCertificationLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            app:boxStrokeColor="@color/cricket_green_primary"
+            app:hintTextColor="@color/cricket_green_primary"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/coachCertificationEdit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Certifications (Optional)"
+                android:inputType="textMultiLine"
+                android:maxLines="3"
+                android:drawableStart="@drawable/ic_certificate"
+                android:drawablePadding="12dp" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Register Button -->
+        <Button
+            android:id="@+id/coachRegisterBtn"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Register as Coach"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:background="@drawable/button_background"
+            android:backgroundTint="@color/cricket_green_primary"
+            android:elevation="4dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Info Text -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Don't have a coach code? Contact the academy administrator to get one."
+            android:textSize="12sp"
+            android:textColor="@color/text_secondary"
+            android:gravity="center"
+            android:padding="16dp"
+            android:background="@drawable/rounded_background"
+            android:backgroundTint="@color/background_secondary" />
+
+    </LinearLayout>
+
+</ScrollView>

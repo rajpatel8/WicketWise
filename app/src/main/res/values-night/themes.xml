@@ -1,16 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Theme.Becomebetter" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
-        <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/purple_200</item>
-        <item name="colorPrimaryVariant">@color/purple_700</item>
+    <!-- Base application theme for dark mode. -->
+    <style name="Theme.BecomeBetter" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color (darker for night mode). -->
+        <item name="colorPrimary">@color/cricket_green_secondary</item>
+        <item name="colorPrimaryVariant">@color/cricket_green_primary</item>
         <item name="colorOnPrimary">@color/black</item>
+
         <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/teal_200</item>
-        <item name="colorSecondaryVariant">@color/teal_200</item>
+        <item name="colorSecondary">@color/cricket_green_light</item>
+        <item name="colorSecondaryVariant">@color/cricket_green_secondary</item>
         <item name="colorOnSecondary">@color/black</item>
+
         <!-- Status bar color. -->
-        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
-        <!-- Customize your theme here. -->
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+
+        <!-- Background colors for dark mode -->
+        <item name="android:windowBackground">@color/black</item>
+        <item name="colorSurface">#121212</item>
+        <item name="colorOnSurface">@color/white</item>
+
+        <!-- Text colors for dark mode -->
+        <item name="android:textColorPrimary">@color/white</item>
+        <item name="android:textColorSecondary">#B3FFFFFF</item>
+        <item name="android:textColorHint">#80FFFFFF</item>
+
+        <!-- Material Design 3 colors -->
+        <item name="colorError">@color/error_color</item>
+        <item name="colorOnError">@color/white</item>
+
+        <!-- Remove action bar -->
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
     </style>
 </resources>
