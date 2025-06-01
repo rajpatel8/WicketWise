@@ -13,6 +13,8 @@ updates:
       timezone: "America/New_York"
     # Enable security updates
     open-pull-requests-limit: 10
+    # Include transitive dependencies
+    update-subdependencies: true
     # Automatically merge minor and patch updates
     auto-merge:
       enabled: true
