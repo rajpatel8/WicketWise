@@ -20,4 +20,5 @@ updates:
           - "io.netty*"
       security-updates:
         update-types:
-          - "security"
+          - "patch"
+          - "minor"
