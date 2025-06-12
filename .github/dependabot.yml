@@ -1,0 +1,24 @@
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for all configuration options:
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  - package-ecosystem: "gradle"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      time: "09:00"
+      timezone: "America/New_York"
+    # Enable security updates
+    open-pull-requests-limit: 10
+    # Group updates to reduce PR noise
+    groups:
+      netty:
+        patterns:
+          - "io.netty*"
+      security-updates:
+        update-types:
+          - "patch"
+          - "minor"
