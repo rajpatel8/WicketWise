@@ -21,22 +21,22 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="center"
-            android:layout_marginTop="60dp"
-            android:layout_marginBottom="48dp">
+            android:layout_marginTop="40dp"
+            android:layout_marginBottom="40dp">
 
-            <!-- Brand Logo Placeholder -->
+            <!-- Brand Logo Circle -->
             <FrameLayout
-                android:layout_width="140dp"
-                android:layout_height="140dp"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
                 android:background="@drawable/logo_circle_background"
                 android:layout_marginBottom="24dp">
 
                 <ImageView
                     android:layout_width="80dp"
                     android:layout_height="80dp"
-                    android:src="@drawable/ic_cricket_logo"
+                    android:src="@drawable/logo"
                     android:layout_gravity="center"
-                    app:tint="@color/white" />
+                    android:scaleType="centerInside" />
 
             </FrameLayout>
 
@@ -44,11 +44,13 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="BECOME BETTER"
+                android:text="BECOME\nBETTER"
                 android:textColor="@color/white"
-                android:textSize="32sp"
+                android:textSize="28sp"
                 android:textStyle="bold"
                 android:letterSpacing="0.1"
+                android:gravity="center"
+                android:lineSpacingExtra="4dp"
                 android:layout_marginBottom="8dp" />
 
             <TextView
@@ -56,8 +58,9 @@
                 android:layout_height="wrap_content"
                 android:text="Cricket Coaching Excellence"
                 android:textColor="@color/white"
-                android:textSize="16sp"
+                android:textSize="14sp"
                 android:alpha="0.9"
+                android:gravity="center"
                 android:letterSpacing="0.05" />
 
         </LinearLayout>
@@ -66,44 +69,44 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="8dp"
+            android:layout_marginHorizontal="4dp"
             app:cardCornerRadius="24dp"
             app:cardElevation="12dp"
-            app:cardBackgroundColor="@color/card_background"
+            app:cardBackgroundColor="@color/white"
             app:strokeWidth="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="32dp">
+                android:padding="28dp">
 
                 <!-- Welcome Header -->
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Welcome Back"
                     android:textColor="@color/brand_primary"
-                    android:textSize="28sp"
+                    android:textSize="24sp"
                     android:textStyle="bold"
-                    android:layout_gravity="center"
-                    android:layout_marginBottom="8dp" />
+                    android:gravity="center"
+                    android:layout_marginBottom="6dp" />
 
                 <TextView
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Sign in to continue your cricket journey"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp"
-                    android:layout_gravity="center"
-                    android:layout_marginBottom="32dp" />
+                    android:gravity="center"
+                    android:layout_marginBottom="28dp" />
 
                 <!-- Email Input with Modern Style -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/emailLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="20dp"
+                    android:layout_marginBottom="16dp"
                     app:boxBackgroundMode="outline"
                     app:boxStrokeColor="@color/brand_primary"
                     app:hintTextColor="@color/brand_primary"
@@ -121,7 +124,8 @@
                         android:layout_height="wrap_content"
                         android:hint="Email Address"
                         android:inputType="textEmailAddress"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        android:paddingVertical="16dp" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -130,7 +134,7 @@
                     android:id="@+id/passwordLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="16dp"
+                    android:layout_marginBottom="12dp"
                     app:boxBackgroundMode="outline"
                     app:boxStrokeColor="@color/brand_primary"
                     app:hintTextColor="@color/brand_primary"
@@ -150,21 +154,22 @@
                         android:layout_height="wrap_content"
                         android:hint="Password"
                         android:inputType="textPassword"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        android:paddingVertical="16dp" />
 
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <!-- Forgot Password -->
                 <TextView
                     android:id="@+id/forgotPasswordText"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Forgot Password?"
                     android:textColor="@color/brand_primary"
                     android:textSize="14sp"
                     android:textStyle="bold"
-                    android:layout_gravity="end"
-                    android:layout_marginBottom="32dp"
+                    android:gravity="end"
+                    android:layout_marginBottom="24dp"
                     android:padding="8dp"
                     android:background="?attr/selectableItemBackground" />
 
@@ -172,16 +177,16 @@
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/loginBtn"
                     android:layout_width="match_parent"
-                    android:layout_height="64dp"
-                    android:text="Sign In"
+                    android:layout_height="56dp"
+                    android:text="SIGN IN"
                     android:textColor="@color/white"
-                    android:textSize="18sp"
+                    android:textSize="16sp"
                     android:textStyle="bold"
                     android:letterSpacing="0.02"
                     app:backgroundTint="@color/brand_primary"
-                    app:cornerRadius="20dp"
-                    app:elevation="6dp"
-                    android:layout_marginBottom="24dp" />
+                    app:cornerRadius="16dp"
+                    app:elevation="4dp"
+                    android:layout_marginBottom="20dp" />
 
                 <!-- Divider -->
                 <LinearLayout
@@ -189,7 +194,7 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:layout_marginBottom="24dp">
+                    android:layout_marginBottom="20dp">
 
                     <View
                         android:layout_width="0dp"
@@ -226,17 +231,18 @@
                         android:text="New to Become Better?"
                         android:textColor="@color/text_secondary"
                         android:textSize="14sp"
-                        android:layout_marginBottom="16dp" />
+                        android:layout_marginBottom="12dp" />
 
                     <!-- Register Button -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/registerBtn"
                         android:layout_width="match_parent"
-                        android:layout_height="56dp"
-                        android:text="Create Account"
+                        android:layout_height="52dp"
+                        android:text="CREATE ACCOUNT"
                         android:textColor="@color/brand_primary"
-                        android:textSize="16sp"
+                        android:textSize="15sp"
                         android:textStyle="bold"
+                        android:letterSpacing="0.02"
                         app:backgroundTint="@color/transparent"
                         app:strokeColor="@color/brand_primary"
                         app:strokeWidth="2dp"
@@ -249,16 +255,24 @@
 
         </com.google.android.material.card.MaterialCardView>
 
+        <!-- Spacer to push footer down -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:minHeight="20dp" />
+
         <!-- Footer -->
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="© 2025 Become Better • Excellence in Cricket Coaching"
             android:textColor="@color/white"
-            android:textSize="12sp"
-            android:alpha="0.7"
-            android:layout_marginTop="32dp"
-            android:gravity="center" />
+            android:textSize="11sp"
+            android:alpha="0.8"
+            android:gravity="center"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp" />
 
     </LinearLayout>
 
