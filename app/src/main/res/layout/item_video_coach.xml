@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/rounded_background"
+    android:backgroundTint="@color/white"
+    android:padding="20dp"
+    android:layout_marginBottom="12dp"
+    android:elevation="3dp">
+
+    <!-- Video Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp">
+
+        <!-- Video Icon with Status -->
+        <FrameLayout
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_marginEnd="16dp">
+
+            <ImageView
+                android:id="@+id/videoIcon"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:src="@drawable/ic_video_camera"
+                android:background="@drawable/rounded_background"
+                android:backgroundTint="@color/cricket_green_light"
+                android:padding="14dp"
+                android:tint="@color/cricket_green_primary" />
+
+            <!-- Status Icon -->
+            <ImageView
+                android:id="@+id/statusIcon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_check"
+                android:background="@drawable/rounded_background"
+                android:backgroundTint="@color/success_color"
+                android:padding="2dp"
+                android:tint="@color/white"
+                android:layout_gravity="top|end"
+                android:layout_marginTop="4dp"
+                android:layout_marginEnd="4dp"
+                android:visibility="gone" />
+
+        </FrameLayout>
+
+        <!-- Video Info -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- Title and Status -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/videoTitleText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Video Title"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/videoStatusText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="PENDING"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/warning_color"
+                    android:background="@drawable/rounded_background"
+                    android:backgroundTint="@color/background_secondary"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="4dp" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/studentNameText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="By: Student Name"
+                android:textColor="@color/cricket_green_primary"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:layout_marginTop="4dp" />
+
+            <!-- Duration and Upload Date -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="4dp">
+
+                <TextView
+                    android:id="@+id/videoDurationText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="00:10"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:drawableStart="@drawable/ic_play_arrow"
+                    android:drawableTint="@color/text_secondary"
+                    android:drawablePadding="4dp"
+                    android:gravity="center_vertical"
+                    android:layout_marginEnd="16dp" />
+
+                <TextView
+                    android:id="@+id/videoUploadDateText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2025-06-12"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:drawableStart="@drawable/ic_calendar"
+                    android:drawableTint="@color/text_secondary"
+                    android:drawablePadding="4dp"
+                    android:gravity="center_vertical" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Status Indicator Bar -->
+        <View
+            android:id="@+id/statusIndicator"
+            android:layout_width="4dp"
+            android:layout_height="50dp"
+            android:background="@drawable/rounded_background"
+            android:backgroundTint="@color/warning_color"
+            android:layout_marginStart="12dp" />
+
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/divider_color"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Action Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <!-- Review Button -->
+        <Button
+            android:id="@+id/reviewVideoBtn"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:text="Quick View"
+            android:textColor="@color/cricket_green_primary"
+            android:textSize="14sp"
+            android:background="@drawable/button_outline_background"
+            android:drawableStart="@drawable/ic_play_arrow"
+            android:drawableTint="@color/cricket_green_primary"
+            android:drawablePadding="6dp"
+            android:gravity="center" />
+
+        <!-- Annotate Button -->
+        <Button
+            android:id="@+id/annotateVideoBtn"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="Start Review"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:background="@drawable/button_background"
+            android:backgroundTint="@color/cricket_green_primary"
+            android:drawableStart="@drawable/ic_video_camera"
+            android:drawableTint="@color/white"
+            android:drawablePadding="6dp"
+            android:gravity="center" />
+
+    </LinearLayout>
+
+</LinearLayout>

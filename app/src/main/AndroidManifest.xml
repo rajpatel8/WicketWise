@@ -86,6 +86,19 @@
             android:screenOrientation="portrait"
             android:parentActivityName=".StudentProfileActivity" />
 
+        <activity
+            android:name=".VideoListActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:parentActivityName=".DashboardActivity" />
+
+        <!-- Video Player with Annotation Activity -->
+        <activity
+            android:name=".VideoPlayerActivity"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:parentActivityName=".VideoListActivity" />
+
         <!-- Simple Find Coach Activity (for debugging) -->
         <activity
             android:name=".SimpleFindCoachActivity"

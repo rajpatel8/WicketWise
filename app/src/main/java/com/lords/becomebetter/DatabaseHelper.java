@@ -214,6 +214,102 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return id;
     }
 
+    // Add these methods to your existing DatabaseHelper.java class
+
+// ANNOTATION METHODS
+
+// Add annotation to database
+public long addAnnotation(Annotation annotation) {
+    SQLiteDatabase db = this.getWritableDatabase();
+    ContentValues values = new ContentValues();
+    values.put(COLUMN_VIDEO_ID, annotation.getVideoId());
+    values.put(COLUMN_COACH_ID, annotation.getCoachId());
+    values.put(COLUMN_TIMESTAMP, annotation.getTimestamp());
+    values.put(COLUMN_ANNOTATION_TYPE, annotation.getAnnotationType());
+    values.put(COLUMN_ANNOTATION_DATA, annotation.getAnnotationData());
+    values.put(COLUMN_X_POSITION, annotation.getXPosition());
+    values.put(COLUMN_Y_POSITION, annotation.getYPosition());
+
+    return db.insert(TABLE_ANNOTATIONS, null, values);
+}
+
+    // Get annotations for a specific video
+    public List<Annotation> getAnnotationsByVideoId(int videoId) {
+        List<Annotation> annotations = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_ANNOTATIONS + " WHERE " + COLUMN_VIDEO_ID + " = ? ORDER BY " + COLUMN_TIMESTAMP + " ASC";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(videoId)});
+
+        if (cursor.moveToFirst()) {
+            do {
+                Annotation annotation = new Annotation();
+                annotation.setAnnotationId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ANNOTATION_ID)));
+                annotation.setVideoId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_VIDEO_ID)));
+                annotation.setCoachId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_COACH_ID)));
+                annotation.setTimestamp(cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)));
+                annotation.setAnnotationType(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ANNOTATION_TYPE)));
+                annotation.setAnnotationData(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ANNOTATION_DATA)));
+                annotation.setXPosition(cursor.getFloat(cursor.getColumnIndexOrThrow(COLUMN_X_POSITION)));
+                annotation.setYPosition(cursor.getFloat(cursor.getColumnIndexOrThrow(COLUMN_Y_POSITION)));
+                annotation.setCreatedAt(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CREATED_AT)));
+                annotations.add(annotation);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return annotations;
+    }
+
+    // Delete all annotations for a video
+    public boolean deleteAnnotationsByVideoId(int videoId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int result = db.delete(TABLE_ANNOTATIONS, COLUMN_VIDEO_ID + " = ?",
+                new String[]{String.valueOf(videoId)});
+        return result > 0;
+    }
+
+    // Get annotations by coach for a specific video
+    public List<Annotation> getAnnotationsByVideoAndCoach(int videoId, int coachId) {
+        List<Annotation> annotations = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_ANNOTATIONS + " WHERE " + COLUMN_VIDEO_ID + " = ? AND " +
+                COLUMN_COACH_ID + " = ? ORDER BY " + COLUMN_TIMESTAMP + " ASC";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(videoId), String.valueOf(coachId)});
+
+        if (cursor.moveToFirst()) {
+            do {
+                Annotation annotation = new Annotation();
+                annotation.setAnnotationId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ANNOTATION_ID)));
+                annotation.setVideoId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_VIDEO_ID)));
+                annotation.setCoachId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_COACH_ID)));
+                annotation.setTimestamp(cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)));
+                annotation.setAnnotationType(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ANNOTATION_TYPE)));
+                annotation.setAnnotationData(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ANNOTATION_DATA)));
+                annotation.setXPosition(cursor.getFloat(cursor.getColumnIndexOrThrow(COLUMN_X_POSITION)));
+                annotation.setYPosition(cursor.getFloat(cursor.getColumnIndexOrThrow(COLUMN_Y_POSITION)));
+                annotation.setCreatedAt(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CREATED_AT)));
+                annotations.add(annotation);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return annotations;
+    }
+
+    // Helper class for videos with annotation count
+//    public static class VideoWithAnnotations {
+//        private Video video;
+//        private int annotationCount;
+//
+//        public VideoWithAnnotations(Video video, int annotationCount) {
+//            this.video = video;
+//            this.annotationCount = annotationCount;
+//        }
+//
+//        public Video getVideo() { return video; }
+//        public int getAnnotationCount() { return annotationCount; }
+//    }
+
+    // Get all annotations by a coach
+
     // Add new student
     public long addStudent(Student student) {
         SQLiteDatabase db = this.getWritableDatabase();
@@ -667,6 +763,124 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return studentName;
+    }
+
+    public boolean updateAnnotation(Annotation annotation) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_TIMESTAMP, annotation.getTimestamp());
+        values.put(COLUMN_ANNOTATION_TYPE, annotation.getAnnotationType());
+        values.put(COLUMN_ANNOTATION_DATA, annotation.getAnnotationData());
+        values.put(COLUMN_X_POSITION, annotation.getXPosition());
+        values.put(COLUMN_Y_POSITION, annotation.getYPosition());
+
+        int result = db.update(TABLE_ANNOTATIONS, values, COLUMN_ANNOTATION_ID + " = ?",
+                new String[]{String.valueOf(annotation.getAnnotationId())});
+        return result > 0;
+    }
+
+    // Delete single annotation
+    public boolean deleteAnnotation(int annotationId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int result = db.delete(TABLE_ANNOTATIONS, COLUMN_ANNOTATION_ID + " = ?",
+                new String[]{String.valueOf(annotationId)});
+        return result > 0;
+    }
+
+    // Get annotation count for a video
+    public int getAnnotationCountForVideo(int videoId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT COUNT(*) FROM " + TABLE_ANNOTATIONS + " WHERE " + COLUMN_VIDEO_ID + " = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(videoId)});
+
+        int count = 0;
+        if (cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+        }
+        cursor.close();
+        return count;
+    }
+
+    // Get all annotations by a coach
+    public List<Annotation> getAnnotationsByCoachId(int coachId) {
+        List<Annotation> annotations = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_ANNOTATIONS + " WHERE " + COLUMN_COACH_ID + " = ? ORDER BY " +
+                COLUMN_CREATED_AT + " DESC";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(coachId)});
+
+        if (cursor.moveToFirst()) {
+            do {
+                Annotation annotation = new Annotation();
+                annotation.setAnnotationId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ANNOTATION_ID)));
+                annotation.setVideoId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_VIDEO_ID)));
+                annotation.setCoachId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_COACH_ID)));
+                annotation.setTimestamp(cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP)));
+                annotation.setAnnotationType(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ANNOTATION_TYPE)));
+                annotation.setAnnotationData(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ANNOTATION_DATA)));
+                annotation.setXPosition(cursor.getFloat(cursor.getColumnIndexOrThrow(COLUMN_X_POSITION)));
+                annotation.setYPosition(cursor.getFloat(cursor.getColumnIndexOrThrow(COLUMN_Y_POSITION)));
+                annotation.setCreatedAt(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CREATED_AT)));
+                annotations.add(annotation);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return annotations;
+    }
+
+// ENHANCED VIDEO METHODS
+
+    // Get videos with annotation count
+    public List<VideoWithAnnotations> getVideosWithAnnotationsByCoachId(int coachId) {
+        List<VideoWithAnnotations> videosWithAnnotations = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query = "SELECT v.*, COUNT(a." + COLUMN_ANNOTATION_ID + ") as annotation_count " +
+                "FROM " + TABLE_VIDEOS + " v " +
+                "LEFT JOIN " + TABLE_ANNOTATIONS + " a ON v." + COLUMN_VIDEO_ID + " = a." + COLUMN_VIDEO_ID + " " +
+                "WHERE v." + COLUMN_COACH_ID + " = ? " +
+                "GROUP BY v." + COLUMN_VIDEO_ID + " " +
+                "ORDER BY v." + COLUMN_UPLOAD_DATE + " DESC";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(coachId)});
+
+        if (cursor.moveToFirst()) {
+            do {
+                Video video = new Video();
+                video.setVideoId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_VIDEO_ID)));
+                video.setStudentId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_STUDENT_ID)));
+                video.setCoachId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_COACH_ID)));
+                video.setVideoPath(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_VIDEO_PATH)));
+                video.setVideoTitle(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_VIDEO_TITLE)));
+                video.setVideoDescription(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_VIDEO_DESCRIPTION)));
+                video.setVideoDuration(cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_VIDEO_DURATION)));
+                video.setUploadDate(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_UPLOAD_DATE)));
+                video.setStatus(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_STATUS)));
+                video.setThumbnailPath(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_THUMBNAIL_PATH)));
+                video.setCreatedAt(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CREATED_AT)));
+
+                int annotationCount = cursor.getInt(cursor.getColumnIndexOrThrow("annotation_count"));
+
+                VideoWithAnnotations videoWithAnnotations = new VideoWithAnnotations(video, annotationCount);
+                videosWithAnnotations.add(videoWithAnnotations);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return videosWithAnnotations;
+    }
+
+    // Helper class for videos with annotation count
+    public static class VideoWithAnnotations {
+        private Video video;
+        private int annotationCount;
+
+        public VideoWithAnnotations(Video video, int annotationCount) {
+            this.video = video;
+            this.annotationCount = annotationCount;
+        }
+
+        public Video getVideo() { return video; }
+        public int getAnnotationCount() { return annotationCount; }
     }
 
 }

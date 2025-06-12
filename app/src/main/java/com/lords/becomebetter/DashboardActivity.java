@@ -90,6 +90,11 @@ public class DashboardActivity extends AppCompatActivity {
         viewProfileBtn.setOnClickListener(v -> viewProfile());
         editProfileBtn.setOnClickListener(v -> editProfile());
 
+        if (manageSessionsBtn != null) {
+            manageSessionsBtn.setOnClickListener(v -> viewVideos()); // Changed from manageSessions() to viewVideos()
+        }
+
+
         // Coach-specific actions
         if (viewStudentsBtn != null) {
             viewStudentsBtn.setOnClickListener(v -> viewStudents());
@@ -116,6 +121,12 @@ public class DashboardActivity extends AppCompatActivity {
         finish();
     }
 
+    private void viewVideos() {
+        Intent intent = new Intent(this, VideoListActivity.class);
+        intent.putExtra("coachEmail", userEmail);
+        startActivity(intent);
+    }
+
     private void viewProfile() {
         if ("coach".equals(userType)) {
             Intent intent = new Intent(this, CoachProfileActivity.class);
@@ -140,20 +151,18 @@ public class DashboardActivity extends AppCompatActivity {
         }
     }
 
+    private void manageSessions() {
+        // For now, redirect to video management
+        viewVideos();
+    }
+
     private void viewStudents() {
         // Remove the "coming soon" message and implement the actual functionality
         Intent intent = new Intent(this, ViewStudentsActivity.class);
         intent.putExtra("coachEmail", userEmail);
         startActivity(intent);
     }
-    private void manageSessions() {
-        showComingSoonMessage("Manage Sessions");
-        // TODO: Implement session management
-        // Intent intent = new Intent(this, ManageSessionsActivity.class);
-        // intent.putExtra("userType", userType);
-        // intent.putExtra("userEmail", userEmail);
-        // startActivity(intent);
-    }
+
 
     private void findCoach() {
         // Navigate to SimpleFindCoachActivity for students

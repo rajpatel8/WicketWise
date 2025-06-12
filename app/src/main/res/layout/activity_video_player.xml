@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/black"
+    tools:context=".VideoPlayerActivity">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:background="@color/cricket_green_primary"
+        android:gravity="center_vertical">
+
+        <ImageButton
+            android:id="@+id/backBtn"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_arrow_back"
+            android:tint="@color/white"
+            android:contentDescription="Back" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp">
+
+            <TextView
+                android:id="@+id/videoTitleText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Video Title"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/studentNameText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Student: Name"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:alpha="0.8"
+                android:layout_marginTop="2dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Video Container with Overlay -->
+    <FrameLayout
+        android:id="@+id/videoContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@color/black">
+
+        <!-- Video View -->
+        <VideoView
+            android:id="@+id/videoView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center" />
+
+        <!-- Annotation Overlay -->
+        <com.lords.becomebetter.AnnotationOverlay
+            android:id="@+id/annotationOverlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </FrameLayout>
+
+    <!-- Video Controls -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/cricket_green_primary"
+        android:padding="16dp">
+
+        <!-- Time and Seek Bar -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:id="@+id/currentTimeText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="00:00"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:minWidth="40dp" />
+
+            <SeekBar
+                android:id="@+id/videoSeekBar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginHorizontal="12dp"
+                android:progressTint="@color/white"
+                android:thumbTint="@color/white" />
+
+            <TextView
+                android:id="@+id/totalTimeText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="00:00"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:minWidth="40dp"
+                android:gravity="end" />
+
+        </LinearLayout>
+
+        <!-- Play Controls -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="16dp">
+
+            <ImageButton
+                android:id="@+id/playPauseBtn"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:background="@drawable/rounded_background"
+                android:backgroundTint="@color/white"
+                android:src="@drawable/ic_play_arrow"
+                android:tint="@color/cricket_green_primary"
+                android:contentDescription="Play/Pause" />
+
+        </LinearLayout>
+
+        <!-- Annotation Controls -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/clearAnnotationsBtn"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:text="Clear"
+                android:textColor="@color/white"
+                android:textSize="14sp"
+                android:background="@drawable/button_outline_background"
+                android:backgroundTint="@android:color/transparent"
+                app:strokeColor="@color/white"
+                app:strokeWidth="2dp"
+                android:drawableStart="@drawable/ic_close"
+                android:drawableTint="@color/white"
+                android:drawablePadding="8dp"
+                android:gravity="center" />
+
+            <Button
+                android:id="@+id/saveAnnotationsBtn"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="Save Annotations"
+                android:textColor="@color/cricket_green_primary"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:background="@drawable/button_background"
+                android:backgroundTint="@color/white"
+                android:drawableStart="@drawable/ic_check"
+                android:drawableTint="@color/cricket_green_primary"
+                android:drawablePadding="8dp"
+                android:gravity="center" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>
