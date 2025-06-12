@@ -32,7 +32,8 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.BecomeBetter">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -44,6 +45,7 @@
             android:name=".RegistrationActivity"
             android:exported="false"
             android:screenOrientation="portrait"
+            android:theme="@style/Theme.BecomeBetter"
             android:parentActivityName=".MainActivity" />
 
         <!-- Dashboard Activity -->
@@ -51,6 +53,7 @@
             android:name=".DashboardActivity"
             android:exported="false"
             android:screenOrientation="portrait"
+            android:theme="@style/Theme.BecomeBetter"
             android:parentActivityName=".MainActivity" />
 
         <!-- Profile Activities -->
@@ -58,25 +61,29 @@
             android:name=".CoachProfileActivity"
             android:exported="false"
             android:screenOrientation="portrait"
+            android:theme="@style/Theme.BecomeBetter"
             android:parentActivityName=".DashboardActivity" />
 
         <activity
             android:name=".StudentProfileActivity"
             android:exported="false"
             android:screenOrientation="portrait"
+            android:theme="@style/Theme.BecomeBetter"
             android:parentActivityName=".DashboardActivity" />
 
-        <!-- Edit Profile Activities (to be implemented) -->
+        <!-- Edit Profile Activities -->
         <activity
             android:name=".EditCoachProfileActivity"
             android:exported="false"
             android:screenOrientation="portrait"
+            android:theme="@style/Theme.BecomeBetter"
             android:parentActivityName=".CoachProfileActivity" />
 
         <activity
             android:name=".EditStudentProfileActivity"
             android:exported="false"
             android:screenOrientation="portrait"
+            android:theme="@style/Theme.BecomeBetter"
             android:parentActivityName=".StudentProfileActivity" />
 
         <!-- Find Coach Activity -->
@@ -84,12 +91,14 @@
             android:name=".FindCoachActivity"
             android:exported="false"
             android:screenOrientation="portrait"
+            android:theme="@style/Theme.BecomeBetter"
             android:parentActivityName=".StudentProfileActivity" />
 
         <activity
             android:name=".VideoListActivity"
             android:exported="false"
             android:screenOrientation="portrait"
+            android:theme="@style/Theme.BecomeBetter"
             android:parentActivityName=".DashboardActivity" />
 
         <!-- Video Player with Annotation Activity -->
@@ -97,26 +106,30 @@
             android:name=".VideoPlayerActivity"
             android:exported="false"
             android:screenOrientation="portrait"
+            android:theme="@style/Theme.BecomeBetter.VideoPlayer"
             android:parentActivityName=".VideoListActivity" />
 
-        <!-- Simple Find Coach Activity (for debugging) -->
+        <!-- Simple Find Coach Activity -->
         <activity
             android:name=".SimpleFindCoachActivity"
             android:exported="false"
             android:screenOrientation="portrait"
+            android:theme="@style/Theme.BecomeBetter"
             android:parentActivityName=".StudentProfileActivity" />
 
         <activity
             android:name=".ViewStudentsActivity"
             android:exported="false"
             android:screenOrientation="portrait"
+            android:theme="@style/Theme.BecomeBetter"
             android:parentActivityName=".DashboardActivity" />
 
-        <!-- Add this activity inside the <application> tag -->
+        <!-- Video Upload Activity -->
         <activity
             android:name=".VideoUploadActivity"
             android:exported="false"
             android:screenOrientation="portrait"
+            android:theme="@style/Theme.BecomeBetter"
             android:parentActivityName=".StudentProfileActivity" />
     </application>
 

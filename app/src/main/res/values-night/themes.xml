@@ -3,13 +3,13 @@
     <!-- Base application theme for dark mode. -->
     <style name="Theme.BecomeBetter" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color (darker for night mode). -->
-        <item name="colorPrimary">@color/cricket_green_secondary</item>
-        <item name="colorPrimaryVariant">@color/cricket_green_primary</item>
+        <item name="colorPrimary">@color/brand_accent</item>
+        <item name="colorPrimaryVariant">@color/brand_secondary</item>
         <item name="colorOnPrimary">@color/black</item>
 
         <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/cricket_green_light</item>
-        <item name="colorSecondaryVariant">@color/cricket_green_secondary</item>
+        <item name="colorSecondary">@color/brand_light</item>
+        <item name="colorSecondaryVariant">@color/brand_accent</item>
         <item name="colorOnSecondary">@color/black</item>
 
         <!-- Status bar color. -->

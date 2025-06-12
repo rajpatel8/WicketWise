@@ -37,54 +37,65 @@
         <!-- Action bar -->
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
-
-        <!-- Material Components -->
-        <item name="materialCardViewStyle">@style/Widget.BecomeBetter.CardView</item>
-        <item name="materialButtonStyle">@style/Widget.BecomeBetter.Button</item>
-        <item name="textInputStyle">@style/Widget.BecomeBetter.TextInputLayout</item>
     </style>
 
-    <!-- Dark theme variant -->
-    <style name="Theme.BecomeBetter.Dark" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <!-- Primary brand colors (adjusted for dark theme) -->
-        <item name="colorPrimary">@color/brand_accent</item>
-        <item name="colorPrimaryVariant">@color/brand_secondary</item>
-        <item name="colorOnPrimary">@color/text_primary</item>
-
-        <!-- Secondary brand colors -->
-        <item name="colorSecondary">@color/brand_light</item>
+    <!-- ADD THESE MISSING STYLES -->
+    <!-- Base BecomeBetter style that AAPT is looking for -->
+    <style name="BecomeBetter" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/brand_primary</item>
+        <item name="colorPrimaryVariant">@color/brand_dark</item>
+        <item name="colorOnPrimary">@color/text_on_primary</item>
+        <item name="colorSecondary">@color/brand_secondary</item>
         <item name="colorSecondaryVariant">@color/brand_accent</item>
-        <item name="colorOnSecondary">@color/text_primary</item>
-
-        <!-- Dark background colors -->
-        <item name="android:windowBackground">#121212</item>
-        <item name="colorSurface">#1E1E1E</item>
-        <item name="colorOnSurface">@color/white</item>
-        <item name="colorSurfaceVariant">#2A2A2A</item>
-
-        <!-- Status bar for dark theme -->
-        <item name="android:statusBarColor" tools:targetApi="l">@color/black</item>
-
-        <!-- Text colors for dark theme -->
-        <item name="android:textColorPrimary">@color/white</item>
-        <item name="android:textColorSecondary">#B3FFFFFF</item>
-        <item name="android:textColorHint">#80FFFFFF</item>
-
-        <!-- Error colors -->
+        <item name="colorOnSecondary">@color/text_on_secondary</item>
+        <item name="android:windowBackground">@color/background_primary</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/text_primary</item>
         <item name="colorError">@color/error</item>
-        <item name="colorOnError">@color/white</item>
-
-        <!-- Action bar -->
+        <item name="colorOnError">@color/text_on_primary</item>
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
 
-    <!-- Splash screen theme -->
-    <style name="Theme.BecomeBetter.Splash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/brand_primary</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_cricket_logo</item>
-        <item name="windowSplashScreenAnimationDuration">300</item>
-        <item name="postSplashScreenTheme">@style/Theme.BecomeBetter</item>
+    <!-- Cricket-themed text styles -->
+    <style name="BecomeBetter.Header">
+        <item name="android:textSize">24sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/brand_primary</item>
+        <item name="android:letterSpacing">0.02</item>
+    </style>
+
+    <style name="BecomeBetter.Subheader">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <style name="BecomeBetter.Body">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:lineSpacingExtra">2dp</item>
+    </style>
+
+    <style name="BecomeBetter.Caption">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/text_tertiary</item>
+    </style>
+
+    <!-- Profile badge style -->
+    <style name="BecomeBetter.Badge">
+        <item name="android:background">@drawable/rounded_background</item>
+        <item name="android:backgroundTint">@color/brand_light</item>
+        <item name="android:textColor">@color/brand_primary</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:padding">8dp</item>
+    </style>
+
+    <!-- Progress indicator style -->
+    <style name="BecomeBetter.ProgressIndicator" parent="Widget.MaterialComponents.LinearProgressIndicator">
+        <item name="indicatorColor">@color/brand_primary</item>
+        <item name="trackColor">@color/brand_light</item>
     </style>
 
     <!-- Custom Card View Style -->
@@ -131,48 +142,5 @@
         <item name="android:windowBackground">@color/black</item>
         <item name="android:statusBarColor" tools:targetApi="l">@color/black</item>
         <item name="android:navigationBarColor" tools:targetApi="l">@color/black</item>
-    </style>
-
-    <!-- Cricket-themed styles -->
-    <style name="BecomeBetter.Header">
-        <item name="android:textSize">24sp</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textColor">@color/brand_primary</item>
-        <item name="android:letterSpacing">0.02</item>
-    </style>
-
-    <style name="BecomeBetter.Subheader">
-        <item name="android:textSize">18sp</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textColor">@color/text_primary</item>
-    </style>
-
-    <style name="BecomeBetter.Body">
-        <item name="android:textSize">14sp</item>
-        <item name="android:textColor">@color/text_secondary</item>
-        <item name="android:lineSpacingExtra">2dp</item>
-    </style>
-
-    <style name="BecomeBetter.Caption">
-        <item name="android:textSize">12sp</item>
-        <item name="android:textColor">@color/text_tertiary</item>
-    </style>
-
-    <!-- Profile badge style -->
-    <style name="BecomeBetter.Badge">
-        <item name="android:background">@drawable/rounded_background</item>
-        <item name="android:backgroundTint">@color/brand_light</item>
-        <item name="android:textColor">@color/brand_primary</item>
-        <item name="android:textSize">12sp</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:padding">8dp</item>
-    </style>
-
-    <!-- Progress indicator style -->
-    <style name="BecomeBetter.ProgressIndicator" parent="Widget.MaterialComponents.LinearProgressIndicator">
-        <item name="indicatorColor">@color/brand_primary</item>
-        <item name="trackColor">@color/brand_light</item>
-        <item name="trackCornerRadius">4dp</item>
-        <item name="indicatorCornerRadius">4dp</item>
     </style>
 </resources>
