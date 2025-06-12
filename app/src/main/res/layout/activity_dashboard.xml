@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="@color/background_light"
+    android:background="@color/background_primary"
     tools:context=".DashboardActivity">
 
     <LinearLayout
@@ -13,66 +13,21 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- Header Section -->
+        <!-- Header Section with Brand Gradient -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="@color/cricket_green_primary"
-            android:padding="24dp">
+            android:background="@drawable/login_gradient_background"
+            android:paddingBottom="32dp">
 
             <!-- Top Bar with Logout -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="24dp">
-
-                <TextView
-                    android:id="@+id/welcomeText"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Welcome back!"
-                    android:textColor="@color/white"
-                    android:textSize="20sp"
-                    android:textStyle="bold" />
-
-                <Button
-                    android:id="@+id/logoutBtn"
-                    android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:text="Logout"
-                    android:textColor="@color/cricket_green_primary"
-                    android:textSize="12sp"
-                    android:background="@drawable/rounded_background"
-                    android:backgroundTint="@color/white"
-                    android:paddingHorizontal="16dp"
-                    android:minWidth="0dp"
-                    android:minHeight="0dp" />
-
-            </LinearLayout>
-
-            <!-- User Info Card -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:background="@drawable/rounded_background"
-                android:backgroundTint="@color/cricket_green_light"
-                android:padding="16dp"
+                android:padding="20dp"
                 android:gravity="center_vertical">
-
-                <ImageView
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:src="@drawable/ic_person"
-                    android:background="@drawable/rounded_background"
-                    android:backgroundTint="@color/white"
-                    android:padding="8dp"
-                    android:layout_marginEnd="16dp"
-                    app:tint="@color/cricket_green_primary" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -81,32 +36,130 @@
                     android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/userNameText"
+                        android:id="@+id/welcomeText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="User Name"
-                        android:textColor="@color/cricket_green_primary"
-                        android:textSize="16sp"
+                        android:text="Welcome back!"
+                        android:textColor="@color/white"
+                        android:textSize="24sp"
                         android:textStyle="bold" />
 
                     <TextView
-                        android:id="@+id/userTypeText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Coach/Student"
-                        android:textColor="@color/cricket_green_dark"
+                        android:text="Ready to become better?"
+                        android:textColor="@color/white"
                         android:textSize="14sp"
+                        android:alpha="0.9"
                         android:layout_marginTop="4dp" />
 
                 </LinearLayout>
 
-                <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:src="@drawable/ic_cricket_bat"
-                    app:tint="@color/cricket_green_primary" />
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/logoutBtn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:text="Logout"
+                    android:textColor="@color/brand_primary"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    app:backgroundTint="@color/white"
+                    app:cornerRadius="20dp"
+                    android:paddingHorizontal="20dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp" />
 
             </LinearLayout>
+
+            <!-- User Profile Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="24dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="8dp"
+                app:cardBackgroundColor="@color/card_background"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="24dp"
+                    android:gravity="center_vertical">
+
+                    <!-- Profile Avatar -->
+                    <FrameLayout
+                        android:layout_width="64dp"
+                        android:layout_height="64dp"
+                        android:background="@drawable/logo_circle_background"
+                        android:backgroundTint="@color/brand_light">
+
+                        <ImageView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@drawable/ic_person"
+                            android:layout_gravity="center"
+                            app:tint="@color/brand_primary" />
+
+                    </FrameLayout>
+
+                    <!-- User Info -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="20dp"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/userNameText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="User Name"
+                            android:textColor="@color/text_primary"
+                            android:textSize="20sp"
+                            android:textStyle="bold" />
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginTop="4dp"
+                            android:background="@drawable/status_badge_background"
+                            android:paddingHorizontal="12dp"
+                            android:paddingVertical="6dp">
+
+                            <ImageView
+                                android:layout_width="16dp"
+                                android:layout_height="16dp"
+                                android:src="@drawable/ic_sports_cricket"
+                                app:tint="@color/brand_primary"
+                                android:layout_marginEnd="6dp" />
+
+                            <TextView
+                                android:id="@+id/userTypeText"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Coach/Student"
+                                android:textColor="@color/brand_primary"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <!-- Status Indicator -->
+                    <View
+                        android:layout_width="4dp"
+                        android:layout_height="40dp"
+                        android:background="@drawable/rounded_background"
+                        android:backgroundTint="@color/brand_primary" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
 
@@ -115,17 +168,33 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:padding="24dp"
+            android:layout_marginTop="-16dp">
 
-            <!-- Quick Actions Section -->
-            <TextView
-                android:layout_width="wrap_content"
+            <!-- Quick Actions Header -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Quick Actions"
-                android:textColor="@color/text_primary"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="16dp" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="20dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Quick Actions"
+                    android:textColor="@color/text_primary"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/ic_trophy"
+                    app:tint="@color/brand_primary" />
+
+            </LinearLayout>
 
             <!-- Action Buttons Grid -->
             <LinearLayout
@@ -139,36 +208,61 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginBottom="12dp">
+                    android:layout_marginBottom="16dp">
 
-                    <Button
-                        android:id="@+id/viewProfileBtn"
+                    <com.google.android.material.card.MaterialCardView
                         android:layout_width="0dp"
-                        android:layout_height="80dp"
+                        android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:layout_marginEnd="6dp"
-                        android:text="View Profile"
-                        android:textColor="@color/white"
-                        android:textSize="14sp"
-                        android:background="@drawable/button_background"
-                        android:backgroundTint="@color/cricket_green_primary"
-                        android:drawableTop="@drawable/ic_person"
-                        android:drawableTint="@color/white"
-                        android:drawablePadding="8dp" />
+                        android:layout_marginEnd="8dp"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="4dp"
+                        app:cardBackgroundColor="@color/card_background"
+                        app:strokeWidth="0dp">
 
-                    <Button
-                        android:id="@+id/editProfileBtn"
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/viewProfileBtn"
+                            android:layout_width="match_parent"
+                            android:layout_height="100dp"
+                            android:text="View Profile"
+                            android:textColor="@color/white"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            app:backgroundTint="@color/brand_primary"
+                            app:cornerRadius="16dp"
+                            app:icon="@drawable/ic_person"
+                            app:iconTint="@color/white"
+                            app:iconGravity="top"
+                            app:iconPadding="8dp" />
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
                         android:layout_width="0dp"
-                        android:layout_height="80dp"
+                        android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:layout_marginStart="6dp"
-                        android:text="Edit Profile"
-                        android:textColor="@color/cricket_green_primary"
-                        android:textSize="14sp"
-                        android:background="@drawable/button_outline_background"
-                        android:drawableTop="@drawable/ic_person"
-                        android:drawableTint="@color/cricket_green_primary"
-                        android:drawablePadding="8dp" />
+                        android:layout_marginStart="8dp"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="4dp"
+                        app:cardBackgroundColor="@color/card_background"
+                        app:strokeWidth="0dp">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/editProfileBtn"
+                            android:layout_width="match_parent"
+                            android:layout_height="100dp"
+                            android:text="Edit Profile"
+                            android:textColor="@color/brand_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            app:backgroundTint="@color/brand_light"
+                            app:cornerRadius="16dp"
+                            app:icon="@drawable/ic_person"
+                            app:iconTint="@color/brand_primary"
+                            app:iconGravity="top"
+                            app:iconPadding="8dp" />
+
+                    </com.google.android.material.card.MaterialCardView>
 
                 </LinearLayout>
 
@@ -180,34 +274,59 @@
                     android:orientation="horizontal"
                     android:visibility="gone">
 
-                    <Button
-                        android:id="@+id/viewStudentsBtn"
+                    <com.google.android.material.card.MaterialCardView
                         android:layout_width="0dp"
-                        android:layout_height="80dp"
+                        android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:layout_marginEnd="6dp"
-                        android:text="My Students"
-                        android:textColor="@color/white"
-                        android:textSize="14sp"
-                        android:background="@drawable/button_background"
-                        android:backgroundTint="@color/cricket_green_secondary"
-                        android:drawableTop="@drawable/ic_student"
-                        android:drawableTint="@color/white"
-                        android:drawablePadding="8dp" />
+                        android:layout_marginEnd="8dp"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="4dp"
+                        app:cardBackgroundColor="@color/card_background"
+                        app:strokeWidth="0dp">
 
-                    <Button
-                        android:id="@+id/manageSessionsBtn"
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/viewStudentsBtn"
+                            android:layout_width="match_parent"
+                            android:layout_height="100dp"
+                            android:text="My Students"
+                            android:textColor="@color/white"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            app:backgroundTint="@color/brand_secondary"
+                            app:cornerRadius="16dp"
+                            app:icon="@drawable/ic_student"
+                            app:iconTint="@color/white"
+                            app:iconGravity="top"
+                            app:iconPadding="8dp" />
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
                         android:layout_width="0dp"
-                        android:layout_height="80dp"
+                        android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:layout_marginStart="6dp"
-                        android:text="Review Videos"
-                        android:textColor="@color/cricket_green_secondary"
-                        android:textSize="14sp"
-                        android:background="@drawable/button_outline_background"
-                        android:drawableTop="@drawable/ic_video_camera"
-                        android:drawableTint="@color/cricket_green_secondary"
-                        android:drawablePadding="8dp" />
+                        android:layout_marginStart="8dp"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="4dp"
+                        app:cardBackgroundColor="@color/card_background"
+                        app:strokeWidth="0dp">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/manageSessionsBtn"
+                            android:layout_width="match_parent"
+                            android:layout_height="100dp"
+                            android:text="Review Videos"
+                            android:textColor="@color/brand_secondary"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            app:backgroundTint="@color/brand_light"
+                            app:cornerRadius="16dp"
+                            app:icon="@drawable/ic_video_camera"
+                            app:iconTint="@color/brand_secondary"
+                            app:iconGravity="top"
+                            app:iconPadding="8dp" />
+
+                    </com.google.android.material.card.MaterialCardView>
 
                 </LinearLayout>
 
@@ -218,92 +337,295 @@
                     android:orientation="horizontal"
                     android:visibility="gone">
 
-                    <Button
-                        android:id="@+id/findCoachBtn"
+                    <com.google.android.material.card.MaterialCardView
                         android:layout_width="0dp"
-                        android:layout_height="80dp"
+                        android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:layout_marginEnd="6dp"
-                        android:text="Find Coach"
-                        android:textColor="@color/white"
-                        android:textSize="14sp"
-                        android:background="@drawable/button_background"
-                        android:backgroundTint="@color/cricket_green_secondary"
-                        android:drawableTop="@drawable/ic_coach"
-                        android:drawableTint="@color/white"
-                        android:drawablePadding="8dp" />
+                        android:layout_marginEnd="8dp"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="4dp"
+                        app:cardBackgroundColor="@color/card_background"
+                        app:strokeWidth="0dp">
 
-                    <Button
-                        android:id="@+id/bookSessionBtn"
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/findCoachBtn"
+                            android:layout_width="match_parent"
+                            android:layout_height="100dp"
+                            android:text="Find Coach"
+                            android:textColor="@color/white"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            app:backgroundTint="@color/brand_secondary"
+                            app:cornerRadius="16dp"
+                            app:icon="@drawable/ic_coach"
+                            app:iconTint="@color/white"
+                            app:iconGravity="top"
+                            app:iconPadding="8dp" />
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <com.google.android.material.card.MaterialCardView
                         android:layout_width="0dp"
-                        android:layout_height="80dp"
+                        android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:layout_marginStart="6dp"
-                        android:text="Book Session"
-                        android:textColor="@color/cricket_green_secondary"
-                        android:textSize="14sp"
-                        android:background="@drawable/button_outline_background"
-                        android:drawableTop="@drawable/ic_calendar"
-                        android:drawableTint="@color/cricket_green_secondary"
-                        android:drawablePadding="8dp" />
+                        android:layout_marginStart="8dp"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="4dp"
+                        app:cardBackgroundColor="@color/card_background"
+                        app:strokeWidth="0dp">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/bookSessionBtn"
+                            android:layout_width="match_parent"
+                            android:layout_height="100dp"
+                            android:text="Book Session"
+                            android:textColor="@color/brand_secondary"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            app:backgroundTint="@color/brand_light"
+                            app:cornerRadius="16dp"
+                            app:icon="@drawable/ic_calendar"
+                            app:iconTint="@color/brand_secondary"
+                            app:iconGravity="top"
+                            app:iconPadding="8dp" />
+
+                    </com.google.android.material.card.MaterialCardView>
 
                 </LinearLayout>
 
             </LinearLayout>
 
             <!-- Development Status Section -->
-            <LinearLayout
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:background="@drawable/rounded_background"
-                android:backgroundTint="@color/background_secondary"
-                android:padding="20dp"
-                android:layout_marginBottom="24dp">
+                android:layout_marginBottom="24dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="4dp"
+                app:cardBackgroundColor="@color/card_background"
+                app:strokeColor="@color/brand_light"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="16dp">
+                    android:orientation="vertical"
+                    android:padding="24dp">
 
-                    <ImageView
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
-                        android:src="@drawable/ic_trophy"
-                        android:layout_marginEnd="12dp"
-                        app:tint="@color/cricket_green_primary" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <!-- Header with Icon -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="🚀 Development Status"
-                        android:textColor="@color/cricket_green_primary"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="16dp">
+
+                        <ImageView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@drawable/ic_trophy"
+                            android:layout_marginEnd="12dp"
+                            app:tint="@color/brand_primary" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="🚀 Development Progress"
+                            android:textColor="@color/brand_primary"
+                            android:textSize="18sp"
+                            android:textStyle="bold" />
+
+                    </LinearLayout>
+
+                    <!-- Progress Items -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <!-- Phase 1 -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="12dp"
+                            android:gravity="center_vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="✅"
+                                android:textSize="16sp"
+                                android:layout_marginEnd="12dp" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Phase 1: Authentication &amp; Registration"
+                                android:textColor="@color/text_primary"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Complete"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:background="@drawable/status_badge_background"
+                                android:backgroundTint="@color/success"
+                                android:textColor="@color/white"
+                                android:paddingHorizontal="8dp"
+                                android:paddingVertical="4dp" />
+
+                        </LinearLayout>
+
+                        <!-- Phase 2 -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="12dp"
+                            android:gravity="center_vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="🔄"
+                                android:textSize="16sp"
+                                android:layout_marginEnd="12dp" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Phase 2: CRUD Profile Management"
+                                android:textColor="@color/text_primary"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="In Progress"
+                                android:textColor="@color/white"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:background="@drawable/status_badge_background"
+                                android:backgroundTint="@color/brand_primary"
+                                android:paddingHorizontal="8dp"
+                                android:paddingVertical="4dp" />
+
+                        </LinearLayout>
+
+                        <!-- Phase 3 -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="12dp"
+                            android:gravity="center_vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="🎥"
+                                android:textSize="16sp"
+                                android:layout_marginEnd="12dp" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Phase 3: Video Annotation System"
+                                android:textColor="@color/text_primary"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Coming Soon"
+                                android:textColor="@color/white"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:background="@drawable/status_badge_background"
+                                android:backgroundTint="@color/text_secondary"
+                                android:paddingHorizontal="8dp"
+                                android:paddingVertical="4dp" />
+
+                        </LinearLayout>
+
+                        <!-- Phase 4 -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="📊"
+                                android:textSize="16sp"
+                                android:layout_marginEnd="12dp" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Phase 4: Analytics &amp; Progress Tracking"
+                                android:textColor="@color/text_primary"
+                                android:textSize="14sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Planned"
+                                android:textColor="@color/white"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:background="@drawable/status_badge_background"
+                                android:backgroundTint="@color/text_secondary"
+                                android:paddingHorizontal="8dp"
+                                android:paddingVertical="4dp" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
 
                 </LinearLayout>
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="✅ Phase 1: Authentication &amp; Registration - Complete!\n📋 Phase 2: CRUD Profile Management - In Progress\n🎥 Phase 3: Video Annotation System - Coming Soon\n📊 Phase 4: Analytics &amp; Progress Tracking - Planned"
-                    android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
-                    android:lineSpacingExtra="4dp" />
-
-            </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- Version Info -->
-            <TextView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Become Better Cricket Academy v1.0\nPhase 2 - CRUD Development"
-                android:textColor="@color/text_secondary"
-                android:textSize="12sp"
+                android:orientation="horizontal"
                 android:gravity="center"
-                android:alpha="0.7" />
+                android:background="@drawable/brand_card_background"
+                android:backgroundTint="@color/brand_light"
+                android:padding="16dp">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_sports_cricket"
+                    app:tint="@color/brand_primary"
+                    android:layout_marginEnd="8dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Become Better v2.0 • Phase 2 Development"
+                    android:textColor="@color/brand_primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
 
         </LinearLayout>
 
