@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="@color/background_light"
+    tools:context=".VideoUploadActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="16dp"
+            android:background="@color/cricket_green_primary"
+            android:gravity="center_vertical">
+
+            <ImageButton
+                android:id="@+id/backBtn"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_arrow_back"
+                android:tint="@color/white"
+                android:contentDescription="Back" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Upload Video"
+                android:textColor="@color/white"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_marginEnd="48dp" />
+
+        </LinearLayout>
+
+        <!-- Info Section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="@color/cricket_green_light"
+            android:padding="16dp"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_video_camera"
+                android:tint="@color/cricket_green_primary"
+                android:layout_marginEnd="12dp" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Upload a 5-10 second cricket video for your coach to review and annotate"
+                android:textColor="@color/cricket_green_primary"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+        <!-- Content -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <!-- Video Selection Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/rounded_background"
+                android:backgroundTint="@color/white"
+                android:padding="20dp"
+                android:elevation="3dp"
+                android:layout_marginBottom="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📹 Select Video"
+                    android:textColor="@color/cricket_green_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Video Selection Buttons -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="16dp">
+
+                    <Button
+                        android:id="@+id/recordVideoBtn"
+                        android:layout_width="0dp"
+                        android:layout_height="56dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="8dp"
+                        android:text="Record Video"
+                        android:textColor="@color/white"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:background="@drawable/button_background"
+                        android:backgroundTint="@color/cricket_green_primary"
+                        android:drawableStart="@drawable/ic_video_camera"
+                        android:drawableTint="@color/white"
+                        android:drawablePadding="8dp"
+                        android:gravity="center" />
+
+                    <Button
+                        android:id="@+id/selectVideoBtn"
+                        android:layout_width="0dp"
+                        android:layout_height="56dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="8dp"
+                        android:text="Select from Gallery"
+                        android:textColor="@color/cricket_green_primary"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:background="@drawable/button_outline_background"
+                        android:drawableStart="@drawable/ic_folder"
+                        android:drawableTint="@color/cricket_green_primary"
+                        android:drawablePadding="8dp"
+                        android:gravity="center" />
+
+                </LinearLayout>
+
+                <!-- Video Info -->
+                <TextView
+                    android:id="@+id/videoInfoText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="No video selected"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:background="@drawable/rounded_background"
+                    android:backgroundTint="@color/background_secondary" />
+
+            </LinearLayout>
+
+            <!-- Video Preview Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/rounded_background"
+                android:backgroundTint="@color/white"
+                android:padding="20dp"
+                android:elevation="3dp"
+                android:layout_marginBottom="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🎬 Video Preview"
+                    android:textColor="@color/cricket_green_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Video Preview -->
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="200dp"
+                    android:background="@drawable/rounded_background"
+                    android:backgroundTint="@color/background_secondary"
+                    android:layout_marginBottom="16dp">
+
+                    <VideoView
+                        android:id="@+id/videoPreview"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center" />
+
+                    <ImageView
+                        android:id="@+id/thumbnailPreview"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Video preview will appear here"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="14sp"
+                        android:layout_gravity="center" />
+
+                </FrameLayout>
+
+            </LinearLayout>
+
+            <!-- Video Details Form -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/rounded_background"
+                android:backgroundTint="@color/white"
+                android:padding="20dp"
+                android:elevation="3dp"
+                android:layout_marginBottom="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📝 Video Details"
+                    android:textColor="@color/cricket_green_primary"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="16dp" />
+
+                <!-- Title Input -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/videoTitleLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:boxStrokeColor="@color/cricket_green_primary"
+                    app:hintTextColor="@color/cricket_green_primary"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/videoTitleEdit"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Video Title (e.g., 'Batting Practice')"
+                        android:inputType="text"
+                        android:maxLines="1" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Description Input -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/videoDescriptionLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:boxStrokeColor="@color/cricket_green_primary"
+                    app:hintTextColor="@color/cricket_green_primary"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/videoDescriptionEdit"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Description (Optional)"
+                        android:inputType="textMultiLine"
+                        android:maxLines="3"
+                        android:gravity="top" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Upload Status -->
+                <TextView
+                    android:id="@+id/uploadStatusText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:padding="8dp"
+                    android:layout_marginBottom="16dp"
+                    android:visibility="gone" />
+
+                <!-- Upload Button -->
+                <Button
+                    android:id="@+id/uploadVideoBtn"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="Upload Video to Coach"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/button_background"
+                    android:backgroundTint="@color/cricket_green_primary"
+                    android:drawableStart="@drawable/ic_upload"
+                    android:drawableTint="@color/white"
+                    android:drawablePadding="12dp"
+                    android:gravity="center"
+                    android:elevation="4dp" />
+
+            </LinearLayout>
+
+            <!-- Guidelines -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@drawable/rounded_background"
+                android:backgroundTint="@color/cricket_green_light"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📋 Video Guidelines"
+                    android:textColor="@color/cricket_green_primary"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="• Maximum duration: 10 seconds\n• Focus on specific cricket technique\n• Good lighting and clear view\n• Hold phone horizontally for better view"
+                    android:textColor="@color/cricket_green_dark"
+                    android:textSize="12sp"
+                    android:lineSpacingExtra="2dp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>

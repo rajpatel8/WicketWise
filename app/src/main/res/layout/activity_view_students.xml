@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@color/background_light"
-    tools:context=".SimpleFindCoachActivity">
+    tools:context=".ViewStudentsActivity">
 
     <!-- Header -->
     <LinearLayout
@@ -31,7 +31,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Select Your Coach"
+            android:text="My Students"
             android:textColor="@color/white"
             android:textSize="20sp"
             android:textStyle="bold"
@@ -52,32 +52,49 @@
         <ImageView
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:src="@drawable/ic_coach"
+            android:src="@drawable/ic_student"
             android:tint="@color/cricket_green_primary"
             android:layout_marginEnd="12dp" />
 
-        <TextView
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Choose a coach to guide your cricket journey. You can change your coach anytime."
-            android:textColor="@color/cricket_green_primary"
-            android:textSize="14sp" />
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/studentCountText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Loading students..."
+                android:textColor="@color/cricket_green_primary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Students assigned to you"
+                android:textColor="@color/cricket_green_dark"
+                android:textSize="12sp"
+                android:layout_marginTop="2dp" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
-    <!-- Coaches List -->
+    <!-- Students List -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/coachesRecyclerView"
+        android:id="@+id/studentsRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:padding="16dp"
         android:clipToPadding="false" />
 
-    <!-- No Coaches Message -->
+    <!-- No Students Message -->
     <LinearLayout
-        android:id="@+id/noCoachesLayout"
+        android:id="@+id/noStudentsLayout"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
@@ -89,14 +106,14 @@
         <ImageView
             android:layout_width="80dp"
             android:layout_height="80dp"
-            android:src="@drawable/ic_coach"
-            android:layout_marginBottom="16dp"
-            app:tint="@color/text_secondary" />
+            android:src="@drawable/ic_student"
+            android:tint="@color/text_secondary"
+            android:layout_marginBottom="16dp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="No Coaches Available"
+            android:text="No Students Assigned"
             android:textColor="@color/text_primary"
             android:textSize="18sp"
             android:textStyle="bold"
@@ -105,10 +122,36 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="No coaches have registered yet. Please check back later or contact the academy."
+            android:text="You don't have any students assigned yet. Students will appear here once they select you as their coach."
             android:textColor="@color/text_secondary"
             android:textSize="14sp"
             android:gravity="center" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="@drawable/rounded_background"
+            android:backgroundTint="@color/cricket_green_light"
+            android:padding="12dp"
+            android:layout_marginTop="16dp"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_info"
+                android:tint="@color/cricket_green_primary"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Students choose their own coaches"
+                android:textSize="12sp"
+                android:textColor="@color/cricket_green_dark" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

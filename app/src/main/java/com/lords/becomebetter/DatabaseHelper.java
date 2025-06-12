@@ -11,12 +11,14 @@ import java.util.List;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "CricketCoaching.db";
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2; // Updated version for new tables
 
     // Table names
     private static final String TABLE_COACHES = "coaches";
     private static final String TABLE_STUDENTS = "students";
     private static final String TABLE_COACH_CODES = "coach_codes";
+    private static final String TABLE_VIDEOS = "videos";
+    private static final String TABLE_ANNOTATIONS = "annotations";
 
     // Common columns
     private static final String COLUMN_ID = "id";
@@ -39,6 +41,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // Coach codes columns
     private static final String COLUMN_CODE = "code";
     private static final String COLUMN_IS_USED = "is_used";
+
+    // Video table columns
+    private static final String COLUMN_VIDEO_ID = "video_id";
+    private static final String COLUMN_STUDENT_ID = "student_id";
+    private static final String COLUMN_VIDEO_PATH = "video_path";
+    private static final String COLUMN_VIDEO_TITLE = "video_title";
+    private static final String COLUMN_VIDEO_DESCRIPTION = "video_description";
+    private static final String COLUMN_VIDEO_DURATION = "video_duration";
+    private static final String COLUMN_UPLOAD_DATE = "upload_date";
+    private static final String COLUMN_STATUS = "status";
+    private static final String COLUMN_THUMBNAIL_PATH = "thumbnail_path";
+
+    // Annotation table columns
+    private static final String COLUMN_ANNOTATION_ID = "annotation_id";
+    private static final String COLUMN_TIMESTAMP = "timestamp";
+    private static final String COLUMN_ANNOTATION_TYPE = "annotation_type";
+    private static final String COLUMN_ANNOTATION_DATA = "annotation_data";
+    private static final String COLUMN_X_POSITION = "x_position";
+    private static final String COLUMN_Y_POSITION = "y_position";
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -81,9 +102,44 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COLUMN_CREATED_AT + " DATETIME DEFAULT CURRENT_TIMESTAMP"
                 + ")";
 
+        // Create videos table
+        String CREATE_VIDEOS_TABLE = "CREATE TABLE " + TABLE_VIDEOS + "("
+                + COLUMN_VIDEO_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + COLUMN_STUDENT_ID + " INTEGER NOT NULL,"
+                + COLUMN_COACH_ID + " INTEGER,"
+                + COLUMN_VIDEO_PATH + " TEXT NOT NULL,"
+                + COLUMN_VIDEO_TITLE + " TEXT,"
+                + COLUMN_VIDEO_DESCRIPTION + " TEXT,"
+                + COLUMN_VIDEO_DURATION + " INTEGER,"
+                + COLUMN_UPLOAD_DATE + " DATETIME DEFAULT CURRENT_TIMESTAMP,"
+                + COLUMN_STATUS + " TEXT DEFAULT 'pending',"
+                + COLUMN_THUMBNAIL_PATH + " TEXT,"
+                + COLUMN_CREATED_AT + " DATETIME DEFAULT CURRENT_TIMESTAMP,"
+                + "FOREIGN KEY(" + COLUMN_STUDENT_ID + ") REFERENCES " + TABLE_STUDENTS + "(" + COLUMN_ID + "),"
+                + "FOREIGN KEY(" + COLUMN_COACH_ID + ") REFERENCES " + TABLE_COACHES + "(" + COLUMN_ID + ")"
+                + ")";
+
+        // Create annotations table
+        String CREATE_ANNOTATIONS_TABLE = "CREATE TABLE " + TABLE_ANNOTATIONS + "("
+                + COLUMN_ANNOTATION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + COLUMN_VIDEO_ID + " INTEGER NOT NULL,"
+                + COLUMN_COACH_ID + " INTEGER NOT NULL,"
+                + COLUMN_TIMESTAMP + " INTEGER NOT NULL,"
+                + COLUMN_ANNOTATION_TYPE + " TEXT NOT NULL,"
+                + COLUMN_ANNOTATION_DATA + " TEXT NOT NULL,"
+                + COLUMN_X_POSITION + " FLOAT,"
+                + COLUMN_Y_POSITION + " FLOAT,"
+                + COLUMN_CREATED_AT + " DATETIME DEFAULT CURRENT_TIMESTAMP,"
+                + "FOREIGN KEY(" + COLUMN_VIDEO_ID + ") REFERENCES " + TABLE_VIDEOS + "(" + COLUMN_VIDEO_ID + "),"
+                + "FOREIGN KEY(" + COLUMN_COACH_ID + ") REFERENCES " + TABLE_COACHES + "(" + COLUMN_ID + ")"
+                + ")";
+
+        // Execute table creation
         db.execSQL(CREATE_COACHES_TABLE);
         db.execSQL(CREATE_STUDENTS_TABLE);
         db.execSQL(CREATE_COACH_CODES_TABLE);
+        db.execSQL(CREATE_VIDEOS_TABLE);
+        db.execSQL(CREATE_ANNOTATIONS_TABLE);
 
         // Insert some default coach codes
         insertDefaultCoachCodes(db);
@@ -91,9 +147,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACHES);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_STUDENTS);
+        // Drop all tables in correct order (annotations first, then videos, etc.)
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_ANNOTATIONS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_VIDEOS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACH_CODES);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_STUDENTS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACHES);
+
+        // Recreate all tables
         onCreate(db);
     }
 
@@ -331,4 +392,281 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
         return coachName;
     }
+
+    // Get students assigned to a specific coach
+    public List<Student> getStudentsByCoachId(int coachId) {
+        List<Student> students = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_STUDENTS + " WHERE " + COLUMN_COACH_ID + " = ? ORDER BY " + COLUMN_NAME;
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(coachId)});
+
+        if (cursor.moveToFirst()) {
+            do {
+                Student student = new Student();
+                student.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)));
+                student.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)));
+                student.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)));
+                student.setPhone(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PHONE)));
+                student.setAge(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_AGE)));
+                student.setSkillLevel(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SKILL_LEVEL)));
+                student.setCoachId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_COACH_ID)));
+                student.setCreatedAt(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CREATED_AT)));
+                students.add(student);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return students;
+    }
+
+    // Get count of students assigned to a coach
+    public int getStudentCountByCoachId(int coachId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT COUNT(*) FROM " + TABLE_STUDENTS + " WHERE " + COLUMN_COACH_ID + " = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(coachId)});
+
+        int count = 0;
+        if (cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+        }
+        cursor.close();
+        return count;
+    }
+
+    // Get all students without assigned coaches
+    public List<Student> getUnassignedStudents() {
+        List<Student> students = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_STUDENTS + " WHERE " + COLUMN_COACH_ID + " = 0 OR " + COLUMN_COACH_ID + " IS NULL ORDER BY " + COLUMN_NAME;
+        Cursor cursor = db.rawQuery(query, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                Student student = new Student();
+                student.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)));
+                student.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)));
+                student.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)));
+                student.setPhone(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PHONE)));
+                student.setAge(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_AGE)));
+                student.setSkillLevel(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SKILL_LEVEL)));
+                student.setCoachId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_COACH_ID)));
+                student.setCreatedAt(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CREATED_AT)));
+                students.add(student);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return students;
+    }
+
+    // Remove coach assignment from student
+    public boolean removeCoachFromStudent(int studentId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_COACH_ID, 0);
+
+        int result = db.update(TABLE_STUDENTS, values, COLUMN_ID + " = ?",
+                new String[]{String.valueOf(studentId)});
+        return result > 0;
+    }
+
+    // Get assignment statistics for dashboard
+    public AssignmentStats getAssignmentStats() {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        // Total coaches
+        String coachQuery = "SELECT COUNT(*) FROM " + TABLE_COACHES;
+        Cursor coachCursor = db.rawQuery(coachQuery, null);
+        int totalCoaches = 0;
+        if (coachCursor.moveToFirst()) {
+            totalCoaches = coachCursor.getInt(0);
+        }
+        coachCursor.close();
+
+        // Total students
+        String studentQuery = "SELECT COUNT(*) FROM " + TABLE_STUDENTS;
+        Cursor studentCursor = db.rawQuery(studentQuery, null);
+        int totalStudents = 0;
+        if (studentCursor.moveToFirst()) {
+            totalStudents = studentCursor.getInt(0);
+        }
+        studentCursor.close();
+
+        // Assigned students
+        String assignedQuery = "SELECT COUNT(*) FROM " + TABLE_STUDENTS + " WHERE " + COLUMN_COACH_ID + " > 0";
+        Cursor assignedCursor = db.rawQuery(assignedQuery, null);
+        int assignedStudents = 0;
+        if (assignedCursor.moveToFirst()) {
+            assignedStudents = assignedCursor.getInt(0);
+        }
+        assignedCursor.close();
+
+        return new AssignmentStats(totalCoaches, totalStudents, assignedStudents);
+    }
+
+    // Inner class for assignment statistics
+    public static class AssignmentStats {
+        public final int totalCoaches;
+        public final int totalStudents;
+        public final int assignedStudents;
+        public final int unassignedStudents;
+
+        public AssignmentStats(int totalCoaches, int totalStudents, int assignedStudents) {
+            this.totalCoaches = totalCoaches;
+            this.totalStudents = totalStudents;
+            this.assignedStudents = assignedStudents;
+            this.unassignedStudents = totalStudents - assignedStudents;
+        }
+    }
+
+    // VIDEO METHODS
+
+    // Add video to database
+    public long addVideo(Video video) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_STUDENT_ID, video.getStudentId());
+        values.put(COLUMN_COACH_ID, video.getCoachId());
+        values.put(COLUMN_VIDEO_PATH, video.getVideoPath());
+        values.put(COLUMN_VIDEO_TITLE, video.getVideoTitle());
+        values.put(COLUMN_VIDEO_DESCRIPTION, video.getVideoDescription());
+        values.put(COLUMN_VIDEO_DURATION, video.getVideoDuration());
+        values.put(COLUMN_STATUS, video.getStatus());
+        values.put(COLUMN_THUMBNAIL_PATH, video.getThumbnailPath());
+
+        return db.insert(TABLE_VIDEOS, null, values);
+    }
+
+    // Get videos for a specific student
+    public List<Video> getVideosByStudentId(int studentId) {
+        List<Video> videos = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_VIDEOS + " WHERE " + COLUMN_STUDENT_ID + " = ? ORDER BY " + COLUMN_UPLOAD_DATE + " DESC";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(studentId)});
+
+        if (cursor.moveToFirst()) {
+            do {
+                Video video = new Video();
+                video.setVideoId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_VIDEO_ID)));
+                video.setStudentId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_STUDENT_ID)));
+                video.setCoachId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_COACH_ID)));
+                video.setVideoPath(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_VIDEO_PATH)));
+                video.setVideoTitle(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_VIDEO_TITLE)));
+                video.setVideoDescription(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_VIDEO_DESCRIPTION)));
+                video.setVideoDuration(cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_VIDEO_DURATION)));
+                video.setUploadDate(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_UPLOAD_DATE)));
+                video.setStatus(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_STATUS)));
+                video.setThumbnailPath(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_THUMBNAIL_PATH)));
+                video.setCreatedAt(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CREATED_AT)));
+                videos.add(video);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return videos;
+    }
+
+    // Get videos for a specific coach
+    public List<Video> getVideosByCoachId(int coachId) {
+        List<Video> videos = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_VIDEOS + " WHERE " + COLUMN_COACH_ID + " = ? ORDER BY " + COLUMN_UPLOAD_DATE + " DESC";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(coachId)});
+
+        if (cursor.moveToFirst()) {
+            do {
+                Video video = new Video();
+                video.setVideoId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_VIDEO_ID)));
+                video.setStudentId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_STUDENT_ID)));
+                video.setCoachId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_COACH_ID)));
+                video.setVideoPath(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_VIDEO_PATH)));
+                video.setVideoTitle(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_VIDEO_TITLE)));
+                video.setVideoDescription(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_VIDEO_DESCRIPTION)));
+                video.setVideoDuration(cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_VIDEO_DURATION)));
+                video.setUploadDate(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_UPLOAD_DATE)));
+                video.setStatus(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_STATUS)));
+                video.setThumbnailPath(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_THUMBNAIL_PATH)));
+                video.setCreatedAt(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CREATED_AT)));
+                videos.add(video);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return videos;
+    }
+
+    // Get video by ID
+    public Video getVideoById(int videoId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_VIDEOS + " WHERE " + COLUMN_VIDEO_ID + " = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(videoId)});
+
+        Video video = null;
+        if (cursor.moveToFirst()) {
+            video = new Video();
+            video.setVideoId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_VIDEO_ID)));
+            video.setStudentId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_STUDENT_ID)));
+            video.setCoachId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_COACH_ID)));
+            video.setVideoPath(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_VIDEO_PATH)));
+            video.setVideoTitle(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_VIDEO_TITLE)));
+            video.setVideoDescription(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_VIDEO_DESCRIPTION)));
+            video.setVideoDuration(cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_VIDEO_DURATION)));
+            video.setUploadDate(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_UPLOAD_DATE)));
+            video.setStatus(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_STATUS)));
+            video.setThumbnailPath(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_THUMBNAIL_PATH)));
+            video.setCreatedAt(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CREATED_AT)));
+        }
+        cursor.close();
+        return video;
+    }
+
+    // Update video status
+    public boolean updateVideoStatus(int videoId, String status) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_STATUS, status);
+
+        int result = db.update(TABLE_VIDEOS, values, COLUMN_VIDEO_ID + " = ?",
+                new String[]{String.valueOf(videoId)});
+        return result > 0;
+    }
+
+    // Get pending videos for coach
+    public List<Video> getPendingVideosByCoachId(int coachId) {
+        List<Video> videos = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_VIDEOS + " WHERE " + COLUMN_COACH_ID + " = ? AND " + COLUMN_STATUS + " = 'pending' ORDER BY " + COLUMN_UPLOAD_DATE + " ASC";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(coachId)});
+
+        if (cursor.moveToFirst()) {
+            do {
+                Video video = new Video();
+                video.setVideoId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_VIDEO_ID)));
+                video.setStudentId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_STUDENT_ID)));
+                video.setCoachId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_COACH_ID)));
+                video.setVideoPath(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_VIDEO_PATH)));
+                video.setVideoTitle(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_VIDEO_TITLE)));
+                video.setVideoDescription(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_VIDEO_DESCRIPTION)));
+                video.setVideoDuration(cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_VIDEO_DURATION)));
+                video.setUploadDate(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_UPLOAD_DATE)));
+                video.setStatus(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_STATUS)));
+                video.setThumbnailPath(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_THUMBNAIL_PATH)));
+                video.setCreatedAt(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CREATED_AT)));
+                videos.add(video);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return videos;
+    }
+
+    // Get student name by ID
+    public String getStudentNameById(int studentId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT " + COLUMN_NAME + " FROM " + TABLE_STUDENTS + " WHERE " + COLUMN_ID + " = ?";
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(studentId)});
+
+        String studentName = "Unknown Student";
+        if (cursor.moveToFirst()) {
+            studentName = cursor.getString(0);
+        }
+        cursor.close();
+        return studentName;
+    }
+
 }

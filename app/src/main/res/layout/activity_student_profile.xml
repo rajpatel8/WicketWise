@@ -385,6 +385,23 @@
                     android:gravity="center"
                     android:layout_marginBottom="12dp" />
 
+                <Button
+                    android:id="@+id/uploadVideoBtn"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:text="Upload Video for Coach"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/button_background"
+                    android:backgroundTint="@color/cricket_green_secondary"
+                    android:elevation="4dp"
+                    android:drawableStart="@drawable/ic_video_camera"
+                    android:drawableTint="@color/white"
+                    android:drawablePadding="12dp"
+                    android:gravity="center"
+                    android:layout_marginBottom="12dp" />
+
                 <!-- Find Coach Button (conditional) -->
                 <Button
                     android:id="@+id/findCoachBtn"

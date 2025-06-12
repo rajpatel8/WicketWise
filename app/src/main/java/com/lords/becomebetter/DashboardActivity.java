@@ -141,13 +141,11 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     private void viewStudents() {
-        showComingSoonMessage("View Students");
-        // TODO: Implement student management for coaches
-        // Intent intent = new Intent(this, ViewStudentsActivity.class);
-        // intent.putExtra("coachEmail", userEmail);
-        // startActivity(intent);
+        // Remove the "coming soon" message and implement the actual functionality
+        Intent intent = new Intent(this, ViewStudentsActivity.class);
+        intent.putExtra("coachEmail", userEmail);
+        startActivity(intent);
     }
-
     private void manageSessions() {
         showComingSoonMessage("Manage Sessions");
         // TODO: Implement session management

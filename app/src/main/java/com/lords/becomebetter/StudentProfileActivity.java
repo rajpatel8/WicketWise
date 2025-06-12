@@ -18,6 +18,8 @@ public class StudentProfileActivity extends AppCompatActivity {
     private ImageButton backBtn;  // Changed from Button to ImageButton
     private ImageView profileIcon;
 
+    private Button uploadVideoBtn;
+
     private DatabaseHelper databaseHelper;
     private Student currentStudent;
     private String userEmail;
@@ -37,6 +39,7 @@ public class StudentProfileActivity extends AppCompatActivity {
 
     private void initializeViews() {
         // Profile info views
+        uploadVideoBtn = findViewById(R.id.uploadVideoBtn);
         nameText = findViewById(R.id.studentNameText);
         emailText = findViewById(R.id.studentEmailText);
         phoneText = findViewById(R.id.studentPhoneText);
@@ -117,6 +120,18 @@ public class StudentProfileActivity extends AppCompatActivity {
             startActivityForResult(intent, 100);
         });
 
+        uploadVideoBtn.setOnClickListener(v -> {
+            if (currentStudent.getCoachId() == 0) {
+                Toast.makeText(this, "Please assign a coach first before uploading videos",
+                        Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            Intent intent = new Intent(this, VideoUploadActivity.class);
+            intent.putExtra("studentEmail", userEmail);
+            startActivityForResult(intent, 200);
+        });
+
         findCoachBtn.setOnClickListener(v -> {
             // Add debug logging
             Toast.makeText(this, "Button clicked! Opening coach selection...", Toast.LENGTH_SHORT).show();
@@ -141,6 +156,10 @@ public class StudentProfileActivity extends AppCompatActivity {
             // Profile was updated, reload the data
             loadStudentProfile();
             Toast.makeText(this, "Profile updated successfully!", Toast.LENGTH_SHORT).show();
+        } else if (requestCode == 200 && resultCode == RESULT_OK) {
+            // Video was uploaded successfully
+            Toast.makeText(this, "Video uploaded successfully! Your coach will review it soon.",
+                    Toast.LENGTH_LONG).show();
         }
     }
 
@@ -182,4 +201,7 @@ public class StudentProfileActivity extends AppCompatActivity {
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }
+
+
+
 }

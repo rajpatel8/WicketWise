@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -19,8 +20,8 @@ import java.util.List;
 public class FindCoachActivity extends AppCompatActivity {
 
     private RecyclerView coachesRecyclerView;
-    private TextView noCoachesText;
-    private ImageButton backBtn;  // Changed from Button to ImageButton
+    private LinearLayout noCoachesLayout;  // Changed from TextView to LinearLayout
+    private ImageButton backBtn;
 
     private DatabaseHelper databaseHelper;
     private CoachAdapter coachAdapter;
@@ -44,7 +45,7 @@ public class FindCoachActivity extends AppCompatActivity {
 
     private void initializeViews() {
         coachesRecyclerView = findViewById(R.id.coachesRecyclerView);
-        noCoachesText = findViewById(R.id.noCoachesText);
+        noCoachesLayout = findViewById(R.id.noCoachesLayout);  // This matches your existing layout
         backBtn = findViewById(R.id.backBtn);
 
         coachesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -55,10 +56,10 @@ public class FindCoachActivity extends AppCompatActivity {
 
         if (coachesList.isEmpty()) {
             coachesRecyclerView.setVisibility(View.GONE);
-            noCoachesText.setVisibility(View.VISIBLE);
+            noCoachesLayout.setVisibility(View.VISIBLE);
         } else {
             coachesRecyclerView.setVisibility(View.VISIBLE);
-            noCoachesText.setVisibility(View.GONE);
+            noCoachesLayout.setVisibility(View.GONE);
 
             coachAdapter = new CoachAdapter(coachesList);
             coachesRecyclerView.setAdapter(coachAdapter);

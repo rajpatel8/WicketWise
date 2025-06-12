@@ -2,38 +2,18 @@ package com.lords.becomebetter;
 
 import android.os.Bundle;
 import android.view.View;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.Spinner;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
-import com.google.android.material.textfield.TextInputEditText;
-import com.google.android.material.textfield.TextInputLayout;
 
 public class RegistrationActivity extends AppCompatActivity {
 
     private TabLayout tabLayout;
     private ViewPager2 viewPager;
     private DatabaseHelper databaseHelper;
-
-    // Coach registration views
-    private TextInputLayout coachNameLayout, coachEmailLayout, coachPasswordLayout,
-            coachPhoneLayout, coachCodeLayout, coachExperienceLayout, coachCertificationLayout;
-    private TextInputEditText coachNameEdit, coachEmailEdit, coachPasswordEdit,
-            coachPhoneEdit, coachCodeEdit, coachExperienceEdit, coachCertificationEdit;
-    private Spinner coachSpecializationSpinner;
-    private Button coachRegisterBtn;
-
-    // Student registration views
-    private TextInputLayout studentNameLayout, studentEmailLayout, studentPasswordLayout,
-            studentPhoneLayout, studentAgeLayout;
-    private TextInputEditText studentNameEdit, studentEmailEdit, studentPasswordEdit,
-            studentPhoneEdit, studentAgeEdit;
-    private Spinner studentSkillSpinner;
-    private Button studentRegisterBtn;
+    private RegistrationPagerAdapter pagerAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,8 +24,6 @@ public class RegistrationActivity extends AppCompatActivity {
 
         setupBackButton();
         setupTabs();
-        setupCoachRegistration();
-        setupStudentRegistration();
     }
 
     private void setupBackButton() {
@@ -58,8 +36,8 @@ public class RegistrationActivity extends AppCompatActivity {
         tabLayout = findViewById(R.id.tabLayout);
         viewPager = findViewById(R.id.viewPager);
 
-        RegistrationPagerAdapter adapter = new RegistrationPagerAdapter(this);
-        viewPager.setAdapter(adapter);
+        pagerAdapter = new RegistrationPagerAdapter(this);
+        viewPager.setAdapter(pagerAdapter);
 
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
             if (position == 0) {
@@ -72,16 +50,7 @@ public class RegistrationActivity extends AppCompatActivity {
         }).attach();
     }
 
-    private void setupCoachRegistration() {
-        // Initialize coach views (these will be in the fragment)
-        // This is a simplified version - in reality, these would be in CoachRegistrationFragment
-    }
-
-    private void setupStudentRegistration() {
-        // Initialize student views (these will be in the fragment)
-        // This is a simplified version - in reality, these would be in StudentRegistrationFragment
-    }
-
+    // Called from CoachRegistrationFragment
     public void registerCoach(Coach coach, String coachCode) {
         // Validate inputs
         if (!validateCoachInputs(coach, coachCode)) {
@@ -111,6 +80,7 @@ public class RegistrationActivity extends AppCompatActivity {
         }
     }
 
+    // Called from StudentRegistrationFragment
     public void registerStudent(Student student) {
         // Validate inputs
         if (!validateStudentInputs(student)) {
@@ -222,12 +192,26 @@ public class RegistrationActivity extends AppCompatActivity {
     }
 
     private void clearCoachForm() {
-        // Clear all coach form fields
-        // This would be implemented in the actual fragments
+        // Get current fragment and clear form
+        int currentItem = viewPager.getCurrentItem();
+        if (currentItem == 0) { // Coach tab
+            CoachRegistrationFragment fragment = (CoachRegistrationFragment)
+                    getSupportFragmentManager().findFragmentByTag("f" + 0);
+            if (fragment != null) {
+                fragment.clearForm();
+            }
+        }
     }
 
     private void clearStudentForm() {
-        // Clear all student form fields
-        // This would be implemented in the actual fragments
+        // Get current fragment and clear form
+        int currentItem = viewPager.getCurrentItem();
+        if (currentItem == 1) { // Student tab
+            StudentRegistrationFragment fragment = (StudentRegistrationFragment)
+                    getSupportFragmentManager().findFragmentByTag("f" + 1);
+            if (fragment != null) {
+                fragment.clearForm();
+            }
+        }
     }
 }
