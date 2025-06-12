@@ -1,5 +1,7 @@
 package com.lords.becomebetter;
 
+import android.os.Build;
+
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -111,15 +113,15 @@ public class VideoUploadActivity extends AppCompatActivity {
         uploadBtn.setOnClickListener(v -> uploadVideo());
     }
 
-    private void selectVideoFromGallery() {
-        if (checkStoragePermission()) {
-            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Video.Media.EXTERNAL_CONTENT_URI);
-            intent.setType("video/*");
-            startActivityForResult(intent, REQUEST_VIDEO_GALLERY);
-        } else {
-            requestStoragePermission();
-        }
-    }
+//    private void selectVideoFromGallery() {
+//        if (checkStoragePermission()) {
+//            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Video.Media.EXTERNAL_CONTENT_URI);
+//            intent.setType("video/*");
+//            startActivityForResult(intent, REQUEST_VIDEO_GALLERY);
+//        } else {
+//            requestStoragePermission();
+//        }
+//    }
 
     private void recordVideo() {
         if (checkCameraPermission()) {
@@ -132,50 +134,50 @@ public class VideoUploadActivity extends AppCompatActivity {
         }
     }
 
-    private boolean checkCameraPermission() {
-        return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                == PackageManager.PERMISSION_GRANTED;
-    }
+//    private boolean checkCameraPermission() {
+//        return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+//                == PackageManager.PERMISSION_GRANTED;
+//    }
 
-    private boolean checkStoragePermission() {
-        return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                == PackageManager.PERMISSION_GRANTED;
-    }
+//    private boolean checkStoragePermission() {
+//        return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+//                == PackageManager.PERMISSION_GRANTED;
+//    }
 
-    private void requestCameraPermission() {
-        ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.CAMERA},
-                REQUEST_CAMERA_PERMISSION);
-    }
+//    private void requestCameraPermission() {
+//        ActivityCompat.requestPermissions(this,
+//                new String[]{Manifest.permission.CAMERA},
+//                REQUEST_CAMERA_PERMISSION);
+//    }
 
-    private void requestStoragePermission() {
-        ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                REQUEST_STORAGE_PERMISSION);
-    }
+//    private void requestStoragePermission() {
+//        ActivityCompat.requestPermissions(this,
+//                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+//                REQUEST_STORAGE_PERMISSION);
+//    }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        switch (requestCode) {
-            case REQUEST_CAMERA_PERMISSION:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    recordVideo();
-                } else {
-                    showError("Camera permission is required to record videos");
-                }
-                break;
-            case REQUEST_STORAGE_PERMISSION:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    selectVideoFromGallery();
-                } else {
-                    showError("Storage permission is required to select videos");
-                }
-                break;
-        }
-    }
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+//                                           @NonNull int[] grantResults) {
+//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+//
+//        switch (requestCode) {
+//            case REQUEST_CAMERA_PERMISSION:
+//                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                    recordVideo();
+//                } else {
+//                    showError("Camera permssion is required to record videos");
+//                }
+//                break;
+//            case REQUEST_STORAGE_PERMISSION:
+//                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+//                    selectVideoFromGallery();
+//                } else {
+//                    showError("Storage permission is required to select videos");
+//                }
+//                break;
+//        }
+//    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -379,5 +381,78 @@ public class VideoUploadActivity extends AppCompatActivity {
         super.onBackPressed();
         // Clean up temporary files if needed
         finish();
+    }
+
+    // Replace the permission methods in your VideoUploadActivity.java with these updated versions:
+
+    private void selectVideoFromGallery() {
+        if (checkStoragePermission()) {
+            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Video.Media.EXTERNAL_CONTENT_URI);
+            intent.setType("video/*");
+            startActivityForResult(intent, REQUEST_VIDEO_GALLERY);
+        } else {
+            requestStoragePermission();
+        }
+    }
+
+    private boolean checkCameraPermission() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private boolean checkStoragePermission() {
+        // Check different permissions based on Android version
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // API 33+
+            return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_VIDEO)
+                    == PackageManager.PERMISSION_GRANTED;
+        } else {
+            return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED;
+        }
+    }
+
+    private void requestCameraPermission() {
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO},
+                REQUEST_CAMERA_PERMISSION);
+    }
+
+    private void requestStoragePermission() {
+        String[] permissions;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // API 33+
+            permissions = new String[]{
+                    Manifest.permission.READ_MEDIA_VIDEO,
+                    Manifest.permission.READ_MEDIA_IMAGES
+            };
+        } else {
+            permissions = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE};
+        }
+
+        ActivityCompat.requestPermissions(this, permissions, REQUEST_STORAGE_PERMISSION);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        switch (requestCode) {
+            case REQUEST_CAMERA_PERMISSION:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    recordVideo();
+                } else {
+                    showError("Camera permission is required to record videos");
+                }
+                break;
+
+            case REQUEST_STORAGE_PERMISSION:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    selectVideoFromGallery();
+                } else {
+                    showError("Storage permission is required to select videos from gallery");
+                }
+                break;
+        }
     }
 }

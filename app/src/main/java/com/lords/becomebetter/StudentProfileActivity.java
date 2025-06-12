@@ -51,9 +51,19 @@ public class StudentProfileActivity extends AppCompatActivity {
         // Buttons and icons
         editProfileBtn = findViewById(R.id.editProfileBtn);
         findCoachBtn = findViewById(R.id.findCoachBtn);
-        backBtn = findViewById(R.id.backBtn);  // This is an ImageButton
+        backBtn = findViewById(R.id.backBtn);
         profileIcon = findViewById(R.id.profileIcon);
+
+        // DEBUG: Check if uploadVideoBtn is found
+        if (uploadVideoBtn == null) {
+            Toast.makeText(this, "ERROR: Upload video button not found in layout!", Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(this, "SUCCESS: Upload video button found!", Toast.LENGTH_SHORT).show();
+            // Force visibility for debugging
+            uploadVideoBtn.setVisibility(View.VISIBLE);
+        }
     }
+
 
     private void loadStudentProfile() {
         if (userEmail == null || userEmail.isEmpty()) {
@@ -97,12 +107,14 @@ public class StudentProfileActivity extends AppCompatActivity {
         String coachName = databaseHelper.getCoachNameById(currentStudent.getCoachId());
         coachText.setText(coachName);
 
-        // Show/hide find coach button based on assignment
+        // Show/hide buttons based on coach assignment
         if (currentStudent.getCoachId() == 0) {
             findCoachBtn.setVisibility(View.VISIBLE);
+            uploadVideoBtn.setVisibility(View.GONE); // Hide upload button when no coach
             coachText.setTextColor(getResources().getColor(R.color.text_secondary));
         } else {
             findCoachBtn.setVisibility(View.GONE);
+            uploadVideoBtn.setVisibility(View.VISIBLE); // Show upload button when coach assigned
             coachText.setTextColor(getResources().getColor(R.color.text_primary));
         }
 
