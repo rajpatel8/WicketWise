@@ -1,15 +1,12 @@
 package com.lords.becomebetter;
 
 import android.content.Intent;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Path;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.MotionEvent;
+import android.util.Log;
+//import android:view.View;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -25,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class VideoPlayerActivity extends AppCompatActivity {
+
+    private static final String TAG = "VideoPlayerActivity";
 
     private VideoView videoView;
     private AnnotationOverlay annotationOverlay;
@@ -48,9 +47,6 @@ public class VideoPlayerActivity extends AppCompatActivity {
 
     // Annotation data
     private List<Annotation> annotations = new ArrayList<>();
-    private boolean isDrawing = false;
-    private Path currentPath = new Path();
-    private Paint drawPaint;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +59,8 @@ public class VideoPlayerActivity extends AppCompatActivity {
         videoId = getIntent().getIntExtra("videoId", 0);
         coachEmail = getIntent().getStringExtra("coachEmail");
         viewOnly = getIntent().getBooleanExtra("viewOnly", false);
+
+        Log.d(TAG, "VideoPlayerActivity created - VideoID: " + videoId + ", ViewOnly: " + viewOnly);
 
         initializeViews();
         loadVideoData();
@@ -89,7 +87,16 @@ public class VideoPlayerActivity extends AppCompatActivity {
         if (viewOnly) {
             saveAnnotationsBtn.setVisibility(View.GONE);
             clearAnnotationsBtn.setVisibility(View.GONE);
+            if (annotationOverlay != null) {
+                annotationOverlay.setDrawingEnabled(false);
+            }
+        } else {
+            if (annotationOverlay != null) {
+                annotationOverlay.setDrawingEnabled(true);
+            }
         }
+
+        Log.d(TAG, "Views initialized");
     }
 
     private void loadVideoData() {
@@ -99,6 +106,9 @@ public class VideoPlayerActivity extends AppCompatActivity {
             finish();
             return;
         }
+
+        // Debug video information
+        VideoDebugHelper.debugVideo(this, currentVideo);
 
         // Get coach data
         Coach coach = databaseHelper.getCoachByEmail(coachEmail);
@@ -116,104 +126,133 @@ public class VideoPlayerActivity extends AppCompatActivity {
 
         // Load existing annotations
         loadAnnotations();
+
+        Log.d(TAG, "Video data loaded - Title: " + currentVideo.getVideoTitle());
+        Log.d(TAG, "Video path: " + currentVideo.getVideoPath());
     }
 
     private void setupVideoPlayer() {
         File videoFile = new File(currentVideo.getVideoPath());
+        Log.d(TAG, "Video file path: " + videoFile.getAbsolutePath());
+        Log.d(TAG, "Video file exists: " + videoFile.exists());
+        Log.d(TAG, "Video file length: " + videoFile.length());
+
         if (!videoFile.exists()) {
-            showError("Video file not found");
+            showError("Video file not found at: " + videoFile.getAbsolutePath());
             finish();
             return;
         }
 
-        Uri videoUri = Uri.fromFile(videoFile);
-        videoView.setVideoURI(videoUri);
+        if (videoFile.length() == 0) {
+            showError("Video file is empty");
+            finish();
+            return;
+        }
 
-        videoView.setOnPreparedListener(mp -> {
-            isVideoReady = true;
-            int duration = mp.getDuration();
+        try {
+            Uri videoUri = Uri.fromFile(videoFile);
+            Log.d(TAG, "Video URI: " + videoUri.toString());
 
-            // Set up seek bar
-            videoSeekBar.setMax(duration);
-            totalTimeText.setText(formatTime(duration));
+            videoView.setVideoURI(videoUri);
 
-            // Start time updates
-            startTimeUpdates();
+            videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+                    isVideoReady = true;
+                    int duration = mp.getDuration();
 
-            // Auto-pause initially
-            mp.pause();
-            isPlaying = false;
-            updatePlayPauseButton();
-        });
+                    Log.d(TAG, "Video prepared successfully - Duration: " + duration + "ms");
 
-        videoView.setOnCompletionListener(mp -> {
-            isPlaying = false;
-            updatePlayPauseButton();
-            stopTimeUpdates();
-        });
+                    // Set up seek bar
+                    videoSeekBar.setMax(duration);
+                    totalTimeText.setText(formatTime(duration));
 
-        // Seek bar listener
-        videoSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser && isVideoReady) {
-                    videoView.seekTo(progress);
-                    currentTimeText.setText(formatTime(progress));
+                    // Start time updates
+                    startTimeUpdates();
+
+                    // Set video to fit properly
+                    mp.setVideoScalingMode(MediaPlayer.VIDEO_SCALING_MODE_SCALE_TO_FIT_WITH_CROPPING);
+
+                    // DON'T auto-pause - let it stay ready to play
+                    // The video will be in "prepared" state, ready to start when user clicks play
+                    isPlaying = false;
+                    updatePlayPauseButton();
+
+                    Toast.makeText(VideoPlayerActivity.this, "Video ready - Duration: " + formatTime(duration), Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "Video is ready to play");
                 }
-            }
+            });
 
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
+            videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                @Override
+                public boolean onError(MediaPlayer mp, int what, int extra) {
+                    Log.e(TAG, "MediaPlayer Error: what=" + what + ", extra=" + extra);
+                    String errorMsg = "Video playback error: ";
 
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {}
-        });
+                    switch (what) {
+                        case MediaPlayer.MEDIA_ERROR_UNKNOWN:
+                            errorMsg += "Unknown error";
+                            break;
+                        case MediaPlayer.MEDIA_ERROR_SERVER_DIED:
+                            errorMsg += "Media server died";
+                            break;
+                        default:
+                            errorMsg += "Error code " + what;
+                    }
+
+                    showError(errorMsg + " (Extra: " + extra + ")");
+                    return true; // Handled the error
+                }
+            });
+
+            videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    isPlaying = false;
+                    updatePlayPauseButton();
+                    stopTimeUpdates();
+                    Log.d(TAG, "Video playback completed");
+                }
+            });
+
+            // Seek bar listener
+            videoSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+                @Override
+                public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                    if (fromUser && isVideoReady) {
+                        videoView.seekTo(progress);
+                        currentTimeText.setText(formatTime(progress));
+                    }
+                }
+
+                @Override
+                public void onStartTrackingTouch(SeekBar seekBar) {}
+
+                @Override
+                public void onStopTrackingTouch(SeekBar seekBar) {}
+            });
+
+        } catch (Exception e) {
+            Log.e(TAG, "Exception setting up video player", e);
+            showError("Failed to setup video player: " + e.getMessage());
+            finish();
+        }
+
+        Log.d(TAG, "Video player setup complete");
     }
 
     private void setupAnnotationSystem() {
-        // Initialize paint for drawing
-        drawPaint = new Paint();
-        drawPaint.setColor(Color.RED);
-        drawPaint.setAntiAlias(true);
-        drawPaint.setStrokeWidth(8f);
-        drawPaint.setStyle(Paint.Style.STROKE);
-        drawPaint.setStrokeJoin(Paint.Join.ROUND);
-        drawPaint.setStrokeCap(Paint.Cap.ROUND);
+        if (annotationOverlay != null) {
+            // Set annotation overlay properties
+            annotationOverlay.setDrawingColor(getResources().getColor(R.color.error_color));
+            annotationOverlay.setDrawingWidth(8f);
 
-        // Set up annotation overlay
-        annotationOverlay.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (viewOnly) return false;
+            // Enable clicking and focusing
+            annotationOverlay.setClickable(true);
+            annotationOverlay.setFocusable(true);
+        }
 
-                float x = event.getX();
-                float y = event.getY();
-
-                switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        isDrawing = true;
-                        currentPath.moveTo(x, y);
-                        return true;
-
-                    case MotionEvent.ACTION_MOVE:
-                        if (isDrawing) {
-                            currentPath.lineTo(x, y);
-                            annotationOverlay.invalidate();
-                        }
-                        return true;
-
-                    case MotionEvent.ACTION_UP:
-                        if (isDrawing) {
-                            isDrawing = false;
-                            // Save the current drawing as an annotation
-                            saveCurrentDrawing();
-                            currentPath.reset();
-                        }
-                        return true;
-                }
-                return false;
-            }
-        });
+        Log.d(TAG, "Annotation system setup complete. Drawing enabled: " + !viewOnly);
     }
 
     private void setupClickListeners() {
@@ -221,14 +260,23 @@ public class VideoPlayerActivity extends AppCompatActivity {
 
         playPauseBtn.setOnClickListener(v -> {
             if (isVideoReady) {
-                if (isPlaying) {
-                    videoView.pause();
-                    isPlaying = false;
-                } else {
-                    videoView.start();
-                    isPlaying = true;
+                try {
+                    if (isPlaying) {
+                        videoView.pause();
+                        isPlaying = false;
+                        Log.d(TAG, "Video paused");
+                    } else {
+                        videoView.start();
+                        isPlaying = true;
+                        Log.d(TAG, "Video started");
+                    }
+                    updatePlayPauseButton();
+                } catch (Exception e) {
+                    Log.e(TAG, "Error controlling video playback", e);
+                    showError("Error controlling video playback: " + e.getMessage());
                 }
-                updatePlayPauseButton();
+            } else {
+                Toast.makeText(this, "Video not ready yet", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -242,6 +290,8 @@ public class VideoPlayerActivity extends AppCompatActivity {
                     .setNegativeButton("Cancel", null)
                     .show();
         });
+
+        Log.d(TAG, "Click listeners setup complete");
     }
 
     private void startTimeUpdates() {
@@ -249,9 +299,13 @@ public class VideoPlayerActivity extends AppCompatActivity {
             @Override
             public void run() {
                 if (isVideoReady && videoView != null) {
-                    int currentPosition = videoView.getCurrentPosition();
-                    videoSeekBar.setProgress(currentPosition);
-                    currentTimeText.setText(formatTime(currentPosition));
+                    try {
+                        int currentPosition = videoView.getCurrentPosition();
+                        videoSeekBar.setProgress(currentPosition);
+                        currentTimeText.setText(formatTime(currentPosition));
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error updating time", e);
+                    }
                 }
                 timeHandler.postDelayed(this, 100);
             }
@@ -273,78 +327,76 @@ public class VideoPlayerActivity extends AppCompatActivity {
         }
     }
 
-    private void saveCurrentDrawing() {
-        if (currentPath.isEmpty()) return;
-
-        long currentTime = videoView.getCurrentPosition();
-
-        // Convert path to string data (simplified - you might want to use a more sophisticated format)
-        String pathData = pathToString(currentPath);
-
-        // Create annotation
-        Annotation annotation = new Annotation(
-                videoId,
-                coachId,
-                currentTime,
-                Annotation.TYPE_DRAWING,
-                pathData,
-                0, 0 // x, y not used for drawing annotations
-        );
-
-        annotations.add(annotation);
-
-        // Add to overlay for display
-        annotationOverlay.addAnnotation(annotation);
-
-        Toast.makeText(this, "Annotation added at " + formatTime((int)currentTime), Toast.LENGTH_SHORT).show();
-    }
-
     private void saveAllAnnotations() {
-        // Delete existing annotations for this video
-        // (You'll need to add this method to DatabaseHelper)
+        if (annotationOverlay == null) {
+            Toast.makeText(this, "Annotation system not available", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Get current annotations from overlay
+        List<AnnotationOverlay.AnnotationDrawing> currentDrawings = annotationOverlay.getAllAnnotations();
+
+        if (currentDrawings.isEmpty()) {
+            Toast.makeText(this, "No annotations to save", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Delete existing annotations for this video first
+        databaseHelper.deleteAnnotationsByVideoId(videoId);
 
         // Save all current annotations
-        for (Annotation annotation : annotations) {
+        int savedCount = 0;
+        for (AnnotationOverlay.AnnotationDrawing drawing : currentDrawings) {
+            long currentTime = isVideoReady ? videoView.getCurrentPosition() : 0;
+
+            // Create annotation from drawing
+            Annotation annotation = new Annotation(
+                    videoId,
+                    coachId,
+                    currentTime,
+                    Annotation.TYPE_DRAWING,
+                    "drawing_data_" + System.currentTimeMillis(), // You can enhance this
+                    0, 0 // x, y not used for drawing annotations
+            );
+
             long result = databaseHelper.addAnnotation(annotation);
-            if (result == -1) {
-                showError("Failed to save some annotations");
-                return;
+            if (result != -1) {
+                savedCount++;
             }
         }
 
-        // Update video status
-        databaseHelper.updateVideoStatus(videoId, "annotated");
+        if (savedCount > 0) {
+            // Update video status
+            databaseHelper.updateVideoStatus(videoId, "annotated");
+            Toast.makeText(this, savedCount + " annotations saved successfully!", Toast.LENGTH_LONG).show();
+            setResult(RESULT_OK);
+        } else {
+            showError("Failed to save annotations");
+        }
 
-        Toast.makeText(this, "All annotations saved successfully!", Toast.LENGTH_LONG).show();
-
-        setResult(RESULT_OK);
-        finish();
+        Log.d(TAG, "Saved " + savedCount + " annotations");
     }
 
     private void clearAllAnnotations() {
-        annotations.clear();
-        annotationOverlay.clearAnnotations();
-        currentPath.reset();
-        annotationOverlay.invalidate();
-
-        Toast.makeText(this, "Annotations cleared", Toast.LENGTH_SHORT).show();
+        if (annotationOverlay != null) {
+            annotationOverlay.clearAnnotations();
+            Toast.makeText(this, "Annotations cleared", Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "Annotations cleared");
+        }
     }
 
     private void loadAnnotations() {
         // Load existing annotations from database
-        // (You'll need to add this method to DatabaseHelper)
         List<Annotation> existingAnnotations = databaseHelper.getAnnotationsByVideoId(videoId);
 
         for (Annotation annotation : existingAnnotations) {
             annotations.add(annotation);
-            annotationOverlay.addAnnotation(annotation);
+            if (annotationOverlay != null) {
+                annotationOverlay.addAnnotation(annotation);
+            }
         }
-    }
 
-    private String pathToString(Path path) {
-        // Simple implementation - you might want to use a more sophisticated format
-        // For now, just return a placeholder
-        return "drawing_path_" + System.currentTimeMillis();
+        Log.d(TAG, "Loaded " + existingAnnotations.size() + " existing annotations");
     }
 
     private String formatTime(int milliseconds) {
@@ -356,17 +408,19 @@ public class VideoPlayerActivity extends AppCompatActivity {
 
     private void showError(String message) {
         Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        Log.e(TAG, "Error: " + message);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         stopTimeUpdates();
+        Log.d(TAG, "VideoPlayerActivity destroyed");
     }
 
     @Override
     public void onBackPressed() {
-        if (!viewOnly && !annotations.isEmpty()) {
+        if (!viewOnly && annotationOverlay != null && annotationOverlay.getAllAnnotations().size() > 0) {
             new AlertDialog.Builder(this)
                     .setTitle("Unsaved Annotations")
                     .setMessage("You have unsaved annotations. Do you want to save them before leaving?")

@@ -23,8 +23,8 @@
             android:layout_height="48dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_arrow_back"
-            android:tint="@color/white"
-            android:contentDescription="Back" />
+            android:contentDescription="Back"
+            app:tint="@color/white" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -72,11 +72,25 @@
             android:layout_height="match_parent"
             android:layout_gravity="center" />
 
-        <!-- Annotation Overlay -->
+        <!-- Annotation Overlay - MUST be after VideoView to be on top -->
         <com.lords.becomebetter.AnnotationOverlay
             android:id="@+id/annotationOverlay"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent" />
+
+        <!-- Instruction Text -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="💡 Tap and draw on the video to add annotations"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            android:background="@color/black"
+            android:padding="8dp"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="8dp"
+            android:alpha="0.8" />
 
     </FrameLayout>
 
@@ -141,8 +155,8 @@
                 android:background="@drawable/rounded_background"
                 android:backgroundTint="@color/white"
                 android:src="@drawable/ic_play_arrow"
-                android:tint="@color/cricket_green_primary"
-                android:contentDescription="Play/Pause" />
+                android:contentDescription="Play/Pause"
+                app:tint="@color/cricket_green_primary" />
 
         </LinearLayout>
 

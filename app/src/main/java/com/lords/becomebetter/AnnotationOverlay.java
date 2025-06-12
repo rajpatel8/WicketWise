@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,9 +16,10 @@ public class AnnotationOverlay extends View {
     private Paint drawPaint;
     private Path currentPath;
     private List<AnnotationDrawing> annotations;
+    private boolean isDrawingEnabled = true;
 
     // Inner class to hold annotation drawing data
-    private static class AnnotationDrawing {
+    static class AnnotationDrawing {
         Path path;
         Paint paint;
         long timestamp;
@@ -55,6 +57,9 @@ public class AnnotationOverlay extends View {
 
         currentPath = new Path();
         annotations = new ArrayList<>();
+
+        // Enable drawing on this view
+        setWillNotDraw(false);
     }
 
     @Override
@@ -69,6 +74,45 @@ public class AnnotationOverlay extends View {
         // Draw current path being drawn
         if (!currentPath.isEmpty()) {
             canvas.drawPath(currentPath, drawPaint);
+        }
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (!isDrawingEnabled) {
+            return false;
+        }
+
+        float x = event.getX();
+        float y = event.getY();
+
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                currentPath.moveTo(x, y);
+                return true;
+
+            case MotionEvent.ACTION_MOVE:
+                currentPath.lineTo(x, y);
+                invalidate(); // Trigger redraw
+                return true;
+
+            case MotionEvent.ACTION_UP:
+                // Save the current drawing as an annotation
+                saveCurrentDrawing();
+                currentPath.reset();
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
+    private void saveCurrentDrawing() {
+        if (!currentPath.isEmpty()) {
+            Paint savedPaint = new Paint(drawPaint);
+            AnnotationDrawing drawing = new AnnotationDrawing(currentPath, savedPaint, System.currentTimeMillis());
+            annotations.add(drawing);
+            invalidate();
         }
     }
 
@@ -104,6 +148,10 @@ public class AnnotationOverlay extends View {
         drawPaint.setStrokeWidth(width);
     }
 
+    public void setDrawingEnabled(boolean enabled) {
+        this.isDrawingEnabled = enabled;
+    }
+
     // Convert string back to path (simplified implementation)
     private Path stringToPath(String pathData) {
         Path path = new Path();
@@ -124,5 +172,12 @@ public class AnnotationOverlay extends View {
     // Get all annotations for saving
     public List<AnnotationDrawing> getAllAnnotations() {
         return new ArrayList<>(annotations);
+    }
+
+    // Get current path as string for saving
+    public String getCurrentPathAsString() {
+        // Simple implementation - convert path to string
+        // You can implement a more sophisticated format
+        return "drawing_path_" + System.currentTimeMillis();
     }
 }
