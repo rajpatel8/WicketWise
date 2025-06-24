@@ -69,7 +69,52 @@ public class CoachStudentsActivity extends AppCompatActivity {
     }
 
     private void loadStudents() {
+        // Add detailed logging to debug the issue
+        android.util.Log.d("CoachStudents", "=== DEBUGGING COACH STUDENTS ===");
+        android.util.Log.d("CoachStudents", "Coach ID: " + coachId);
+        android.util.Log.d("CoachStudents", "Coach Email: " + coachEmail);
+
+        // First, let's verify the coach exists and get their info
+        Coach coach = databaseHelper.getCoachByEmail(coachEmail);
+        if (coach != null) {
+            android.util.Log.d("CoachStudents", "Coach found: " + coach.getName() + " (ID: " + coach.getId() + ")");
+        } else {
+            android.util.Log.e("CoachStudents", "Coach NOT found with email: " + coachEmail);
+            return;
+        }
+
+        // Check if there are any coach requests for this coach
+        List<CoachRequest> allRequests = databaseHelper.getAllRequestsForCoach(coachId);
+        android.util.Log.d("CoachStudents", "Total requests for coach: " + allRequests.size());
+
+        for (CoachRequest request : allRequests) {
+            android.util.Log.d("CoachStudents", "Request: Student ID " + request.getStudentId() +
+                    " -> Coach ID " + request.getCoachId() + " | Status: " + request.getStatus());
+        }
+
+        // Check accepted requests specifically
+        List<CoachRequest> acceptedRequests = databaseHelper.getCoachRequestsByStatus(coachId, CoachRequest.STATUS_ACCEPTED);
+        android.util.Log.d("CoachStudents", "Accepted requests: " + acceptedRequests.size());
+
+        // Now check students with this coach ID
         studentsList = databaseHelper.getStudentsForCoach(coachId);
+        android.util.Log.d("CoachStudents", "Students found for coach: " + studentsList.size());
+
+        // Debug each student
+        for (Student student : studentsList) {
+            android.util.Log.d("CoachStudents", "Student: " + student.getName() +
+                    " (ID: " + student.getId() + ", Coach ID: " + student.getCoachId() + ")");
+        }
+
+        // Also check all students in database to see their coach_id values
+        List<Student> allStudents = databaseHelper.getAllStudents();
+        android.util.Log.d("CoachStudents", "=== ALL STUDENTS IN DATABASE ===");
+        for (Student student : allStudents) {
+            android.util.Log.d("CoachStudents", "Student: " + student.getName() +
+                    " | Coach ID: " + student.getCoachId() + " | Email: " + student.getEmail());
+        }
+
+        android.util.Log.d("CoachStudents", "=== END DEBUG ===");
 
         if (studentsList.isEmpty()) {
             studentsRecyclerView.setVisibility(View.GONE);

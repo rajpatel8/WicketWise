@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@color/voice_recording_background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <!-- Recording Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_mic"
+                android:tint="@color/voice_recording_icon"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:id="@+id/recordingTitleText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Voice note at 02:15"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/recordingDurationText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0:45"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp"
+                android:background="@drawable/rounded_background"
+                android:backgroundTint="@color/background_secondary"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp" />
+
+        </LinearLayout>
+
+        <!-- Recording Info -->
+        <TextView
+            android:id="@+id/recordingTimestampText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="At: 02:15 in video"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Action Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/playRecordingBtn"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:text="Play"
+                android:textSize="12sp"
+                android:textColor="@color/cricket_green_primary"
+                android:strokeColor="@color/cricket_green_primary"
+                android:drawableStart="@drawable/ic_play"
+                android:drawableTint="@color/cricket_green_primary"
+                android:layout_marginEnd="8dp"
+                android:minHeight="0dp"
+                android:paddingVertical="8dp" />
+
+            <Button
+                android:id="@+id/deleteRecordingBtn"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="36dp"
+                android:layout_weight="1"
+                android:text="Delete"
+                android:textSize="12sp"
+                android:textColor="@color/error_color"
+                android:strokeColor="@color/error_color"
+                android:drawableStart="@drawable/ic_delete"
+                android:drawableTint="@color/error_color"
+                android:layout_marginStart="8dp"
+                android:minHeight="0dp"
+                android:paddingVertical="8dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

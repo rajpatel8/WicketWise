@@ -93,4 +93,21 @@
     <color name="elevated_surface">#FFFFFF</color>
 
     <color name="success_light">#E8F5E8</color>
+
+    <color name="black_transparent">#80000000</color>
+    <color name="white_transparent">#80FFFFFF</color>
+    <color name="red_transparent">#80FF0000</color>
+
+    <!-- Background Colors -->
+    <color name="voice_recording_background">#FFF3E0</color>
+    <color name="warning_background">#FFF9C4</color>
+    <color name="success_background">#E8F5E8</color>
+
+    <!-- Icon Colors -->
+    <color name="voice_recording_icon">#FF6B35</color>
+
+    <!-- Additional useful colors for the video system -->
+    <color name="video_overlay_background">#CC000000</color>
+
+
 </resources>

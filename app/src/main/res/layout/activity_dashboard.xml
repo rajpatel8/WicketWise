@@ -315,7 +315,7 @@
                             android:id="@+id/manageSessionsBtn"
                             android:layout_width="match_parent"
                             android:layout_height="100dp"
-                            android:text="Review Videos"
+                            android:text="Requests"
                             android:textColor="@color/brand_secondary"
                             android:textSize="16sp"
                             android:textStyle="bold"

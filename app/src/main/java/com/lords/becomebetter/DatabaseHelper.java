@@ -63,6 +63,42 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COLUMN_X_POSITION = "x_position";
     private static final String COLUMN_Y_POSITION = "y_position";
 
+    private static final String TABLE_VIDEO_SUBMISSIONS = "video_submissions";
+    private static final String TABLE_COACH_SELECTIONS = "coach_selections";
+    private static final String TABLE_VIDEO_FEEDBACKS = "video_feedbacks";
+    private static final String TABLE_VOICE_RECORDINGS = "voice_recordings";
+
+    // Video Submissions columns
+    private static final String COLUMN_SUBMISSION_ID = "submission_id";
+    private static final String COLUMN_SUBMISSION_TITLE = "title";
+    private static final String COLUMN_SUBMISSION_DESCRIPTION = "description";
+    private static final String COLUMN_SUBMISSION_VIDEO_PATH = "video_path";
+    private static final String COLUMN_SUBMISSION_STUDENT_ID = "student_id";
+    private static final String COLUMN_SUBMISSION_DATE = "submission_date";
+    private static final String COLUMN_SUBMISSION_STATUS = "status"; // 'pending', 'reviewed'
+
+    // Coach Selections columns
+    private static final String COLUMN_SELECTION_ID = "selection_id";
+    private static final String COLUMN_SELECTED_COACH_ID = "selected_coach_id";
+    private static final String COLUMN_SELECTION_STATUS = "selection_status"; // 'pending', 'completed'
+
+    // Video Feedbacks columns
+    private static final String COLUMN_FEEDBACK_ID = "feedback_id";
+    private static final String COLUMN_FEEDBACK_COACH_ID = "feedback_coach_id";
+    private static final String COLUMN_FEEDBACK_TEXT = "feedback_text";
+    private static final String COLUMN_FEEDBACK_DATE = "feedback_date";
+    private static final String COLUMN_FEEDBACK_ANNOTATION_DATA = "annotation_data";
+    private static final String COLUMN_FEEDBACK_VOICE_RECORDING_PATH = "voice_recording_path";
+    private static final String COLUMN_FEEDBACK_RATING = "rating";
+    private static final String COLUMN_FEEDBACK_STATUS = "feedback_status";
+
+    // Voice Recordings columns
+    private static final String COLUMN_RECORDING_ID = "recording_id";
+    private static final String COLUMN_RECORDING_PATH = "recording_path";
+    private static final String COLUMN_RECORDING_DURATION = "duration";
+    private static final String COLUMN_RECORDING_TIMESTAMP = "timestamp";
+    private static final String COLUMN_RECORDING_TITLE = "recording_title";
+
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -621,6 +657,22 @@ public long addAnnotation(Annotation annotation) {
         assignedCursor.close();
 
         return new AssignmentStats(totalCoaches, totalStudents, assignedStudents);
+    }
+
+    public List<Student> getAllStudents() {
+        List<Student> students = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_STUDENTS + " ORDER BY " + COLUMN_NAME;
+        Cursor cursor = db.rawQuery(query, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                Student student = cursorToStudent(cursor);
+                students.add(student);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return students;
     }
 
     // Inner class for assignment statistics
@@ -1278,9 +1330,13 @@ public long addAnnotation(Annotation annotation) {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Drop all tables in correct order
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_VOICE_RECORDINGS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_VIDEO_FEEDBACKS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACH_SELECTIONS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_VIDEO_SUBMISSIONS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_ANNOTATIONS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_VIDEOS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACH_REQUESTS); // *** ADD THIS ***
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACH_REQUESTS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACH_CODES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_STUDENTS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACHES);
@@ -1288,7 +1344,6 @@ public long addAnnotation(Annotation annotation) {
         // Recreate all tables
         onCreate(db);
     }
-
 // 5. COACH REQUEST METHODS
 
     // Send coach request
@@ -1356,5 +1411,443 @@ public long addAnnotation(Annotation annotation) {
         cursor.close();
         return student;
     }
+
+    private void createVideoFeedbackTables(SQLiteDatabase db) {
+        // Video Submissions table
+        String CREATE_VIDEO_SUBMISSIONS = "CREATE TABLE " + TABLE_VIDEO_SUBMISSIONS + "("
+                + COLUMN_SUBMISSION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + COLUMN_SUBMISSION_TITLE + " TEXT NOT NULL,"
+                + COLUMN_SUBMISSION_DESCRIPTION + " TEXT,"
+                + COLUMN_SUBMISSION_VIDEO_PATH + " TEXT NOT NULL,"
+                + COLUMN_SUBMISSION_STUDENT_ID + " INTEGER NOT NULL,"
+                + COLUMN_SUBMISSION_DATE + " DATETIME DEFAULT CURRENT_TIMESTAMP,"
+                + COLUMN_SUBMISSION_STATUS + " TEXT DEFAULT 'pending',"
+                + "FOREIGN KEY(" + COLUMN_SUBMISSION_STUDENT_ID + ") REFERENCES " + TABLE_STUDENTS + "(" + COLUMN_ID + ")"
+                + ")";
+
+        // Coach Selections table
+        String CREATE_COACH_SELECTIONS = "CREATE TABLE " + TABLE_COACH_SELECTIONS + "("
+                + COLUMN_SELECTION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + COLUMN_SUBMISSION_ID + " INTEGER NOT NULL,"
+                + COLUMN_SELECTED_COACH_ID + " INTEGER NOT NULL,"
+                + COLUMN_SELECTION_STATUS + " TEXT DEFAULT 'pending',"
+                + "FOREIGN KEY(" + COLUMN_SUBMISSION_ID + ") REFERENCES " + TABLE_VIDEO_SUBMISSIONS + "(" + COLUMN_SUBMISSION_ID + "),"
+                + "FOREIGN KEY(" + COLUMN_SELECTED_COACH_ID + ") REFERENCES " + TABLE_COACHES + "(" + COLUMN_ID + ")"
+                + ")";
+
+        // Video Feedbacks table
+        String CREATE_VIDEO_FEEDBACKS = "CREATE TABLE " + TABLE_VIDEO_FEEDBACKS + "("
+                + COLUMN_FEEDBACK_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + COLUMN_SUBMISSION_ID + " INTEGER NOT NULL,"
+                + COLUMN_FEEDBACK_COACH_ID + " INTEGER NOT NULL,"
+                + COLUMN_FEEDBACK_TEXT + " TEXT,"
+                + COLUMN_FEEDBACK_DATE + " DATETIME DEFAULT CURRENT_TIMESTAMP,"
+                + COLUMN_FEEDBACK_ANNOTATION_DATA + " TEXT,"
+                + COLUMN_FEEDBACK_VOICE_RECORDING_PATH + " TEXT,"
+                + COLUMN_FEEDBACK_RATING + " INTEGER DEFAULT 0,"
+                + COLUMN_FEEDBACK_STATUS + " TEXT DEFAULT 'draft',"
+                + "FOREIGN KEY(" + COLUMN_SUBMISSION_ID + ") REFERENCES " + TABLE_VIDEO_SUBMISSIONS + "(" + COLUMN_SUBMISSION_ID + "),"
+                + "FOREIGN KEY(" + COLUMN_FEEDBACK_COACH_ID + ") REFERENCES " + TABLE_COACHES + "(" + COLUMN_ID + ")"
+                + ")";
+
+        // Voice Recordings table
+        String CREATE_VOICE_RECORDINGS = "CREATE TABLE " + TABLE_VOICE_RECORDINGS + "("
+                + COLUMN_RECORDING_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + COLUMN_FEEDBACK_ID + " INTEGER NOT NULL,"
+                + COLUMN_RECORDING_PATH + " TEXT NOT NULL,"
+                + COLUMN_RECORDING_DURATION + " INTEGER,"
+                + COLUMN_RECORDING_TIMESTAMP + " INTEGER,"
+                + COLUMN_RECORDING_TITLE + " TEXT,"
+                + "FOREIGN KEY(" + COLUMN_FEEDBACK_ID + ") REFERENCES " + TABLE_VIDEO_FEEDBACKS + "(" + COLUMN_FEEDBACK_ID + ")"
+                + ")";
+
+        db.execSQL(CREATE_VIDEO_SUBMISSIONS);
+        db.execSQL(CREATE_COACH_SELECTIONS);
+        db.execSQL(CREATE_VIDEO_FEEDBACKS);
+        db.execSQL(CREATE_VOICE_RECORDINGS);
+    }
+
+// ============= VIDEO SUBMISSION METHODS =============
+
+    public long createVideoSubmission(VideoSubmission submission) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_SUBMISSION_TITLE, submission.getTitle());
+        values.put(COLUMN_SUBMISSION_DESCRIPTION, submission.getDescription());
+        values.put(COLUMN_SUBMISSION_VIDEO_PATH, submission.getVideoPath());
+        values.put(COLUMN_SUBMISSION_STUDENT_ID, submission.getStudentId());
+
+        long submissionId = db.insert(TABLE_VIDEO_SUBMISSIONS, null, values);
+
+        if (submissionId > 0) {
+            // Insert coach selections
+            for (Integer coachId : submission.getSelectedCoachIds()) {
+                ContentValues selectionValues = new ContentValues();
+                selectionValues.put(COLUMN_SUBMISSION_ID, submissionId);
+                selectionValues.put(COLUMN_SELECTED_COACH_ID, coachId);
+                db.insert(TABLE_COACH_SELECTIONS, null, selectionValues);
+            }
+        }
+
+        return submissionId;
+    }
+
+    public VideoSubmission getVideoSubmissionById(int submissionId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT vs.*, s." + COLUMN_NAME + " as student_name " +
+                "FROM " + TABLE_VIDEO_SUBMISSIONS + " vs " +
+                "INNER JOIN " + TABLE_STUDENTS + " s ON vs." + COLUMN_SUBMISSION_STUDENT_ID + " = s." + COLUMN_ID + " " +
+                "WHERE vs." + COLUMN_SUBMISSION_ID + " = ?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(submissionId)});
+        VideoSubmission submission = null;
+
+        if (cursor.moveToFirst()) {
+            submission = cursorToVideoSubmission(cursor);
+
+            // Load selected coaches
+            List<Integer> selectedCoachIds = getSelectedCoachIds(submissionId);
+            submission.setSelectedCoachIds(selectedCoachIds);
+
+            // Load feedbacks
+            List<VideoFeedback> feedbacks = getVideoFeedbacks(submissionId);
+            submission.setFeedbacks(feedbacks);
+        }
+
+        cursor.close();
+        return submission;
+    }
+
+    public List<VideoSubmission> getVideoSubmissionsForStudent(int studentId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT vs.*, s." + COLUMN_NAME + " as student_name " +
+                "FROM " + TABLE_VIDEO_SUBMISSIONS + " vs " +
+                "INNER JOIN " + TABLE_STUDENTS + " s ON vs." + COLUMN_SUBMISSION_STUDENT_ID + " = s." + COLUMN_ID + " " +
+                "WHERE vs." + COLUMN_SUBMISSION_STUDENT_ID + " = ? " +
+                "ORDER BY vs." + COLUMN_SUBMISSION_DATE + " DESC";
+
+        return executeVideoSubmissionQuery(query, new String[]{String.valueOf(studentId)});
+    }
+
+    public List<VideoSubmission> getVideoSubmissionsForCoach(int coachId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT DISTINCT vs.*, s." + COLUMN_NAME + " as student_name " +
+                "FROM " + TABLE_VIDEO_SUBMISSIONS + " vs " +
+                "INNER JOIN " + TABLE_STUDENTS + " s ON vs." + COLUMN_SUBMISSION_STUDENT_ID + " = s." + COLUMN_ID + " " +
+                "INNER JOIN " + TABLE_COACH_SELECTIONS + " cs ON vs." + COLUMN_SUBMISSION_ID + " = cs." + COLUMN_SUBMISSION_ID + " " +
+                "WHERE cs." + COLUMN_SELECTED_COACH_ID + " = ? " +
+                "ORDER BY vs." + COLUMN_SUBMISSION_DATE + " DESC";
+
+        return executeVideoSubmissionQuery(query, new String[]{String.valueOf(coachId)});
+    }
+
+    private List<VideoSubmission> executeVideoSubmissionQuery(String query, String[] selectionArgs) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(query, selectionArgs);
+        List<VideoSubmission> submissions = new ArrayList<>();
+
+        if (cursor.moveToFirst()) {
+            do {
+                VideoSubmission submission = cursorToVideoSubmission(cursor);
+
+                // Load selected coaches and feedbacks for each submission
+                List<Integer> selectedCoachIds = getSelectedCoachIds(submission.getSubmissionId());
+                submission.setSelectedCoachIds(selectedCoachIds);
+
+                List<VideoFeedback> feedbacks = getVideoFeedbacks(submission.getSubmissionId());
+                submission.setFeedbacks(feedbacks);
+
+                submissions.add(submission);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        return submissions;
+    }
+
+    private VideoSubmission cursorToVideoSubmission(Cursor cursor) {
+        VideoSubmission submission = new VideoSubmission();
+
+        submission.setSubmissionId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_SUBMISSION_ID)));
+        submission.setTitle(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SUBMISSION_TITLE)));
+        submission.setDescription(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SUBMISSION_DESCRIPTION)));
+        submission.setVideoPath(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SUBMISSION_VIDEO_PATH)));
+        submission.setStudentId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_SUBMISSION_STUDENT_ID)));
+        submission.setSubmissionDate(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SUBMISSION_DATE)));
+        submission.setStatus(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SUBMISSION_STATUS)));
+
+        int studentNameIndex = cursor.getColumnIndex("student_name");
+        if (studentNameIndex >= 0) {
+            submission.setStudentName(cursor.getString(studentNameIndex));
+        }
+
+        return submission;
+    }
+
+    private List<Integer> getSelectedCoachIds(int submissionId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT " + COLUMN_SELECTED_COACH_ID + " FROM " + TABLE_COACH_SELECTIONS +
+                " WHERE " + COLUMN_SUBMISSION_ID + " = ?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(submissionId)});
+        List<Integer> coachIds = new ArrayList<>();
+
+        if (cursor.moveToFirst()) {
+            do {
+                coachIds.add(cursor.getInt(0));
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        return coachIds;
+    }
+
+// ============= VIDEO FEEDBACK METHODS =============
+
+    public boolean saveVideoFeedback(VideoFeedback feedback) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_SUBMISSION_ID, feedback.getSubmissionId());
+        values.put(COLUMN_FEEDBACK_COACH_ID, feedback.getCoachId());
+        values.put(COLUMN_FEEDBACK_TEXT, feedback.getFeedbackText());
+        values.put(COLUMN_FEEDBACK_ANNOTATION_DATA, feedback.getAnnotationData());
+        values.put(COLUMN_FEEDBACK_VOICE_RECORDING_PATH, feedback.getVoiceRecordingPath());
+        values.put(COLUMN_FEEDBACK_RATING, feedback.getRating());
+        values.put(COLUMN_FEEDBACK_STATUS, feedback.getStatus());
+
+        long feedbackId;
+        if (feedback.getFeedbackId() > 0) {
+            // Update existing feedback
+            int result = db.update(TABLE_VIDEO_FEEDBACKS, values,
+                    COLUMN_FEEDBACK_ID + " = ?",
+                    new String[]{String.valueOf(feedback.getFeedbackId())});
+            feedbackId = feedback.getFeedbackId();
+        } else {
+            // Insert new feedback
+            feedbackId = db.insert(TABLE_VIDEO_FEEDBACKS, null, values);
+            feedback.setFeedbackId((int) feedbackId);
+        }
+
+        if (feedbackId > 0) {
+            // Save voice recordings
+            saveVoiceRecordings(feedback.getFeedbackId(), feedback.getVoiceRecordings());
+            return true;
+        }
+
+        return false;
+    }
+
+    public VideoFeedback getVideoFeedback(int submissionId, int coachId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT vf.*, c." + COLUMN_NAME + " as coach_name, c." + COLUMN_EMAIL + " as coach_email " +
+                "FROM " + TABLE_VIDEO_FEEDBACKS + " vf " +
+                "INNER JOIN " + TABLE_COACHES + " c ON vf." + COLUMN_FEEDBACK_COACH_ID + " = c." + COLUMN_ID + " " +
+                "WHERE vf." + COLUMN_SUBMISSION_ID + " = ? AND vf." + COLUMN_FEEDBACK_COACH_ID + " = ?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(submissionId), String.valueOf(coachId)});
+        VideoFeedback feedback = null;
+
+        if (cursor.moveToFirst()) {
+            feedback = cursorToVideoFeedback(cursor);
+
+            // Load voice recordings
+            List<VoiceRecording> voiceRecordings = getVoiceRecordings(feedback.getFeedbackId());
+            feedback.setVoiceRecordings(voiceRecordings);
+        }
+
+        cursor.close();
+        return feedback;
+    }
+
+    public List<VideoFeedback> getVideoFeedbacks(int submissionId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT vf.*, c." + COLUMN_NAME + " as coach_name, c." + COLUMN_EMAIL + " as coach_email " +
+                "FROM " + TABLE_VIDEO_FEEDBACKS + " vf " +
+                "INNER JOIN " + TABLE_COACHES + " c ON vf." + COLUMN_FEEDBACK_COACH_ID + " = c." + COLUMN_ID + " " +
+                "WHERE vf." + COLUMN_SUBMISSION_ID + " = ? " +
+                "ORDER BY vf." + COLUMN_FEEDBACK_DATE + " DESC";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(submissionId)});
+        List<VideoFeedback> feedbacks = new ArrayList<>();
+
+        if (cursor.moveToFirst()) {
+            do {
+                VideoFeedback feedback = cursorToVideoFeedback(cursor);
+
+                // Load voice recordings for each feedback
+                List<VoiceRecording> voiceRecordings = getVoiceRecordings(feedback.getFeedbackId());
+                feedback.setVoiceRecordings(voiceRecordings);
+
+                feedbacks.add(feedback);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        return feedbacks;
+    }
+
+    private VideoFeedback cursorToVideoFeedback(Cursor cursor) {
+        VideoFeedback feedback = new VideoFeedback();
+
+        feedback.setFeedbackId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_ID)));
+        feedback.setSubmissionId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_SUBMISSION_ID)));
+        feedback.setCoachId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_COACH_ID)));
+        feedback.setFeedbackText(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_TEXT)));
+        feedback.setFeedbackDate(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_DATE)));
+        feedback.setAnnotationData(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_ANNOTATION_DATA)));
+        feedback.setVoiceRecordingPath(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_VOICE_RECORDING_PATH)));
+        feedback.setRating(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_RATING)));
+        feedback.setStatus(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_STATUS)));
+
+        // Handle optional coach name and email columns
+        try {
+            int coachNameIndex = cursor.getColumnIndex("coach_name");
+            if (coachNameIndex >= 0) {
+                feedback.setCoachName(cursor.getString(coachNameIndex));
+            }
+
+            int coachEmailIndex = cursor.getColumnIndex("coach_email");
+            if (coachEmailIndex >= 0) {
+                feedback.setCoachEmail(cursor.getString(coachEmailIndex));
+            }
+        } catch (Exception e) {
+            // Column might not exist in all queries, that's okay
+        }
+
+        return feedback;
+    }
+
+// ============= VOICE RECORDING METHODS =============
+
+    private void saveVoiceRecordings(int feedbackId, List<VoiceRecording> recordings) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        // First, delete existing recordings for this feedback
+        db.delete(TABLE_VOICE_RECORDINGS, COLUMN_FEEDBACK_ID + " = ?",
+                new String[]{String.valueOf(feedbackId)});
+
+        // Insert new recordings
+        for (VoiceRecording recording : recordings) {
+            ContentValues values = new ContentValues();
+            values.put(COLUMN_FEEDBACK_ID, feedbackId);
+            values.put(COLUMN_RECORDING_PATH, recording.getRecordingPath());
+            values.put(COLUMN_RECORDING_DURATION, recording.getDuration());
+            values.put(COLUMN_RECORDING_TIMESTAMP, recording.getVideoTimestamp());
+            values.put(COLUMN_RECORDING_TITLE, recording.getTitle());
+
+            long recordingId = db.insert(TABLE_VOICE_RECORDINGS, null, values);
+            recording.setRecordingId((int) recordingId);
+        }
+    }
+
+    public List<VoiceRecording> getVoiceRecordings(int feedbackId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_VOICE_RECORDINGS +
+                " WHERE " + COLUMN_FEEDBACK_ID + " = ? " +
+                " ORDER BY " + COLUMN_RECORDING_TIMESTAMP + " ASC";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(feedbackId)});
+        List<VoiceRecording> recordings = new ArrayList<>();
+
+        if (cursor.moveToFirst()) {
+            do {
+                VoiceRecording recording = cursorToVoiceRecording(cursor);
+                recordings.add(recording);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        return recordings;
+    }
+
+    private VoiceRecording cursorToVoiceRecording(Cursor cursor) {
+        VoiceRecording recording = new VoiceRecording();
+
+        recording.setRecordingId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_RECORDING_ID)));
+        recording.setFeedbackId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_ID)));
+        recording.setRecordingPath(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_RECORDING_PATH)));
+        recording.setDuration(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_RECORDING_DURATION)));
+        recording.setVideoTimestamp(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_RECORDING_TIMESTAMP)));
+        recording.setTitle(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_RECORDING_TITLE)));
+
+        return recording;
+    }
+
+// ============= HELPER METHODS FOR COACH-STUDENT RELATIONSHIPS =============
+
+    public List<Coach> getCoachesForStudent(int studentId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT DISTINCT c.* FROM " + TABLE_COACHES + " c " +
+                "INNER JOIN " + TABLE_COACH_REQUESTS + " cr ON c." + COLUMN_ID + " = cr." + COLUMN_REQUEST_COACH_ID + " " +
+                "WHERE cr." + COLUMN_REQUEST_STUDENT_ID + " = ? AND cr." + COLUMN_REQUEST_STATUS + " = ?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(studentId), CoachRequest.STATUS_ACCEPTED});
+        List<Coach> coaches = new ArrayList<>();
+
+        if (cursor.moveToFirst()) {
+            do {
+                Coach coach = cursorToCoach(cursor);
+                coaches.add(coach);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        return coaches;
+    }
+
+    public int getVideoSubmissionCount(int studentId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT COUNT(*) FROM " + TABLE_VIDEO_SUBMISSIONS +
+                " WHERE " + COLUMN_SUBMISSION_STUDENT_ID + " = ?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(studentId)});
+        int count = 0;
+
+        if (cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+        }
+
+        cursor.close();
+        return count;
+    }
+
+    public int getVideoFeedbackCount(int coachId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT COUNT(*) FROM " + TABLE_VIDEO_FEEDBACKS +
+                " WHERE " + COLUMN_FEEDBACK_COACH_ID + " = ?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(coachId)});
+        int count = 0;
+
+        if (cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+        }
+
+        cursor.close();
+        return count;
+    }
+
+    public int getPendingVideoFeedbackCount(int coachId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT COUNT(DISTINCT vs." + COLUMN_SUBMISSION_ID + ") " +
+                "FROM " + TABLE_VIDEO_SUBMISSIONS + " vs " +
+                "INNER JOIN " + TABLE_COACH_SELECTIONS + " cs ON vs." + COLUMN_SUBMISSION_ID + " = cs." + COLUMN_SUBMISSION_ID + " " +
+                "LEFT JOIN " + TABLE_VIDEO_FEEDBACKS + " vf ON vs." + COLUMN_SUBMISSION_ID + " = vf." + COLUMN_SUBMISSION_ID +
+                " AND vf." + COLUMN_FEEDBACK_COACH_ID + " = ? " +
+                "WHERE cs." + COLUMN_SELECTED_COACH_ID + " = ? AND vf." + COLUMN_FEEDBACK_ID + " IS NULL";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(coachId), String.valueOf(coachId)});
+        int count = 0;
+
+        if (cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+        }
+
+        cursor.close();
+        return count;
+    }
+
 
 }

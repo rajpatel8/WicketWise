@@ -6,10 +6,21 @@
         android:name="android.hardware.camera"
         android:required="false" />
 
+    <uses-feature
+        android:name="android.hardware.microphone"
+        android:required="false" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="28" />
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
@@ -131,6 +142,71 @@
             android:screenOrientation="portrait"
             android:theme="@style/Theme.BecomeBetter"
             android:parentActivityName=".StudentProfileActivity" />
+        <activity
+            android:name=".CoachStudentsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.BecomeBetter"
+            android:parentActivityName=".DashboardActivity" />
+
+        <!-- Also add CoachRequestsActivity if you haven't already -->
+        <activity
+            android:name=".CoachRequestsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.BecomeBetter"
+            android:parentActivityName=".DashboardActivity" />
+
+        <!-- And StudentRequestsActivity -->
+        <activity
+            android:name=".StudentRequestsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.BecomeBetter"
+            android:parentActivityName=".DashboardActivity" />
+
+        <!-- And StudentDetailsActivity if referenced -->
+        <activity
+            android:name=".StudentDetailsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.BecomeBetter"
+            android:parentActivityName=".CoachStudentsActivity" />
+
+        <activity
+            android:name=".EnhancedVideoUploadActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.BecomeBetter"
+            android:parentActivityName=".StudentProfileActivity" />
+
+        <!-- Enhanced Video Player Activity -->
+        <activity
+            android:name=".EnhancedVideoPlayerActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.BecomeBetter.VideoPlayer"
+            android:parentActivityName=".VideoListActivity" />
+
+        <!-- Video Feedback List Activity (for students to view all feedbacks) -->
+        <activity
+            android:name=".VideoFeedbackListActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.BecomeBetter"
+            android:parentActivityName=".StudentProfileActivity" />
+
+        <!-- Coach Video Dashboard Activity (for coaches to see pending videos) -->
+        <activity
+            android:name=".CoachVideoDashboardActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.BecomeBetter"
+            android:parentActivityName=".DashboardActivity" />
+
+
     </application>
+
+
 
 </manifest>
