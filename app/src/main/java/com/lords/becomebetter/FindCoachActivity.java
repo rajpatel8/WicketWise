@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -20,7 +21,7 @@ import java.util.List;
 public class FindCoachActivity extends AppCompatActivity {
 
     private RecyclerView coachesRecyclerView;
-    private LinearLayout noCoachesLayout;  // Changed from TextView to LinearLayout
+    private LinearLayout noCoachesLayout;
     private ImageButton backBtn;
 
     private DatabaseHelper databaseHelper;
@@ -28,6 +29,7 @@ public class FindCoachActivity extends AppCompatActivity {
     private List<Coach> coachesList;
     private String studentEmail;
     private int studentId;
+    private Student currentStudent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +40,9 @@ public class FindCoachActivity extends AppCompatActivity {
         studentEmail = getIntent().getStringExtra("studentEmail");
         studentId = getIntent().getIntExtra("studentId", 0);
 
+        // Get current student info
+        currentStudent = databaseHelper.getStudentByEmail(studentEmail);
+
         initializeViews();
         loadCoaches();
         setupClickListeners();
@@ -45,7 +50,7 @@ public class FindCoachActivity extends AppCompatActivity {
 
     private void initializeViews() {
         coachesRecyclerView = findViewById(R.id.coachesRecyclerView);
-        noCoachesLayout = findViewById(R.id.noCoachesLayout);  // This matches your existing layout
+        noCoachesLayout = findViewById(R.id.noCoachesLayout);
         backBtn = findViewById(R.id.backBtn);
 
         coachesRecyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -70,21 +75,65 @@ public class FindCoachActivity extends AppCompatActivity {
         backBtn.setOnClickListener(v -> onBackPressed());
     }
 
-    private void selectCoach(Coach coach) {
-        // Update student's coach assignment
-        Student student = databaseHelper.getStudentByEmail(studentEmail);
-        if (student != null) {
-            student.setCoachId(coach.getId());
-            boolean success = databaseHelper.updateStudent(student);
+    private void requestCoach(Coach coach) {
+        // Check if student already has this coach
+        if (currentStudent != null && currentStudent.getCoachId() == coach.getId()) {
+            Toast.makeText(this, coach.getName() + " is already your coach!", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-            if (success) {
-                Toast.makeText(this, "Coach " + coach.getName() + " assigned successfully!",
-                        Toast.LENGTH_SHORT).show();
-                finish(); // Return to profile
-            } else {
-                Toast.makeText(this, "Failed to assign coach. Please try again.",
-                        Toast.LENGTH_LONG).show();
+        // Check if there's already a pending request
+        if (databaseHelper.hasExistingPendingRequest(studentId, coach.getId())) {
+            Toast.makeText(this, "You already have a pending request to " + coach.getName(),
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        showRequestDialog(coach);
+    }
+
+    private void showRequestDialog(Coach coach) {
+        // Create a simple EditText for the message
+        EditText messageEdit = new EditText(this);
+        messageEdit.setHint("Tell " + coach.getName() + " why you'd like them as your coach...");
+        messageEdit.setLines(3);
+        messageEdit.setMaxLines(5);
+
+        // Create AlertDialog
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Request Coach")
+                .setMessage("Send request to " + coach.getName())
+                .setView(messageEdit)
+                .setPositiveButton("Send Request", (dialog, which) -> {
+                    String message = messageEdit.getText().toString().trim();
+                    if (message.isEmpty()) {
+                        Toast.makeText(this, "Please enter a message", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    sendCoachRequest(coach, message);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void sendCoachRequest(Coach coach, String message) {
+// DEBUG MSG
+//        Toast.makeText(this, "Request sent to " + coach.getName() + "! (Feature coming soon)",
+//                Toast.LENGTH_SHORT).show();
+
+        long result = databaseHelper.sendCoachRequest(studentId, coach.getId(), message);
+
+        if (result > 0) {
+            Toast.makeText(this, "Request sent to " + coach.getName() + "!", Toast.LENGTH_SHORT).show();
+            // Refresh adapter to update button states
+            if (coachAdapter != null) {
+                coachAdapter.notifyDataSetChanged();
             }
+        } else if (result == -2) {
+            Toast.makeText(this, "You already have a pending request to " + coach.getName(),
+                    Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Failed to send request. Please try again.", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -119,7 +168,7 @@ public class FindCoachActivity extends AppCompatActivity {
         class CoachViewHolder extends RecyclerView.ViewHolder {
 
             private TextView nameText, specializationText, experienceText;
-            private Button selectBtn;
+            private Button requestBtn;
             private ImageView coachIcon;
 
             public CoachViewHolder(@NonNull View itemView) {
@@ -127,7 +176,7 @@ public class FindCoachActivity extends AppCompatActivity {
                 nameText = itemView.findViewById(R.id.coachNameText);
                 specializationText = itemView.findViewById(R.id.coachSpecializationText);
                 experienceText = itemView.findViewById(R.id.coachExperienceText);
-                selectBtn = itemView.findViewById(R.id.selectCoachBtn);
+                requestBtn = itemView.findViewById(R.id.selectCoachBtn);
                 coachIcon = itemView.findViewById(R.id.coachIcon);
             }
 
@@ -136,8 +185,44 @@ public class FindCoachActivity extends AppCompatActivity {
                 specializationText.setText(coach.getSpecialization());
                 experienceText.setText(coach.getExperienceYears() + " years experience");
 
-                selectBtn.setOnClickListener(v -> selectCoach(coach));
+                // Check current relationship status
+                updateButtonState(coach);
+
+                requestBtn.setOnClickListener(v -> requestCoach(coach));
             }
+
+            private void updateButtonState(Coach coach) {
+                // Check if this coach is already the student's coach
+                if (currentStudent != null && currentStudent.getCoachId() == coach.getId()) {
+                    requestBtn.setText("Your Coach");
+                    requestBtn.setEnabled(false);
+                    requestBtn.setBackgroundTintList(getResources().getColorStateList(R.color.success_color));
+                    return;
+                }
+
+//                 Check if there's a pending request
+                if (databaseHelper.hasExistingPendingRequest(studentId, coach.getId())) {
+                    requestBtn.setText("Request Pending");
+                    requestBtn.setEnabled(false);
+                    requestBtn.setBackgroundTintList(getResources().getColorStateList(R.color.warning_color));
+                    return;
+                }
+
+                // Default state - can send request
+                requestBtn.setText("Request Coach");
+                requestBtn.setEnabled(true);
+                requestBtn.setBackgroundTintList(getResources().getColorStateList(R.color.cricket_green_primary));
+            }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Refresh data when returning from other activities
+        currentStudent = databaseHelper.getStudentByEmail(studentEmail);
+        if (coachAdapter != null) {
+            coachAdapter.notifyDataSetChanged();
         }
     }
 

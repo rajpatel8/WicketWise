@@ -11,6 +11,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class DashboardActivity extends AppCompatActivity {
 
+    private DatabaseHelper databaseHelper;
+
     private TextView welcomeText, userNameText, userTypeText;
     private Button logoutBtn, viewProfileBtn, editProfileBtn;
     private Button viewStudentsBtn, manageSessionsBtn, findCoachBtn, bookSessionBtn;
@@ -90,25 +92,20 @@ public class DashboardActivity extends AppCompatActivity {
         viewProfileBtn.setOnClickListener(v -> viewProfile());
         editProfileBtn.setOnClickListener(v -> editProfile());
 
-        if (manageSessionsBtn != null) {
-            manageSessionsBtn.setOnClickListener(v -> viewVideos()); // Changed from manageSessions() to viewVideos()
-        }
-
-
         // Coach-specific actions
         if (viewStudentsBtn != null) {
-            viewStudentsBtn.setOnClickListener(v -> viewStudents());
+            viewStudentsBtn.setOnClickListener(v -> viewMyStudents()); // Updated to use new activity
         }
         if (manageSessionsBtn != null) {
-            manageSessionsBtn.setOnClickListener(v -> manageSessions());
+            manageSessionsBtn.setOnClickListener(v -> viewStudentRequests()); // Updated to handle requests
         }
 
         // Student-specific actions
         if (findCoachBtn != null) {
-            findCoachBtn.setOnClickListener(v -> findCoach());
+            findCoachBtn.setOnClickListener(v -> findCoach()); // Already implemented
         }
         if (bookSessionBtn != null) {
-            bookSessionBtn.setOnClickListener(v -> bookSession());
+            bookSessionBtn.setOnClickListener(v -> viewMyRequests()); // Updated to view request status
         }
     }
 
@@ -164,14 +161,14 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
 
-    private void findCoach() {
-        // Navigate to SimpleFindCoachActivity for students
-        Intent intent = new Intent(this, SimpleFindCoachActivity.class);
-        intent.putExtra("studentEmail", userEmail);
-        // We need to get the student ID, but for now we can pass 0
-        intent.putExtra("studentId", 0);
-        startActivity(intent);
-    }
+//    private void findCoach() {
+//        // Navigate to SimpleFindCoachActivity for students
+//        Intent intent = new Intent(this, SimpleFindCoachActivity.class);
+//        intent.putExtra("studentEmail", userEmail);
+//        // We need to get the student ID, but for now we can pass 0
+//        intent.putExtra("studentId", 0);
+//        startActivity(intent);
+//    }
 
     private void bookSession() {
         showComingSoonMessage("Book Session");
@@ -209,4 +206,63 @@ public class DashboardActivity extends AppCompatActivity {
         super.onBackPressed();
         Toast.makeText(this, "Use logout button to exit", Toast.LENGTH_SHORT).show();
     }
+
+    // Updated Coach methods
+    private void viewMyStudents() {
+        DatabaseHelper databaseHelper = new DatabaseHelper(this);
+        Coach coach = databaseHelper.getCoachByEmail(userEmail);
+
+        if (coach != null) {
+            Intent intent = new Intent(this, CoachStudentsActivity.class);
+            intent.putExtra("coachEmail", userEmail);
+            intent.putExtra("coachId", coach.getId());
+            startActivity(intent);
+        } else {
+            Toast.makeText(this, "Coach profile not found", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void viewStudentRequests() {
+        DatabaseHelper databaseHelper = new DatabaseHelper(this);
+        Coach coach = databaseHelper.getCoachByEmail(userEmail);
+
+        if (coach != null) {
+            Intent intent = new Intent(this, CoachRequestsActivity.class);
+            intent.putExtra("coachEmail", userEmail);
+            intent.putExtra("coachId", coach.getId());
+            startActivity(intent);
+        } else {
+            Toast.makeText(this, "Coach profile not found", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    // Updated Student methods
+    private void findCoach() {
+        DatabaseHelper databaseHelper = new DatabaseHelper(this);
+        Student student = databaseHelper.getStudentByEmail(userEmail);
+
+        if (student != null) {
+            Intent intent = new Intent(this, FindCoachActivity.class);
+            intent.putExtra("studentEmail", userEmail);
+            intent.putExtra("studentId", student.getId());
+            startActivity(intent);
+        } else {
+            Toast.makeText(this, "Student profile not found", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void viewMyRequests() {
+        DatabaseHelper databaseHelper = new DatabaseHelper(this);
+        Student student = databaseHelper.getStudentByEmail(userEmail);
+
+        if (student != null) {
+            Intent intent = new Intent(this, StudentRequestsActivity.class);
+            intent.putExtra("studentEmail", userEmail);
+            intent.putExtra("studentId", student.getId());
+            startActivity(intent);
+        } else {
+            Toast.makeText(this, "Student profile not found", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 }

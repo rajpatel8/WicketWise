@@ -11,7 +11,7 @@ import java.util.List;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "CricketCoaching.db";
-    private static final int DATABASE_VERSION = 2; // Updated version for new tables
+    private static final int DATABASE_VERSION = 3; // Updated version for new tables
 
     // Table names
     private static final String TABLE_COACHES = "coaches";
@@ -19,6 +19,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TABLE_COACH_CODES = "coach_codes";
     private static final String TABLE_VIDEOS = "videos";
     private static final String TABLE_ANNOTATIONS = "annotations";
+
+    private static final String TABLE_COACH_REQUESTS = "coach_requests";
 
     // Common columns
     private static final String COLUMN_ID = "id";
@@ -65,6 +67,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
+
     @Override
     public void onCreate(SQLiteDatabase db) {
         // Create coaches table
@@ -102,7 +105,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COLUMN_CREATED_AT + " DATETIME DEFAULT CURRENT_TIMESTAMP"
                 + ")";
 
-        // Create videos table
+        // Create videos table (if you have it)
         String CREATE_VIDEOS_TABLE = "CREATE TABLE " + TABLE_VIDEOS + "("
                 + COLUMN_VIDEO_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + COLUMN_STUDENT_ID + " INTEGER NOT NULL,"
@@ -119,7 +122,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + "FOREIGN KEY(" + COLUMN_COACH_ID + ") REFERENCES " + TABLE_COACHES + "(" + COLUMN_ID + ")"
                 + ")";
 
-        // Create annotations table
+        // Create annotations table (if you have it)
         String CREATE_ANNOTATIONS_TABLE = "CREATE TABLE " + TABLE_ANNOTATIONS + "("
                 + COLUMN_ANNOTATION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + COLUMN_VIDEO_ID + " INTEGER NOT NULL,"
@@ -134,29 +137,45 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + "FOREIGN KEY(" + COLUMN_COACH_ID + ") REFERENCES " + TABLE_COACHES + "(" + COLUMN_ID + ")"
                 + ")";
 
+        // *** NEW: Create coach requests table ***
+        String CREATE_COACH_REQUESTS_TABLE = "CREATE TABLE " + TABLE_COACH_REQUESTS + "("
+                + COLUMN_REQUEST_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + COLUMN_REQUEST_STUDENT_ID + " INTEGER NOT NULL,"
+                + COLUMN_REQUEST_COACH_ID + " INTEGER NOT NULL,"
+                + COLUMN_REQUEST_STATUS + " TEXT DEFAULT 'pending',"
+                + COLUMN_REQUEST_MESSAGE + " TEXT,"
+                + COLUMN_RESPONSE_MESSAGE + " TEXT,"
+                + COLUMN_REQUEST_DATE + " DATETIME DEFAULT CURRENT_TIMESTAMP,"
+                + COLUMN_RESPONSE_DATE + " DATETIME,"
+                + "FOREIGN KEY(" + COLUMN_REQUEST_STUDENT_ID + ") REFERENCES " + TABLE_STUDENTS + "(" + COLUMN_ID + "),"
+                + "FOREIGN KEY(" + COLUMN_REQUEST_COACH_ID + ") REFERENCES " + TABLE_COACHES + "(" + COLUMN_ID + ")"
+                + ")";
+
         // Execute table creation
         db.execSQL(CREATE_COACHES_TABLE);
         db.execSQL(CREATE_STUDENTS_TABLE);
         db.execSQL(CREATE_COACH_CODES_TABLE);
         db.execSQL(CREATE_VIDEOS_TABLE);
         db.execSQL(CREATE_ANNOTATIONS_TABLE);
+        db.execSQL(CREATE_COACH_REQUESTS_TABLE); // *** NEW TABLE ***
 
-        // Insert some default coach codes
+        // Insert default coach codes
         insertDefaultCoachCodes(db);
     }
 
-    @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // Drop all tables in correct order (annotations first, then videos, etc.)
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_ANNOTATIONS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_VIDEOS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACH_CODES);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_STUDENTS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACHES);
-
-        // Recreate all tables
-        onCreate(db);
-    }
+//    @Override
+//    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+//        // Drop all tables in correct order
+//        db.execSQL("DROP TABLE IF EXISTS " + TABLE_ANNOTATIONS);
+//        db.execSQL("DROP TABLE IF EXISTS " + TABLE_VIDEOS);
+//        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACH_REQUESTS); // Add this line
+//        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACH_CODES);
+//        db.execSQL("DROP TABLE IF EXISTS " + TABLE_STUDENTS);
+//        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACHES);
+//
+//        // Recreate all tables
+//        onCreate(db);
+//    }
 
     private void insertDefaultCoachCodes(SQLiteDatabase db) {
         // Insert some default 6-digit codes for coaches
@@ -424,6 +443,7 @@ public long addAnnotation(Annotation annotation) {
     // Update coach profile
     public boolean updateCoach(Coach coach) {
         SQLiteDatabase db = this.getWritableDatabase();
+
         ContentValues values = new ContentValues();
         values.put(COLUMN_NAME, coach.getName());
         values.put(COLUMN_PHONE, coach.getPhone());
@@ -431,14 +451,17 @@ public long addAnnotation(Annotation annotation) {
         values.put(COLUMN_SPECIALIZATION, coach.getSpecialization());
         values.put(COLUMN_CERTIFICATION, coach.getCertification());
 
-        int result = db.update(TABLE_COACHES, values, COLUMN_ID + " = ?",
+        int result = db.update(TABLE_COACHES, values,
+                COLUMN_ID + " = ?",
                 new String[]{String.valueOf(coach.getId())});
+
         return result > 0;
     }
 
     // Update student profile
     public boolean updateStudent(Student student) {
         SQLiteDatabase db = this.getWritableDatabase();
+
         ContentValues values = new ContentValues();
         values.put(COLUMN_NAME, student.getName());
         values.put(COLUMN_PHONE, student.getPhone());
@@ -446,8 +469,10 @@ public long addAnnotation(Annotation annotation) {
         values.put(COLUMN_SKILL_LEVEL, student.getSkillLevel());
         values.put(COLUMN_COACH_ID, student.getCoachId());
 
-        int result = db.update(TABLE_STUDENTS, values, COLUMN_ID + " = ?",
+        int result = db.update(TABLE_STUDENTS, values,
+                COLUMN_ID + " = ?",
                 new String[]{String.valueOf(student.getId())});
+
         return result > 0;
     }
 
@@ -881,6 +906,455 @@ public long addAnnotation(Annotation annotation) {
 
         public Video getVideo() { return video; }
         public int getAnnotationCount() { return annotationCount; }
+    }
+
+    // Add these methods to your existing DatabaseHelper.java class
+
+// ============= COACH REQUEST SYSTEM METHODS =============
+
+    // Table name for coach requests
+
+    // Coach request table columns
+    private static final String COLUMN_REQUEST_ID = "request_id";
+    private static final String COLUMN_REQUEST_STUDENT_ID = "student_id";
+    private static final String COLUMN_REQUEST_COACH_ID = "coach_id";
+    private static final String COLUMN_REQUEST_STATUS = "status";
+    private static final String COLUMN_REQUEST_MESSAGE = "message";
+    private static final String COLUMN_RESPONSE_MESSAGE = "response_message";
+    private static final String COLUMN_REQUEST_DATE = "request_date";
+    private static final String COLUMN_RESPONSE_DATE = "response_date";
+
+    // Add this to your onCreate method after other table creations:
+    public void createCoachRequestsTable(SQLiteDatabase db) {
+        String CREATE_COACH_REQUESTS_TABLE = "CREATE TABLE " + TABLE_COACH_REQUESTS + "("
+                + COLUMN_REQUEST_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + COLUMN_REQUEST_STUDENT_ID + " INTEGER NOT NULL,"
+                + COLUMN_REQUEST_COACH_ID + " INTEGER NOT NULL,"
+                + COLUMN_REQUEST_STATUS + " TEXT DEFAULT 'pending',"
+                + COLUMN_REQUEST_MESSAGE + " TEXT,"
+                + COLUMN_RESPONSE_MESSAGE + " TEXT,"
+                + COLUMN_REQUEST_DATE + " DATETIME DEFAULT CURRENT_TIMESTAMP,"
+                + COLUMN_RESPONSE_DATE + " DATETIME,"
+                + "FOREIGN KEY(" + COLUMN_REQUEST_STUDENT_ID + ") REFERENCES " + TABLE_STUDENTS + "(" + COLUMN_ID + "),"
+                + "FOREIGN KEY(" + COLUMN_REQUEST_COACH_ID + ") REFERENCES " + TABLE_COACHES + "(" + COLUMN_ID + ")"
+                + ")";
+
+        db.execSQL(CREATE_COACH_REQUESTS_TABLE);
+    }
+
+// Add this to your onUpgrade method:
+// db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACH_REQUESTS);
+
+// ============= COACH REQUEST CRUD OPERATIONS =============
+
+    // Send coach request
+//    public long sendCoachRequest(int studentId, int coachId, String message) {
+//        SQLiteDatabase db = this.getWritableDatabase();
+//
+//        // Check if request already exists and is pending
+//        if (hasExistingPendingRequest(studentId, coachId)) {
+//            return -2; // Indicates duplicate request
+//        }
+//
+//        ContentValues values = new ContentValues();
+//        values.put(COLUMN_REQUEST_STUDENT_ID, studentId);
+//        values.put(COLUMN_REQUEST_COACH_ID, coachId);
+//        values.put(COLUMN_REQUEST_MESSAGE, message);
+//        values.put(COLUMN_REQUEST_STATUS, CoachRequest.STATUS_PENDING);
+//
+//        return db.insert(TABLE_COACH_REQUESTS, null, values);
+//    }
+
+    // Check if pending request exists
+//    public boolean hasExistingPendingRequest(int studentId, int coachId) {
+//        SQLiteDatabase db = this.getReadableDatabase();
+//        String query = "SELECT * FROM " + TABLE_COACH_REQUESTS + " WHERE "
+//                + COLUMN_REQUEST_STUDENT_ID + " = ? AND "
+//                + COLUMN_REQUEST_COACH_ID + " = ? AND "
+//                + COLUMN_REQUEST_STATUS + " = ?";
+//
+//        Cursor cursor = db.rawQuery(query, new String[]{
+//                String.valueOf(studentId),
+//                String.valueOf(coachId),
+//                CoachRequest.STATUS_PENDING
+//        });
+//
+//        boolean exists = cursor.getCount() > 0;
+//        cursor.close();
+//        return exists;
+//    }
+
+    // Respond to coach request
+    public boolean respondToCoachRequest(int requestId, String status, String responseMessage) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_REQUEST_STATUS, status);
+        values.put(COLUMN_RESPONSE_MESSAGE, responseMessage);
+        values.put(COLUMN_RESPONSE_DATE, getCurrentTimestamp());
+
+        int result = db.update(TABLE_COACH_REQUESTS, values,
+                COLUMN_REQUEST_ID + " = ?",
+                new String[]{String.valueOf(requestId)});
+
+        // If request is accepted, update student's coach_id
+        if (result > 0 && CoachRequest.STATUS_ACCEPTED.equals(status)) {
+            CoachRequest request = getCoachRequestById(requestId);
+            if (request != null) {
+                updateStudentCoach(request.getStudentId(), request.getCoachId());
+            }
+        }
+
+        return result > 0;
+    }
+
+    // Update student's coach assignment
+    public boolean updateStudentCoach(int studentId, int coachId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_COACH_ID, coachId);
+
+        int result = db.update(TABLE_STUDENTS, values,
+                COLUMN_ID + " = ?",
+                new String[]{String.valueOf(studentId)});
+
+        return result > 0;
+    }
+
+    // Get coach request by ID
+    public CoachRequest getCoachRequestById(int requestId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT cr.*, " +
+                "s." + COLUMN_NAME + " as student_name, " +
+                "s." + COLUMN_EMAIL + " as student_email, " +
+                "c." + COLUMN_NAME + " as coach_name, " +
+                "c." + COLUMN_EMAIL + " as coach_email " +
+                "FROM " + TABLE_COACH_REQUESTS + " cr " +
+                "INNER JOIN " + TABLE_STUDENTS + " s ON cr." + COLUMN_REQUEST_STUDENT_ID + " = s." + COLUMN_ID + " " +
+                "INNER JOIN " + TABLE_COACHES + " c ON cr." + COLUMN_REQUEST_COACH_ID + " = c." + COLUMN_ID + " " +
+                "WHERE cr." + COLUMN_REQUEST_ID + " = ?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(requestId)});
+
+        CoachRequest request = null;
+        if (cursor.moveToFirst()) {
+            request = cursorToCoachRequest(cursor);
+        }
+        cursor.close();
+        return request;
+    }
+
+    // Get pending requests for coach
+    public List<CoachRequest> getPendingRequestsForCoach(int coachId) {
+        return getCoachRequestsByStatus(coachId, CoachRequest.STATUS_PENDING);
+    }
+
+    // Get all requests for coach
+    public List<CoachRequest> getAllRequestsForCoach(int coachId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT cr.*, " +
+                "s." + COLUMN_NAME + " as student_name, " +
+                "s." + COLUMN_EMAIL + " as student_email, " +
+                "c." + COLUMN_NAME + " as coach_name, " +
+                "c." + COLUMN_EMAIL + " as coach_email " +
+                "FROM " + TABLE_COACH_REQUESTS + " cr " +
+                "INNER JOIN " + TABLE_STUDENTS + " s ON cr." + COLUMN_REQUEST_STUDENT_ID + " = s." + COLUMN_ID + " " +
+                "INNER JOIN " + TABLE_COACHES + " c ON cr." + COLUMN_REQUEST_COACH_ID + " = c." + COLUMN_ID + " " +
+                "WHERE cr." + COLUMN_REQUEST_COACH_ID + " = ? " +
+                "ORDER BY cr." + COLUMN_REQUEST_DATE + " DESC";
+
+        return executeCoachRequestQuery(query, new String[]{String.valueOf(coachId)});
+    }
+
+    // Get requests for student
+    public List<CoachRequest> getRequestsForStudent(int studentId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT cr.*, " +
+                "s." + COLUMN_NAME + " as student_name, " +
+                "s." + COLUMN_EMAIL + " as student_email, " +
+                "c." + COLUMN_NAME + " as coach_name, " +
+                "c." + COLUMN_EMAIL + " as coach_email " +
+                "FROM " + TABLE_COACH_REQUESTS + " cr " +
+                "INNER JOIN " + TABLE_STUDENTS + " s ON cr." + COLUMN_REQUEST_STUDENT_ID + " = s." + COLUMN_ID + " " +
+                "INNER JOIN " + TABLE_COACHES + " c ON cr." + COLUMN_REQUEST_COACH_ID + " = c." + COLUMN_ID + " " +
+                "WHERE cr." + COLUMN_REQUEST_STUDENT_ID + " = ? " +
+                "ORDER BY cr." + COLUMN_REQUEST_DATE + " DESC";
+
+        return executeCoachRequestQuery(query, new String[]{String.valueOf(studentId)});
+    }
+
+    // Get coach requests by status
+    public List<CoachRequest> getCoachRequestsByStatus(int coachId, String status) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT cr.*, " +
+                "s." + COLUMN_NAME + " as student_name, " +
+                "s." + COLUMN_EMAIL + " as student_email, " +
+                "c." + COLUMN_NAME + " as coach_name, " +
+                "c." + COLUMN_EMAIL + " as coach_email " +
+                "FROM " + TABLE_COACH_REQUESTS + " cr " +
+                "INNER JOIN " + TABLE_STUDENTS + " s ON cr." + COLUMN_REQUEST_STUDENT_ID + " = s." + COLUMN_ID + " " +
+                "INNER JOIN " + TABLE_COACHES + " c ON cr." + COLUMN_REQUEST_COACH_ID + " = c." + COLUMN_ID + " " +
+                "WHERE cr." + COLUMN_REQUEST_COACH_ID + " = ? AND cr." + COLUMN_REQUEST_STATUS + " = ? " +
+                "ORDER BY cr." + COLUMN_REQUEST_DATE + " DESC";
+
+        return executeCoachRequestQuery(query, new String[]{String.valueOf(coachId), status});
+    }
+
+    // Get students assigned to coach
+    public List<Student> getStudentsForCoach(int coachId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_STUDENTS + " WHERE " + COLUMN_COACH_ID + " = ? " +
+                "ORDER BY " + COLUMN_NAME + " ASC";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(coachId)});
+        List<Student> students = new ArrayList<>();
+
+        if (cursor.moveToFirst()) {
+            do {
+                Student student = cursorToStudent(cursor);
+                students.add(student);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return students;
+    }
+
+    // Get coach for student
+    public Coach getCoachForStudent(int studentId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT c.* FROM " + TABLE_COACHES + " c " +
+                "INNER JOIN " + TABLE_STUDENTS + " s ON c." + COLUMN_ID + " = s." + COLUMN_COACH_ID + " " +
+                "WHERE s." + COLUMN_ID + " = ?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(studentId)});
+
+        Coach coach = null;
+        if (cursor.moveToFirst()) {
+            coach = cursorToCoach(cursor);
+        }
+        cursor.close();
+        return coach;
+    }
+
+    // Helper method to execute coach request queries
+    private List<CoachRequest> executeCoachRequestQuery(String query, String[] selectionArgs) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor cursor = db.rawQuery(query, selectionArgs);
+        List<CoachRequest> requests = new ArrayList<>();
+
+        if (cursor.moveToFirst()) {
+            do {
+                CoachRequest request = cursorToCoachRequest(cursor);
+                requests.add(request);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+        return requests;
+    }
+
+    // Convert cursor to CoachRequest object
+    private CoachRequest cursorToCoachRequest(Cursor cursor) {
+        CoachRequest request = new CoachRequest();
+
+        request.setRequestId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_REQUEST_ID)));
+        request.setStudentId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_REQUEST_STUDENT_ID)));
+        request.setCoachId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_REQUEST_COACH_ID)));
+        request.setStatus(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_REQUEST_STATUS)));
+        request.setMessage(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_REQUEST_MESSAGE)));
+        request.setResponseMessage(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_RESPONSE_MESSAGE)));
+        request.setRequestDate(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_REQUEST_DATE)));
+        request.setResponseDate(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_RESPONSE_DATE)));
+
+        // Set student and coach names if available
+        try {
+            request.setStudentName(cursor.getString(cursor.getColumnIndexOrThrow("student_name")));
+            request.setStudentEmail(cursor.getString(cursor.getColumnIndexOrThrow("student_email")));
+            request.setCoachName(cursor.getString(cursor.getColumnIndexOrThrow("coach_name")));
+            request.setCoachEmail(cursor.getString(cursor.getColumnIndexOrThrow("coach_email")));
+        } catch (Exception e) {
+            // Columns might not exist in some queries
+        }
+
+        return request;
+    }
+
+    // Convert cursor to Student object
+    private Student cursorToStudent(Cursor cursor) {
+        Student student = new Student();
+
+        student.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)));
+        student.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)));
+        student.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)));
+        student.setPassword(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD)));
+        student.setPhone(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PHONE)));
+        student.setAge(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_AGE)));
+        student.setSkillLevel(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SKILL_LEVEL)));
+        student.setCoachId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_COACH_ID)));
+        student.setCreatedAt(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CREATED_AT)));
+
+        return student;
+    }
+
+    // Convert cursor to Coach object
+    private Coach cursorToCoach(Cursor cursor) {
+        Coach coach = new Coach();
+
+        coach.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)));
+        coach.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)));
+        coach.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)));
+        coach.setPassword(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD)));
+        coach.setPhone(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PHONE)));
+        coach.setExperienceYears(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_EXPERIENCE_YEARS)));
+        coach.setSpecialization(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SPECIALIZATION)));
+        coach.setCertification(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CERTIFICATION)));
+        coach.setCreatedAt(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CREATED_AT)));
+
+        return coach;
+    }
+
+    // Get current timestamp
+//    private String getCurrentTimestamp() {
+//        return String.valueOf(System.currentTimeMillis());
+//    }
+
+    // Get pending request count for coach
+    public int getPendingRequestCount(int coachId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT COUNT(*) FROM " + TABLE_COACH_REQUESTS + " WHERE " +
+                COLUMN_REQUEST_COACH_ID + " = ? AND " + COLUMN_REQUEST_STATUS + " = ?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(coachId), CoachRequest.STATUS_PENDING});
+
+        int count = 0;
+        if (cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+        }
+        cursor.close();
+        return count;
+    }
+
+    // Get student count for coach
+    public int getStudentCount(int coachId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT COUNT(*) FROM " + TABLE_STUDENTS + " WHERE " + COLUMN_COACH_ID + " = ?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(coachId)});
+
+        int count = 0;
+        if (cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+        }
+        cursor.close();
+        return count;
+    }
+
+    // Add this method to your DatabaseHelper.java class
+
+    // Get student by ID
+//    public Student getStudentById(int studentId) {
+//        SQLiteDatabase db = this.getReadableDatabase();
+//        String query = "SELECT * FROM " + TABLE_STUDENTS + " WHERE " + COLUMN_ID + " = ?";
+//
+//        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(studentId)});
+//
+//        Student student = null;
+//        if (cursor.moveToFirst()) {
+//            student = new Student();
+//            student.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)));
+//            student.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)));
+//            student.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)));
+//            student.setPassword(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD)));
+//            student.setPhone(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PHONE)));
+//            student.setAge(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_AGE)));
+//            student.setSkillLevel(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SKILL_LEVEL)));
+//            student.setCoachId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_COACH_ID)));
+//            student.setCreatedAt(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CREATED_AT)));
+//        }
+//        cursor.close();
+//        return student;
+//    }
+
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        // Drop all tables in correct order
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_ANNOTATIONS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_VIDEOS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACH_REQUESTS); // *** ADD THIS ***
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACH_CODES);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_STUDENTS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACHES);
+
+        // Recreate all tables
+        onCreate(db);
+    }
+
+// 5. COACH REQUEST METHODS
+
+    // Send coach request
+    public long sendCoachRequest(int studentId, int coachId, String message) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        // Check if request already exists and is pending
+        if (hasExistingPendingRequest(studentId, coachId)) {
+            return -2; // Indicates duplicate request
+        }
+
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_REQUEST_STUDENT_ID, studentId);
+        values.put(COLUMN_REQUEST_COACH_ID, coachId);
+        values.put(COLUMN_REQUEST_MESSAGE, message);
+        values.put(COLUMN_REQUEST_STATUS, "pending");
+
+        return db.insert(TABLE_COACH_REQUESTS, null, values);
+    }
+
+    // Check if pending request exists
+    public boolean hasExistingPendingRequest(int studentId, int coachId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_COACH_REQUESTS + " WHERE "
+                + COLUMN_REQUEST_STUDENT_ID + " = ? AND "
+                + COLUMN_REQUEST_COACH_ID + " = ? AND "
+                + COLUMN_REQUEST_STATUS + " = ?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{
+                String.valueOf(studentId),
+                String.valueOf(coachId),
+                "pending"
+        });
+
+        boolean exists = cursor.getCount() > 0;
+        cursor.close();
+        return exists;
+    }
+
+    // Get current timestamp
+    private String getCurrentTimestamp() {
+        return String.valueOf(System.currentTimeMillis());
+    }
+
+    // Get student by ID method
+    public Student getStudentById(int studentId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_STUDENTS + " WHERE " + COLUMN_ID + " = ?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(studentId)});
+
+        Student student = null;
+        if (cursor.moveToFirst()) {
+            student = new Student();
+            student.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)));
+            student.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)));
+            student.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)));
+            student.setPassword(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD)));
+            student.setPhone(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PHONE)));
+            student.setAge(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_AGE)));
+            student.setSkillLevel(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SKILL_LEVEL)));
+            student.setCoachId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_COACH_ID)));
+            student.setCreatedAt(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CREATED_AT)));
+        }
+        cursor.close();
+        return student;
     }
 
 }

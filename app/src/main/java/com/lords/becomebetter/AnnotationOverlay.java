@@ -6,30 +6,81 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
 public class AnnotationOverlay extends View {
 
+    private static final String TAG = "AnnotationOverlay";
+
     private Paint drawPaint;
     private Path currentPath;
     private List<AnnotationDrawing> annotations;
     private boolean isDrawingEnabled = true;
+    private VideoPlayerActivity parentActivity; // Reference to get current video time
+    private long currentVideoPosition = 0;
 
     // Inner class to hold annotation drawing data
-    static class AnnotationDrawing {
+    public static class AnnotationDrawing {
         Path path;
         Paint paint;
         long timestamp;
+        String pathData; // Serialized path data
+        List<Point> points; // Store path points for serialization
 
-        AnnotationDrawing(Path path, Paint paint, long timestamp) {
+        public AnnotationDrawing(Path path, Paint paint, long timestamp, String pathData) {
             this.path = new Path(path);
             this.paint = new Paint(paint);
             this.timestamp = timestamp;
+            this.pathData = pathData;
+            this.points = new ArrayList<>();
+        }
+
+        public AnnotationDrawing(Path path, Paint paint, long timestamp, List<Point> points) {
+            this.path = new Path(path);
+            this.paint = new Paint(paint);
+            this.timestamp = timestamp;
+            this.points = new ArrayList<>(points);
+            this.pathData = pointsToString(points);
+        }
+
+        private String pointsToString(List<Point> points) {
+            try {
+                JSONArray jsonArray = new JSONArray();
+                for (Point point : points) {
+                    JSONObject pointObj = new JSONObject();
+                    pointObj.put("x", point.x);
+                    pointObj.put("y", point.y);
+                    pointObj.put("action", point.action);
+                    jsonArray.put(pointObj);
+                }
+                return jsonArray.toString();
+            } catch (JSONException e) {
+                Log.e(TAG, "Error converting points to string", e);
+                return "";
+            }
         }
     }
+
+    // Point class to store drawing coordinates
+    public static class Point {
+        float x, y;
+        int action; // MotionEvent action (DOWN, MOVE, UP)
+
+        public Point(float x, float y, int action) {
+            this.x = x;
+            this.y = y;
+            this.action = action;
+        }
+    }
+
+    private List<Point> currentDrawingPoints;
 
     public AnnotationOverlay(Context context) {
         super(context);
@@ -57,18 +108,38 @@ public class AnnotationOverlay extends View {
 
         currentPath = new Path();
         annotations = new ArrayList<>();
+        currentDrawingPoints = new ArrayList<>();
 
         // Enable drawing on this view
         setWillNotDraw(false);
+
+        Log.d(TAG, "AnnotationOverlay initialized");
+    }
+
+    // Set parent activity reference to get current video time
+    public void setParentActivity(VideoPlayerActivity activity) {
+        this.parentActivity = activity;
+        Log.d(TAG, "Parent activity set");
+    }
+
+    // Update current video position for time-based annotation display
+    public void updateVideoPosition(long position) {
+        this.currentVideoPosition = position;
+        invalidate(); // Trigger redraw to show/hide annotations based on time
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        // Draw all saved annotations
+        // Draw annotations that should be visible at current time
         for (AnnotationDrawing annotation : annotations) {
-            canvas.drawPath(annotation.path, annotation.paint);
+            // Show annotation if current time is at or after the annotation time
+            // and within a reasonable display window (5 seconds)
+            long timeDiff = currentVideoPosition - annotation.timestamp;
+            if (timeDiff >= 0 && timeDiff <= 5000) { // Show for 5 seconds
+                canvas.drawPath(annotation.path, annotation.paint);
+            }
         }
 
         // Draw current path being drawn
@@ -88,18 +159,29 @@ public class AnnotationOverlay extends View {
 
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                // Start a new drawing path
+                currentPath.reset();
                 currentPath.moveTo(x, y);
+                currentDrawingPoints.clear();
+                currentDrawingPoints.add(new Point(x, y, MotionEvent.ACTION_DOWN));
+
+                Log.d(TAG, "Drawing started at (" + x + ", " + y + ")");
                 return true;
 
             case MotionEvent.ACTION_MOVE:
                 currentPath.lineTo(x, y);
+                currentDrawingPoints.add(new Point(x, y, MotionEvent.ACTION_MOVE));
                 invalidate(); // Trigger redraw
                 return true;
 
             case MotionEvent.ACTION_UP:
-                // Save the current drawing as an annotation
+                // Finish the current drawing and save it
+                currentDrawingPoints.add(new Point(x, y, MotionEvent.ACTION_UP));
                 saveCurrentDrawing();
                 currentPath.reset();
+                currentDrawingPoints.clear();
+
+                Log.d(TAG, "Drawing completed");
                 return true;
 
             default:
@@ -108,35 +190,41 @@ public class AnnotationOverlay extends View {
     }
 
     private void saveCurrentDrawing() {
-        if (!currentPath.isEmpty()) {
+        if (currentDrawingPoints.size() > 1) { // Need at least 2 points for a drawing
+            // Get the actual video timestamp when the drawing was made
+            long drawingTimestamp = parentActivity != null ? parentActivity.getCurrentVideoPosition() : currentVideoPosition;
+
             Paint savedPaint = new Paint(drawPaint);
-            AnnotationDrawing drawing = new AnnotationDrawing(currentPath, savedPaint, System.currentTimeMillis());
+            Path savedPath = new Path(currentPath);
+
+            AnnotationDrawing drawing = new AnnotationDrawing(savedPath, savedPaint, drawingTimestamp, currentDrawingPoints);
             annotations.add(drawing);
+
+            Log.d(TAG, "Drawing saved with timestamp: " + drawingTimestamp + "ms, points: " + currentDrawingPoints.size());
             invalidate();
         }
     }
 
-    public void setCurrentPath(Path path) {
-        this.currentPath = path;
-        invalidate();
-    }
-
     public void addAnnotation(Annotation annotation) {
         // Convert annotation data back to path
-        // For now, create a simple path - you can enhance this based on your path format
         Path path = stringToPath(annotation.getAnnotationData());
-
         Paint paint = new Paint(drawPaint);
-        // You can customize paint based on annotation properties
 
-        AnnotationDrawing drawing = new AnnotationDrawing(path, paint, annotation.getTimestamp());
+        // Customize paint based on annotation properties if needed
+        paint.setColor(Color.BLUE); // Different color for loaded annotations
+
+        AnnotationDrawing drawing = new AnnotationDrawing(path, paint, annotation.getTimestamp(), annotation.getAnnotationData());
         annotations.add(drawing);
+
+        Log.d(TAG, "Annotation loaded with timestamp: " + annotation.getTimestamp() + "ms");
         invalidate();
     }
 
     public void clearAnnotations() {
         annotations.clear();
         currentPath.reset();
+        currentDrawingPoints.clear();
+        Log.d(TAG, "All annotations cleared");
         invalidate();
     }
 
@@ -150,23 +238,45 @@ public class AnnotationOverlay extends View {
 
     public void setDrawingEnabled(boolean enabled) {
         this.isDrawingEnabled = enabled;
+        Log.d(TAG, "Drawing enabled: " + enabled);
     }
 
-    // Convert string back to path (simplified implementation)
+    // Convert string back to path
     private Path stringToPath(String pathData) {
         Path path = new Path();
-        // For now, create a simple placeholder path
-        // You would implement proper path parsing here
-        path.moveTo(100, 100);
-        path.lineTo(200, 200);
-        return path;
-    }
 
-    // Show/hide annotations based on video timestamp
-    public void showAnnotationsForTime(long currentTime) {
-        // You can implement time-based annotation visibility here
-        // For now, show all annotations
-        invalidate();
+        if (pathData == null || pathData.isEmpty()) {
+            // Create a simple placeholder path
+            path.moveTo(100, 100);
+            path.lineTo(200, 200);
+            return path;
+        }
+
+        try {
+            JSONArray jsonArray = new JSONArray(pathData);
+            boolean firstPoint = true;
+
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JSONObject pointObj = jsonArray.getJSONObject(i);
+                float x = (float) pointObj.getDouble("x");
+                float y = (float) pointObj.getDouble("y");
+                int action = pointObj.getInt("action");
+
+                if (action == MotionEvent.ACTION_DOWN || firstPoint) {
+                    path.moveTo(x, y);
+                    firstPoint = false;
+                } else if (action == MotionEvent.ACTION_MOVE) {
+                    path.lineTo(x, y);
+                }
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, "Error parsing path data: " + pathData, e);
+            // Create a simple placeholder path
+            path.moveTo(100, 100);
+            path.lineTo(200, 200);
+        }
+
+        return path;
     }
 
     // Get all annotations for saving
@@ -176,8 +286,23 @@ public class AnnotationOverlay extends View {
 
     // Get current path as string for saving
     public String getCurrentPathAsString() {
-        // Simple implementation - convert path to string
-        // You can implement a more sophisticated format
-        return "drawing_path_" + System.currentTimeMillis();
+        return pointsToString(currentDrawingPoints);
+    }
+
+    private String pointsToString(List<Point> points) {
+        try {
+            JSONArray jsonArray = new JSONArray();
+            for (Point point : points) {
+                JSONObject pointObj = new JSONObject();
+                pointObj.put("x", point.x);
+                pointObj.put("y", point.y);
+                pointObj.put("action", point.action);
+                jsonArray.put(pointObj);
+            }
+            return jsonArray.toString();
+        } catch (JSONException e) {
+            Log.e(TAG, "Error converting points to string", e);
+            return "drawing_path_" + System.currentTimeMillis();
+        }
     }
 }

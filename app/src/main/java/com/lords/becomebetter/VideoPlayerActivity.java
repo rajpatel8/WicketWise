@@ -241,19 +241,19 @@ public class VideoPlayerActivity extends AppCompatActivity {
         Log.d(TAG, "Video player setup complete");
     }
 
-    private void setupAnnotationSystem() {
-        if (annotationOverlay != null) {
-            // Set annotation overlay properties
-            annotationOverlay.setDrawingColor(getResources().getColor(R.color.error_color));
-            annotationOverlay.setDrawingWidth(8f);
-
-            // Enable clicking and focusing
-            annotationOverlay.setClickable(true);
-            annotationOverlay.setFocusable(true);
-        }
-
-        Log.d(TAG, "Annotation system setup complete. Drawing enabled: " + !viewOnly);
-    }
+//    private void setupAnnotationSystem() {
+//        if (annotationOverlay != null) {
+//            // Set annotation overlay properties
+//            annotationOverlay.setDrawingColor(getResources().getColor(R.color.error_color));
+//            annotationOverlay.setDrawingWidth(8f);
+//
+//            // Enable clicking and focusing
+//            annotationOverlay.setClickable(true);
+//            annotationOverlay.setFocusable(true);
+//        }
+//
+//        Log.d(TAG, "Annotation system setup complete. Drawing enabled: " + !viewOnly);
+//    }
 
     private void setupClickListeners() {
         backBtn.setOnClickListener(v -> onBackPressed());
@@ -294,24 +294,24 @@ public class VideoPlayerActivity extends AppCompatActivity {
         Log.d(TAG, "Click listeners setup complete");
     }
 
-    private void startTimeUpdates() {
-        timeUpdateRunnable = new Runnable() {
-            @Override
-            public void run() {
-                if (isVideoReady && videoView != null) {
-                    try {
-                        int currentPosition = videoView.getCurrentPosition();
-                        videoSeekBar.setProgress(currentPosition);
-                        currentTimeText.setText(formatTime(currentPosition));
-                    } catch (Exception e) {
-                        Log.e(TAG, "Error updating time", e);
-                    }
-                }
-                timeHandler.postDelayed(this, 100);
-            }
-        };
-        timeHandler.post(timeUpdateRunnable);
-    }
+//    private void startTimeUpdates() {
+//        timeUpdateRunnable = new Runnable() {
+//            @Override
+//            public void run() {
+//                if (isVideoReady && videoView != null) {
+//                    try {
+//                        int currentPosition = videoView.getCurrentPosition();
+//                        videoSeekBar.setProgress(currentPosition);
+//                        currentTimeText.setText(formatTime(currentPosition));
+//                    } catch (Exception e) {
+//                        Log.e(TAG, "Error updating time", e);
+//                    }
+//                }
+//                timeHandler.postDelayed(this, 100);
+//            }
+//        };
+//        timeHandler.post(timeUpdateRunnable);
+//    }
 
     private void stopTimeUpdates() {
         if (timeUpdateRunnable != null) {
@@ -327,55 +327,55 @@ public class VideoPlayerActivity extends AppCompatActivity {
         }
     }
 
-    private void saveAllAnnotations() {
-        if (annotationOverlay == null) {
-            Toast.makeText(this, "Annotation system not available", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Get current annotations from overlay
-        List<AnnotationOverlay.AnnotationDrawing> currentDrawings = annotationOverlay.getAllAnnotations();
-
-        if (currentDrawings.isEmpty()) {
-            Toast.makeText(this, "No annotations to save", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Delete existing annotations for this video first
-        databaseHelper.deleteAnnotationsByVideoId(videoId);
-
-        // Save all current annotations
-        int savedCount = 0;
-        for (AnnotationOverlay.AnnotationDrawing drawing : currentDrawings) {
-            long currentTime = isVideoReady ? videoView.getCurrentPosition() : 0;
-
-            // Create annotation from drawing
-            Annotation annotation = new Annotation(
-                    videoId,
-                    coachId,
-                    currentTime,
-                    Annotation.TYPE_DRAWING,
-                    "drawing_data_" + System.currentTimeMillis(), // You can enhance this
-                    0, 0 // x, y not used for drawing annotations
-            );
-
-            long result = databaseHelper.addAnnotation(annotation);
-            if (result != -1) {
-                savedCount++;
-            }
-        }
-
-        if (savedCount > 0) {
-            // Update video status
-            databaseHelper.updateVideoStatus(videoId, "annotated");
-            Toast.makeText(this, savedCount + " annotations saved successfully!", Toast.LENGTH_LONG).show();
-            setResult(RESULT_OK);
-        } else {
-            showError("Failed to save annotations");
-        }
-
-        Log.d(TAG, "Saved " + savedCount + " annotations");
-    }
+//    private void saveAllAnnotations() {
+//        if (annotationOverlay == null) {
+//            Toast.makeText(this, "Annotation system not available", Toast.LENGTH_SHORT).show();
+//            return;
+//        }
+//
+//        // Get current annotations from overlay
+//        List<AnnotationOverlay.AnnotationDrawing> currentDrawings = annotationOverlay.getAllAnnotations();
+//
+//        if (currentDrawings.isEmpty()) {
+//            Toast.makeText(this, "No annotations to save", Toast.LENGTH_SHORT).show();
+//            return;
+//        }
+//
+//        // Delete existing annotations for this video first
+//        databaseHelper.deleteAnnotationsByVideoId(videoId);
+//
+//        // Save all current annotations
+//        int savedCount = 0;
+//        for (AnnotationOverlay.AnnotationDrawing drawing : currentDrawings) {
+//            long currentTime = isVideoReady ? videoView.getCurrentPosition() : 0;
+//
+//            // Create annotation from drawing
+//            Annotation annotation = new Annotation(
+//                    videoId,
+//                    coachId,
+//                    currentTime,
+//                    Annotation.TYPE_DRAWING,
+//                    "drawing_data_" + System.currentTimeMillis(), // You can enhance this
+//                    0, 0 // x, y not used for drawing annotations
+//            );
+//
+//            long result = databaseHelper.addAnnotation(annotation);
+//            if (result != -1) {
+//                savedCount++;
+//            }
+//        }
+//
+//        if (savedCount > 0) {
+//            // Update video status
+//            databaseHelper.updateVideoStatus(videoId, "annotated");
+//            Toast.makeText(this, savedCount + " annotations saved successfully!", Toast.LENGTH_LONG).show();
+//            setResult(RESULT_OK);
+//        } else {
+//            showError("Failed to save annotations");
+//        }
+//
+//        Log.d(TAG, "Saved " + savedCount + " annotations");
+//    }
 
     private void clearAllAnnotations() {
         if (annotationOverlay != null) {
@@ -385,19 +385,19 @@ public class VideoPlayerActivity extends AppCompatActivity {
         }
     }
 
-    private void loadAnnotations() {
-        // Load existing annotations from database
-        List<Annotation> existingAnnotations = databaseHelper.getAnnotationsByVideoId(videoId);
-
-        for (Annotation annotation : existingAnnotations) {
-            annotations.add(annotation);
-            if (annotationOverlay != null) {
-                annotationOverlay.addAnnotation(annotation);
-            }
-        }
-
-        Log.d(TAG, "Loaded " + existingAnnotations.size() + " existing annotations");
-    }
+//    private void loadAnnotations() {
+//        // Load existing annotations from database
+//        List<Annotation> existingAnnotations = databaseHelper.getAnnotationsByVideoId(videoId);
+//
+//        for (Annotation annotation : existingAnnotations) {
+//            annotations.add(annotation);
+//            if (annotationOverlay != null) {
+//                annotationOverlay.addAnnotation(annotation);
+//            }
+//        }
+//
+//        Log.d(TAG, "Loaded " + existingAnnotations.size() + " existing annotations");
+//    }
 
     private String formatTime(int milliseconds) {
         int seconds = milliseconds / 1000;
@@ -418,22 +418,237 @@ public class VideoPlayerActivity extends AppCompatActivity {
         Log.d(TAG, "VideoPlayerActivity destroyed");
     }
 
+//    @Override
+//    public void onBackPressed() {
+//        if (!viewOnly && annotationOverlay != null && annotationOverlay.getAllAnnotations().size() > 0) {
+//            new AlertDialog.Builder(this)
+//                    .setTitle("Unsaved Annotations")
+//                    .setMessage("You have unsaved annotations. Do you want to save them before leaving?")
+//                    .setPositiveButton("Save & Exit", (dialog, which) -> saveAllAnnotations())
+//                    .setNegativeButton("Exit Without Saving", (dialog, which) -> {
+//                        super.onBackPressed();
+//                        finish();
+//                    })
+//                    .setNeutralButton("Cancel", null)
+//                    .show();
+//        } else {
+//            super.onBackPressed();
+//            finish();
+//        }
+//    }
+
+    // Add these methods to your VideoPlayerActivity.java class
+// Replace the existing methods with these fixed versions
+
+    private void setupAnnotationSystem() {
+        if (annotationOverlay != null) {
+            // Set annotation overlay properties
+            annotationOverlay.setDrawingColor(getResources().getColor(R.color.error_color));
+            annotationOverlay.setDrawingWidth(8f);
+
+            // Set parent activity reference for getting video time
+            annotationOverlay.setParentActivity(this);
+
+            // Enable clicking and focusing
+            annotationOverlay.setClickable(true);
+            annotationOverlay.setFocusable(true);
+        }
+
+        Log.d(TAG, "Annotation system setup complete. Drawing enabled: " + !viewOnly);
+    }
+
+    // Add this method to get current video position
+    public long getCurrentVideoPosition() {
+        if (isVideoReady && videoView != null) {
+            return videoView.getCurrentPosition();
+        }
+        return 0;
+    }
+
+    private void startTimeUpdates() {
+        timeUpdateRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (isVideoReady && videoView != null) {
+                    try {
+                        int currentPosition = videoView.getCurrentPosition();
+                        videoSeekBar.setProgress(currentPosition);
+                        currentTimeText.setText(formatTime(currentPosition));
+
+                        // Update annotation overlay with current video position
+                        if (annotationOverlay != null) {
+                            annotationOverlay.updateVideoPosition(currentPosition);
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error updating time", e);
+                    }
+                }
+                timeHandler.postDelayed(this, 100);
+            }
+        };
+        timeHandler.post(timeUpdateRunnable);
+    }
+
+//    private void saveAllAnnotations() {
+//        if (annotationOverlay == null) {
+//            Toast.makeText(this, "Annotation system not available", Toast.LENGTH_SHORT).show();
+//            return;
+//        }
+//
+//        // Get current annotations from overlay
+//        List<AnnotationOverlay.AnnotationDrawing> currentDrawings = annotationOverlay.getAllAnnotations();
+//
+//        if (currentDrawings.isEmpty()) {
+//            Toast.makeText(this, "No annotations to save", Toast.LENGTH_SHORT).show();
+//            return;
+//        }
+//
+//        // Delete existing annotations for this video first
+//        databaseHelper.deleteAnnotationsByVideoId(videoId);
+//
+//        // Save all current annotations with their individual timestamps
+//        int savedCount = 0;
+//        for (AnnotationOverlay.AnnotationDrawing drawing : currentDrawings) {
+//            // Use the drawing's actual timestamp, not the current video time
+//            long annotationTimestamp = drawing.timestamp;
+//
+//            // Create annotation from drawing
+//            Annotation annotation = new Annotation(
+//                    videoId,
+//                    coachId,
+//                    annotationTimestamp, // Use the individual annotation timestamp
+//                    Annotation.TYPE_DRAWING,
+//                    drawing.pathData, // Use the serialized path data
+//                    0, 0 // x, y not used for drawing annotations
+//            );
+//
+//            long result = databaseHelper.addAnnotation(annotation);
+//            if (result != -1) {
+//                savedCount++;
+//                Log.d(TAG, "Saved annotation with timestamp: " + annotationTimestamp + "ms");
+//            } else {
+//                Log.e(TAG, "Failed to save annotation with timestamp: " + annotationTimestamp + "ms");
+//            }
+//        }
+//
+//        if (savedCount > 0) {
+//            // Update video status
+//            databaseHelper.updateVideoStatus(videoId, "annotated");
+//            Toast.makeText(this, savedCount + " annotations saved successfully!", Toast.LENGTH_LONG).show();
+//            setResult(RESULT_OK);
+//        } else {
+//            showError("Failed to save annotations");
+//        }
+//
+//        Log.d(TAG, "Saved " + savedCount + " annotations with individual timestamps");
+//    }
+
+    private void loadAnnotations() {
+        // Load existing annotations from database
+        List<Annotation> existingAnnotations = databaseHelper.getAnnotationsByVideoId(videoId);
+
+        for (Annotation annotation : existingAnnotations) {
+            annotations.add(annotation);
+            if (annotationOverlay != null) {
+                annotationOverlay.addAnnotation(annotation);
+            }
+            Log.d(TAG, "Loaded annotation with timestamp: " + annotation.getTimestamp() + "ms");
+        }
+
+        Log.d(TAG, "Loaded " + existingAnnotations.size() + " existing annotations");
+    }
+
     @Override
     public void onBackPressed() {
         if (!viewOnly && annotationOverlay != null && annotationOverlay.getAllAnnotations().size() > 0) {
             new AlertDialog.Builder(this)
                     .setTitle("Unsaved Annotations")
                     .setMessage("You have unsaved annotations. Do you want to save them before leaving?")
-                    .setPositiveButton("Save & Exit", (dialog, which) -> saveAllAnnotations())
+                    .setPositiveButton("Save & Exit", (dialog, which) -> {
+                        // Save annotations and then exit
+                        saveAllAnnotations();
+
+                        // Add a small delay to ensure saving is complete, then exit
+                        new Handler().postDelayed(() -> {
+                            Log.d(TAG, "Exiting after saving annotations");
+                            setResult(RESULT_OK);
+                            finish();
+                        }, 100);
+                    })
                     .setNegativeButton("Exit Without Saving", (dialog, which) -> {
+                        Log.d(TAG, "Exiting without saving annotations");
                         super.onBackPressed();
                         finish();
                     })
-                    .setNeutralButton("Cancel", null)
+                    .setNeutralButton("Cancel", (dialog, which) -> {
+                        Log.d(TAG, "Back press cancelled");
+                        // Just dismiss the dialog, stay on the page
+                        dialog.dismiss();
+                    })
+                    .setCancelable(false) // Prevent dismissing by touching outside
                     .show();
         } else {
+            // No unsaved annotations, just exit normally
+            Log.d(TAG, "No unsaved annotations, exiting normally");
             super.onBackPressed();
             finish();
         }
     }
+
+    // Also update the saveAllAnnotations method to not call setResult here
+// since we're handling it in onBackPressed
+    private void saveAllAnnotations() {
+        if (annotationOverlay == null) {
+            Toast.makeText(this, "Annotation system not available", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Get current annotations from overlay
+        List<AnnotationOverlay.AnnotationDrawing> currentDrawings = annotationOverlay.getAllAnnotations();
+
+        if (currentDrawings.isEmpty()) {
+            Toast.makeText(this, "No annotations to save", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Delete existing annotations for this video first
+        databaseHelper.deleteAnnotationsByVideoId(videoId);
+
+        // Save all current annotations with their individual timestamps
+        int savedCount = 0;
+        for (AnnotationOverlay.AnnotationDrawing drawing : currentDrawings) {
+            // Use the drawing's actual timestamp, not the current video time
+            long annotationTimestamp = drawing.timestamp;
+
+            // Create annotation from drawing
+            Annotation annotation = new Annotation(
+                    videoId,
+                    coachId,
+                    annotationTimestamp, // Use the individual annotation timestamp
+                    Annotation.TYPE_DRAWING,
+                    drawing.pathData, // Use the serialized path data
+                    0, 0 // x, y not used for drawing annotations
+            );
+
+            long result = databaseHelper.addAnnotation(annotation);
+            if (result != -1) {
+                savedCount++;
+                Log.d(TAG, "Saved annotation with timestamp: " + annotationTimestamp + "ms");
+            } else {
+                Log.e(TAG, "Failed to save annotation with timestamp: " + annotationTimestamp + "ms");
+            }
+        }
+
+        if (savedCount > 0) {
+            // Update video status
+            databaseHelper.updateVideoStatus(videoId, "annotated");
+            Toast.makeText(this, savedCount + " annotations saved successfully!", Toast.LENGTH_LONG).show();
+            // Don't call setResult here - let onBackPressed handle it
+        } else {
+            showError("Failed to save annotations");
+        }
+
+        Log.d(TAG, "Saved " + savedCount + " annotations with individual timestamps");
+    }
+
 }

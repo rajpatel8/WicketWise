@@ -91,4 +91,6 @@
     <color name="card_background">#FFFFFF</color>
     <color name="card_stroke">#E8E4F3</color>
     <color name="elevated_surface">#FFFFFF</color>
+
+    <color name="success_light">#E8F5E8</color>
 </resources>

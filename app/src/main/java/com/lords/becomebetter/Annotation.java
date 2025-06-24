@@ -4,7 +4,7 @@ public class Annotation {
     private int annotationId;
     private int videoId;
     private int coachId;
-    private long timestamp; // Video timestamp in milliseconds
+    private long timestamp; // Video timestamp in milliseconds when annotation was made
     private String annotationType; // text, drawing, voice
     private String annotationData; // JSON data or text content
     private float xPosition;
@@ -139,6 +139,21 @@ public class Annotation {
         return TYPE_VOICE.equals(annotationType);
     }
 
+    // Method to validate annotation data
+    public boolean isValid() {
+        return videoId > 0 &&
+                coachId > 0 &&
+                timestamp >= 0 &&
+                annotationType != null && !annotationType.trim().isEmpty() &&
+                annotationData != null && !annotationData.trim().isEmpty();
+    }
+
+    // Method to get annotation summary for logging
+    public String getSummary() {
+        return String.format("Annotation[id=%d, video=%d, coach=%d, time=%s, type=%s]",
+                annotationId, videoId, coachId, getFormattedTimestamp(), annotationType);
+    }
+
     @Override
     public String toString() {
         return "Annotation{" +
@@ -147,7 +162,10 @@ public class Annotation {
                 ", coachId=" + coachId +
                 ", timestamp=" + timestamp +
                 ", annotationType='" + annotationType + '\'' +
-                ", annotationData='" + annotationData + '\'' +
+                ", annotationData='" + (annotationData != null ? annotationData.substring(0, Math.min(50, annotationData.length())) + "..." : "null") + '\'' +
+                ", xPosition=" + xPosition +
+                ", yPosition=" + yPosition +
+                ", createdAt='" + createdAt + '\'' +
                 '}';
     }
 }
