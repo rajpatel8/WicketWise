@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
@@ -163,7 +164,25 @@ public class EnhancedVideoUploadActivity extends AppCompatActivity {
             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Video.Media.EXTERNAL_CONTENT_URI);
             intent.setType("video/*");
             startActivityForResult(intent, REQUEST_VIDEO_GALLERY);
+        } else {
+            requestStoragePermission();
         }
+    }
+
+    // Add this method to request storage permissions properly
+    private void requestStoragePermission() {
+        String[] permissions;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // API 33+
+            permissions = new String[]{
+                    Manifest.permission.READ_MEDIA_VIDEO,
+                    Manifest.permission.READ_MEDIA_IMAGES
+            };
+        } else {
+            permissions = new String[]{Manifest.permission.READ_EXTERNAL_STORAGE};
+        }
+
+        ActivityCompat.requestPermissions(this, permissions, REQUEST_STORAGE_PERMISSION);
     }
 
     private void recordNewVideo() {
@@ -475,13 +494,14 @@ public class EnhancedVideoUploadActivity extends AppCompatActivity {
     }
 
     private boolean checkStoragePermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_STORAGE_PERMISSION);
-            return false;
+        // Check different permissions based on Android version
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // API 33+
+            return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_MEDIA_VIDEO)
+                    == PackageManager.PERMISSION_GRANTED;
+        } else {
+            return ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED;
         }
-        return true;
     }
 
     @Override
@@ -503,7 +523,7 @@ public class EnhancedVideoUploadActivity extends AppCompatActivity {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     selectVideoFromGallery();
                 } else {
-                    Toast.makeText(this, "Storage permission required to select video",
+                    Toast.makeText(this, "Storage permission required to select video from gallery",
                             Toast.LENGTH_SHORT).show();
                 }
                 break;
