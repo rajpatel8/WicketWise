@@ -2,6 +2,7 @@ package com.lords.becomebetter;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,8 +14,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class VideoListActivity extends AppCompatActivity {
@@ -64,11 +68,34 @@ public class VideoListActivity extends AppCompatActivity {
         coachId = coach.getId();
     }
 
-    private void loadVideos() {
-        // Get video submissions instead of old videos table
-        videosList = databaseHelper.getVideoSubmissionsAsVideos(coachId);
 
-        android.util.Log.d("VideoList", "📊 Found " + videosList.size() + " video submissions for coach " + coachId);
+    private void loadVideos() {
+        // Load video submissions instead of regular videos
+        List<VideoSubmission> videoSubmissions = databaseHelper.getVideoSubmissionsForCoach(coachId);
+
+        Log.d("VideoList", "📊 Found " + videoSubmissions.size() + " video submissions for coach " + coachId);
+
+        // Convert VideoSubmissions to Videos for the adapter
+        videosList = new ArrayList<>();
+        for (VideoSubmission submission : videoSubmissions) {
+            Video video = new Video();
+            video.setVideoId(submission.getSubmissionId()); // CORRECTED: getSubmissionId() instead of getId()
+            video.setStudentId(submission.getStudentId());
+            video.setCoachId(coachId); // Set the current coach ID
+            video.setVideoPath(submission.getVideoPath());
+            video.setVideoTitle(submission.getTitle());
+            video.setVideoDescription(submission.getDescription());
+            // Note: VideoSubmission doesn't have getDuration(), so we'll set a default or handle it differently
+            video.setVideoDuration(0); // CORRECTED: Set default duration, will need to get from video file
+            video.setUploadDate(submission.getSubmissionDate());
+            video.setStatus("submitted");
+            // Note: VideoSubmission doesn't have getThumbnailPath(), so we'll set a default
+            video.setThumbnailPath(""); // CORRECTED: Set empty thumbnail path
+
+            videosList.add(video);
+
+            Log.d("VideoList", "✅ Added video: " + video.getVideoTitle() + " from student " + submission.getStudentName());
+        }
 
         if (videosList.isEmpty()) {
             videosRecyclerView.setVisibility(View.GONE);
@@ -86,7 +113,6 @@ public class VideoListActivity extends AppCompatActivity {
             videosRecyclerView.setAdapter(videoAdapter);
         }
     }
-
 
 
     private void setupClickListeners() {
@@ -145,51 +171,74 @@ public class VideoListActivity extends AppCompatActivity {
             public void bind(Video video) {
                 titleText.setText(video.getVideoTitle());
 
-                // Get student name
+                // Get student name for the video
                 String studentName = databaseHelper.getStudentNameById(video.getStudentId());
-                studentNameText.setText("By: " + studentName);
+                studentNameText.setText("Student: " + studentName);
 
-                durationText.setText(video.getFormattedDuration());
-                uploadDateText.setText(formatUploadDate(video.getUploadDate()));
-
-                // Set status
-                String status = video.getStatus();
-                statusText.setText(status.toUpperCase());
-
-                // Set status colors and visibility
-                if ("pending".equals(status)) {
-                    statusText.setTextColor(getResources().getColor(R.color.warning_color));
-                    statusIndicator.setBackgroundColor(getResources().getColor(R.color.warning_color));
-                    annotateBtn.setVisibility(View.VISIBLE);
-                    annotateBtn.setText("Start Review");
-                } else if ("annotated".equals(status)) {
-                    statusText.setTextColor(getResources().getColor(R.color.success_color));
-                    statusIndicator.setBackgroundColor(getResources().getColor(R.color.success_color));
-                    annotateBtn.setVisibility(View.VISIBLE);
-                    annotateBtn.setText("Edit Annotations");
+                // Format duration
+                if (video.getVideoDuration() > 0) {
+                    long seconds = video.getVideoDuration() / 1000;
+                    long minutes = seconds / 60;
+                    seconds = seconds % 60;
+                    durationText.setText(String.format("%d:%02d", minutes, seconds));
                 } else {
-                    statusText.setTextColor(getResources().getColor(R.color.text_secondary));
-                    statusIndicator.setBackgroundColor(getResources().getColor(R.color.text_secondary));
-                    annotateBtn.setVisibility(View.VISIBLE);
-                    annotateBtn.setText("View Annotations");
+                    durationText.setText("--:--");
                 }
 
-                // Set click listeners
+                // Format upload date
+                uploadDateText.setText("Uploaded: " + formatUploadDate(video.getUploadDate()));
+
+                // Set status based on whether it's been reviewed
+                String status = video.getStatus();
+                if ("submitted".equals(status)) {
+                    statusText.setText("Pending Review");
+                    statusText.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.warning_color));
+                    if (statusIndicator != null) {
+                        statusIndicator.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.warning_color));
+                    }
+                } else if ("reviewed".equals(status)) {
+                    statusText.setText("Reviewed");
+                    statusText.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.success_color));
+                    if (statusIndicator != null) {
+                        statusIndicator.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.success_color));
+                    }
+                } else {
+                    statusText.setText("Unknown");
+                    statusText.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.text_secondary));
+                    if (statusIndicator != null) {
+                        statusIndicator.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.text_secondary));
+                    }
+                }
+
+                // Update button text based on status
+                if ("reviewed".equals(status)) {
+                    reviewBtn.setText("View Again");
+                    annotateBtn.setVisibility(View.VISIBLE);
+                    annotateBtn.setText("View Annotations");
+                } else {
+                    reviewBtn.setText("Review Video");
+                    annotateBtn.setVisibility(View.VISIBLE);
+                    annotateBtn.setText("Add Feedback");
+                }
+
+                // Set click listeners - pass the correct video ID
                 reviewBtn.setOnClickListener(v -> {
-                    // Just view the video
+                    Log.d("VideoList", "🎬 Opening video player for video ID: " + video.getVideoId());
                     Intent intent = new Intent(VideoListActivity.this, VideoPlayerActivity.class);
                     intent.putExtra("videoId", video.getVideoId());
                     intent.putExtra("coachEmail", coachEmail);
                     intent.putExtra("viewOnly", true);
+                    intent.putExtra("isSubmission", true); // Add this flag
                     startActivity(intent);
                 });
 
                 annotateBtn.setOnClickListener(v -> {
-                    // View and annotate the video
+                    Log.d("VideoList", "✏️ Opening video player for annotation, video ID: " + video.getVideoId());
                     Intent intent = new Intent(VideoListActivity.this, VideoPlayerActivity.class);
                     intent.putExtra("videoId", video.getVideoId());
                     intent.putExtra("coachEmail", coachEmail);
                     intent.putExtra("viewOnly", false);
+                    intent.putExtra("isSubmission", true); // Add this flag
                     startActivityForResult(intent, 100);
                 });
             }

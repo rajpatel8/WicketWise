@@ -7,12 +7,14 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import java.util.ArrayList;
 import java.util.List;
+
+import android.media.MediaMetadataRetriever;
 import android.util.Log;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "CricketCoaching.db";
-    private static final int DATABASE_VERSION = 4; // Updated version for new tables
+    private static final int DATABASE_VERSION = 5; // Updated version for new tables
 
     // Table names
     private static final String TABLE_COACHES = "coaches";
@@ -105,6 +107,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
 
+    // Replace the onCreate method in DatabaseHelper.java
+
     @Override
     public void onCreate(SQLiteDatabase db) {
         // Create coaches table
@@ -142,7 +146,21 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + COLUMN_CREATED_AT + " DATETIME DEFAULT CURRENT_TIMESTAMP"
                 + ")";
 
-        // Create videos table (if you have it)
+        // Create coach requests table
+        String CREATE_COACH_REQUESTS_TABLE = "CREATE TABLE " + TABLE_COACH_REQUESTS + "("
+                + COLUMN_REQUEST_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + COLUMN_REQUEST_STUDENT_ID + " INTEGER NOT NULL,"
+                + COLUMN_REQUEST_COACH_ID + " INTEGER NOT NULL,"
+                + COLUMN_REQUEST_STATUS + " TEXT DEFAULT 'pending',"
+                + COLUMN_REQUEST_MESSAGE + " TEXT,"
+                + COLUMN_RESPONSE_MESSAGE + " TEXT,"
+                + COLUMN_REQUEST_DATE + " DATETIME DEFAULT CURRENT_TIMESTAMP,"
+                + COLUMN_RESPONSE_DATE + " DATETIME,"
+                + "FOREIGN KEY(" + COLUMN_REQUEST_STUDENT_ID + ") REFERENCES " + TABLE_STUDENTS + "(" + COLUMN_ID + "),"
+                + "FOREIGN KEY(" + COLUMN_REQUEST_COACH_ID + ") REFERENCES " + TABLE_COACHES + "(" + COLUMN_ID + ")"
+                + ")";
+
+        // Create videos table
         String CREATE_VIDEOS_TABLE = "CREATE TABLE " + TABLE_VIDEOS + "("
                 + COLUMN_VIDEO_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + COLUMN_STUDENT_ID + " INTEGER NOT NULL,"
@@ -159,7 +177,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + "FOREIGN KEY(" + COLUMN_COACH_ID + ") REFERENCES " + TABLE_COACHES + "(" + COLUMN_ID + ")"
                 + ")";
 
-        // Create annotations table (if you have it)
+        // Create annotations table
         String CREATE_ANNOTATIONS_TABLE = "CREATE TABLE " + TABLE_ANNOTATIONS + "("
                 + COLUMN_ANNOTATION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + COLUMN_VIDEO_ID + " INTEGER NOT NULL,"
@@ -174,7 +192,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + "FOREIGN KEY(" + COLUMN_COACH_ID + ") REFERENCES " + TABLE_COACHES + "(" + COLUMN_ID + ")"
                 + ")";
 
-        // *** ADD THIS: Video submissions table (MISSING!) ***
+        // === NEW VIDEO SUBMISSION SYSTEM TABLES ===
+
+        // Video Submissions table
         String CREATE_VIDEO_SUBMISSIONS = "CREATE TABLE " + TABLE_VIDEO_SUBMISSIONS + "("
                 + COLUMN_SUBMISSION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + COLUMN_SUBMISSION_TITLE + " TEXT NOT NULL,"
@@ -186,6 +206,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + "FOREIGN KEY(" + COLUMN_SUBMISSION_STUDENT_ID + ") REFERENCES " + TABLE_STUDENTS + "(" + COLUMN_ID + ")"
                 + ")";
 
+        // Coach Selections table
         String CREATE_COACH_SELECTIONS = "CREATE TABLE " + TABLE_COACH_SELECTIONS + "("
                 + COLUMN_SELECTION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + COLUMN_SUBMISSION_ID + " INTEGER NOT NULL,"
@@ -195,36 +216,104 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + "FOREIGN KEY(" + COLUMN_SELECTED_COACH_ID + ") REFERENCES " + TABLE_COACHES + "(" + COLUMN_ID + ")"
                 + ")";
 
-        // *** NEW: Create coach requests table ***
-        String CREATE_COACH_REQUESTS_TABLE = "CREATE TABLE " + TABLE_COACH_REQUESTS + "("
-                + COLUMN_REQUEST_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
-                + COLUMN_REQUEST_STUDENT_ID + " INTEGER NOT NULL,"
-                + COLUMN_REQUEST_COACH_ID + " INTEGER NOT NULL,"
-                + COLUMN_REQUEST_STATUS + " TEXT DEFAULT 'pending',"
-                + COLUMN_REQUEST_MESSAGE + " TEXT,"
-                + COLUMN_RESPONSE_MESSAGE + " TEXT,"
-                + COLUMN_REQUEST_DATE + " DATETIME DEFAULT CURRENT_TIMESTAMP,"
-                + COLUMN_RESPONSE_DATE + " DATETIME,"
-                + "FOREIGN KEY(" + COLUMN_REQUEST_STUDENT_ID + ") REFERENCES " + TABLE_STUDENTS + "(" + COLUMN_ID + "),"
-                + "FOREIGN KEY(" + COLUMN_REQUEST_COACH_ID + ") REFERENCES " + TABLE_COACHES + "(" + COLUMN_ID + ")"
+        // Video Feedbacks table
+        String CREATE_VIDEO_FEEDBACKS = "CREATE TABLE " + TABLE_VIDEO_FEEDBACKS + "("
+                + COLUMN_FEEDBACK_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + COLUMN_SUBMISSION_ID + " INTEGER NOT NULL,"
+                + COLUMN_FEEDBACK_COACH_ID + " INTEGER NOT NULL,"
+                + COLUMN_FEEDBACK_TEXT + " TEXT,"
+                + COLUMN_FEEDBACK_DATE + " DATETIME DEFAULT CURRENT_TIMESTAMP,"
+                + COLUMN_FEEDBACK_ANNOTATION_DATA + " TEXT,"
+                + COLUMN_FEEDBACK_VOICE_RECORDING_PATH + " TEXT,"
+                + COLUMN_FEEDBACK_RATING + " INTEGER DEFAULT 0,"
+                + COLUMN_FEEDBACK_STATUS + " TEXT DEFAULT 'draft',"
+                + "FOREIGN KEY(" + COLUMN_SUBMISSION_ID + ") REFERENCES " + TABLE_VIDEO_SUBMISSIONS + "(" + COLUMN_SUBMISSION_ID + "),"
+                + "FOREIGN KEY(" + COLUMN_FEEDBACK_COACH_ID + ") REFERENCES " + TABLE_COACHES + "(" + COLUMN_ID + ")"
                 + ")";
 
-        // Execute table creation
+        // Voice Recordings table
+        String CREATE_VOICE_RECORDINGS = "CREATE TABLE " + TABLE_VOICE_RECORDINGS + "("
+                + COLUMN_RECORDING_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + COLUMN_FEEDBACK_ID + " INTEGER NOT NULL,"
+                + COLUMN_RECORDING_PATH + " TEXT NOT NULL,"
+                + COLUMN_RECORDING_DURATION + " INTEGER,"
+                + COLUMN_RECORDING_TIMESTAMP + " INTEGER,"
+                + COLUMN_RECORDING_TITLE + " TEXT,"
+                + "FOREIGN KEY(" + COLUMN_FEEDBACK_ID + ") REFERENCES " + TABLE_VIDEO_FEEDBACKS + "(" + COLUMN_FEEDBACK_ID + ")"
+                + ")";
+
+        // Execute all CREATE TABLE statements
         db.execSQL(CREATE_COACHES_TABLE);
         db.execSQL(CREATE_STUDENTS_TABLE);
         db.execSQL(CREATE_COACH_CODES_TABLE);
+        db.execSQL(CREATE_COACH_REQUESTS_TABLE);
         db.execSQL(CREATE_VIDEOS_TABLE);
         db.execSQL(CREATE_ANNOTATIONS_TABLE);
-        db.execSQL(CREATE_VIDEO_SUBMISSIONS);      // *** ADD THIS LINE ***
-        db.execSQL(CREATE_COACH_SELECTIONS);       // Move this AFTER video_submissions
-        db.execSQL(CREATE_COACH_REQUESTS_TABLE);
 
-        // Insert default coach codes
-        insertDefaultCoachCodes(db);
+        // NEW TABLES - These were missing!
+        db.execSQL(CREATE_VIDEO_SUBMISSIONS);
+        db.execSQL(CREATE_COACH_SELECTIONS);
+        db.execSQL(CREATE_VIDEO_FEEDBACKS);
+        db.execSQL(CREATE_VOICE_RECORDINGS);
 
-        android.util.Log.d("DatabaseHelper", "✅ All tables created including video_submissions");
+        Log.d("DatabaseHelper", "All tables created successfully!");
     }
 
+// Also, make sure you have these missing methods defined:
+
+    public List<VideoFeedback> getVideoFeedbacks(int submissionId) {
+        List<VideoFeedback> feedbacks = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        // Check if table exists first
+        if (!tableExists(db, TABLE_VIDEO_FEEDBACKS)) {
+            Log.w("DatabaseHelper", "video_feedbacks table does not exist, returning empty list");
+            return feedbacks;
+        }
+
+        String query = "SELECT vf.*, c.name as coach_name, c.email as coach_email " +
+                "FROM " + TABLE_VIDEO_FEEDBACKS + " vf " +
+                "INNER JOIN " + TABLE_COACHES + " c ON vf." + COLUMN_FEEDBACK_COACH_ID + " = c." + COLUMN_ID + " " +
+                "WHERE vf." + COLUMN_SUBMISSION_ID + " = ? " +
+                "ORDER BY vf." + COLUMN_FEEDBACK_DATE + " DESC";
+
+        try {
+            Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(submissionId)});
+
+            if (cursor.moveToFirst()) {
+                do {
+                    VideoFeedback feedback = new VideoFeedback();
+                    feedback.setFeedbackId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_ID)));
+                    feedback.setSubmissionId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_SUBMISSION_ID)));
+                    feedback.setCoachId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_COACH_ID)));
+                    feedback.setFeedbackText(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_TEXT)));
+                    feedback.setFeedbackDate(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_DATE)));
+                    feedback.setAnnotationData(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_ANNOTATION_DATA)));
+                    feedback.setVoiceRecordingPath(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_VOICE_RECORDING_PATH)));
+                    feedback.setRating(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_RATING)));
+                    feedback.setStatus(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_STATUS)));
+
+                    // Set coach info
+                    feedback.setCoachName(cursor.getString(cursor.getColumnIndexOrThrow("coach_name")));
+                    feedback.setCoachEmail(cursor.getString(cursor.getColumnIndexOrThrow("coach_email")));
+
+                    feedbacks.add(feedback);
+                } while (cursor.moveToNext());
+            }
+            cursor.close();
+        } catch (Exception e) {
+            Log.e("DatabaseHelper", "Error getting video feedbacks", e);
+        }
+
+        return feedbacks;
+    }
+
+    private boolean tableExists(SQLiteDatabase db, String tableName) {
+        Cursor cursor = db.rawQuery("SELECT name FROM sqlite_master WHERE type='table' AND name=?", new String[]{tableName});
+        boolean exists = cursor.getCount() > 0;
+        cursor.close();
+        return exists;
+    }
 //    @Override
 //    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 //        // Drop all tables in correct order
@@ -1645,32 +1734,32 @@ public long addAnnotation(Annotation annotation) {
         return feedback;
     }
 
-    public List<VideoFeedback> getVideoFeedbacks(int submissionId) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        String query = "SELECT vf.*, c." + COLUMN_NAME + " as coach_name, c." + COLUMN_EMAIL + " as coach_email " +
-                "FROM " + TABLE_VIDEO_FEEDBACKS + " vf " +
-                "INNER JOIN " + TABLE_COACHES + " c ON vf." + COLUMN_FEEDBACK_COACH_ID + " = c." + COLUMN_ID + " " +
-                "WHERE vf." + COLUMN_SUBMISSION_ID + " = ? " +
-                "ORDER BY vf." + COLUMN_FEEDBACK_DATE + " DESC";
-
-        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(submissionId)});
-        List<VideoFeedback> feedbacks = new ArrayList<>();
-
-        if (cursor.moveToFirst()) {
-            do {
-                VideoFeedback feedback = cursorToVideoFeedback(cursor);
-
-                // Load voice recordings for each feedback
-                List<VoiceRecording> voiceRecordings = getVoiceRecordings(feedback.getFeedbackId());
-                feedback.setVoiceRecordings(voiceRecordings);
-
-                feedbacks.add(feedback);
-            } while (cursor.moveToNext());
-        }
-
-        cursor.close();
-        return feedbacks;
-    }
+//    public List<VideoFeedback> getVideoFeedbacks(int submissionId) {
+//        SQLiteDatabase db = this.getReadableDatabase();
+//        String query = "SELECT vf.*, c." + COLUMN_NAME + " as coach_name, c." + COLUMN_EMAIL + " as coach_email " +
+//                "FROM " + TABLE_VIDEO_FEEDBACKS + " vf " +
+//                "INNER JOIN " + TABLE_COACHES + " c ON vf." + COLUMN_FEEDBACK_COACH_ID + " = c." + COLUMN_ID + " " +
+//                "WHERE vf." + COLUMN_SUBMISSION_ID + " = ? " +
+//                "ORDER BY vf." + COLUMN_FEEDBACK_DATE + " DESC";
+//
+//        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(submissionId)});
+//        List<VideoFeedback> feedbacks = new ArrayList<>();
+//
+//        if (cursor.moveToFirst()) {
+//            do {
+//                VideoFeedback feedback = cursorToVideoFeedback(cursor);
+//
+//                // Load voice recordings for each feedback
+//                List<VoiceRecording> voiceRecordings = getVoiceRecordings(feedback.getFeedbackId());
+//                feedback.setVoiceRecordings(voiceRecordings);
+//
+//                feedbacks.add(feedback);
+//            } while (cursor.moveToNext());
+//        }
+//
+//        cursor.close();
+//        return feedbacks;
+//    }
 
     private VideoFeedback cursorToVideoFeedback(Cursor cursor) {
         VideoFeedback feedback = new VideoFeedback();
@@ -2153,6 +2242,18 @@ private void loadAvailableCoaches() {
     }
 }
 */
+public long getVideoDurationFromPath(String videoPath) {
+    try {
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        retriever.setDataSource(videoPath);
+        String duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
+        retriever.release();
+        return duration != null ? Long.parseLong(duration) : 0;
+    } catch (Exception e) {
+        Log.e("DatabaseHelper", "Error getting video duration", e);
+        return 0;
+    }
+}
 public List<Video> getVideoSubmissionsAsVideos(int coachId) {
     List<Video> videos = new ArrayList<>();
     SQLiteDatabase db = this.getReadableDatabase();

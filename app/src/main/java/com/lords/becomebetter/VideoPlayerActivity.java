@@ -59,15 +59,107 @@ public class VideoPlayerActivity extends AppCompatActivity {
         videoId = getIntent().getIntExtra("videoId", 0);
         coachEmail = getIntent().getStringExtra("coachEmail");
         viewOnly = getIntent().getBooleanExtra("viewOnly", false);
+        boolean isSubmission = getIntent().getBooleanExtra("isSubmission", false);
 
-        Log.d(TAG, "VideoPlayerActivity created - VideoID: " + videoId + ", ViewOnly: " + viewOnly);
+        Log.d(TAG, "VideoPlayerActivity created - VideoID: " + videoId + ", ViewOnly: " + viewOnly + ", IsSubmission: " + isSubmission);
 
         initializeViews();
-        loadVideoData();
+
+        // Load video data based on whether it's a submission or regular video
+        if (isSubmission) {
+            loadVideoSubmissionData();
+        } else {
+            loadVideoData();
+        }
+
         setupVideoPlayer();
         setupAnnotationSystem();
         setupClickListeners();
     }
+    private void loadVideoSubmissionData() {
+        Log.d(TAG, "🔍 Loading video submission with ID: " + videoId);
+
+        VideoSubmission videoSubmission = databaseHelper.getVideoSubmissionById(videoId);
+
+        if (videoSubmission == null) {
+            Log.e(TAG, "❌ Video submission with ID " + videoId + " not found");
+            showError("Video submission not found");
+            finish();
+            return;
+        }
+
+        Log.d(TAG, "✅ Video submission found: " + videoSubmission.getTitle());
+
+        // Convert VideoSubmission to Video object for compatibility
+        currentVideo = new Video();
+        currentVideo.setVideoId(videoSubmission.getSubmissionId()); // CORRECTED: getSubmissionId() instead of getId()
+        currentVideo.setStudentId(videoSubmission.getStudentId());
+        currentVideo.setVideoPath(videoSubmission.getVideoPath());
+        currentVideo.setVideoTitle(videoSubmission.getTitle());
+        currentVideo.setVideoDescription(videoSubmission.getDescription());
+        currentVideo.setVideoDuration(0); // CORRECTED: VideoSubmission doesn't have getDuration()
+        currentVideo.setUploadDate(videoSubmission.getSubmissionDate());
+        currentVideo.setStatus("submitted");
+        currentVideo.setThumbnailPath(""); // CORRECTED: VideoSubmission doesn't have getThumbnailPath()
+
+        // Get coach data
+        Coach coach = databaseHelper.getCoachByEmail(coachEmail);
+        if (coach == null) {
+            showError("Coach profile not found");
+            finish();
+            return;
+        }
+        coachId = coach.getId();
+        currentVideo.setCoachId(coachId);
+
+        // Set video info
+        videoTitleText.setText(currentVideo.getVideoTitle());
+        studentNameText.setText("Student: " + videoSubmission.getStudentName());
+
+        // Load existing annotations
+        loadAnnotations();
+
+        Log.d(TAG, "✅ Video submission data loaded - Title: " + currentVideo.getVideoTitle());
+        Log.d(TAG, "📂 Video path: " + currentVideo.getVideoPath());
+    }
+
+    private void loadVideoData() {
+        Log.d(TAG, "🔍 Loading regular video with ID: " + videoId);
+
+        currentVideo = databaseHelper.getVideoById(videoId);
+        if (currentVideo == null) {
+            Log.e(TAG, "❌ Video with ID " + videoId + " not found");
+            showError("Video not found");
+            finish();
+            return;
+        }
+
+        Log.d(TAG, "✅ Regular video found: " + currentVideo.getVideoTitle());
+
+        // Debug video information
+        VideoDebugHelper.debugVideo(this, currentVideo);
+
+        // Get coach data
+        Coach coach = databaseHelper.getCoachByEmail(coachEmail);
+        if (coach == null) {
+            showError("Coach profile not found");
+            finish();
+            return;
+        }
+        coachId = coach.getId();
+
+        // Set video info
+        videoTitleText.setText(currentVideo.getVideoTitle());
+        String studentName = databaseHelper.getStudentNameById(currentVideo.getStudentId());
+        studentNameText.setText("Student: " + studentName);
+
+        // Load existing annotations
+        loadAnnotations();
+
+        Log.d(TAG, "✅ Video data loaded - Title: " + currentVideo.getVideoTitle());
+        Log.d(TAG, "📂 Video path: " + currentVideo.getVideoPath());
+    }
+
 
     private void initializeViews() {
         videoView = findViewById(R.id.videoView);
@@ -99,37 +191,37 @@ public class VideoPlayerActivity extends AppCompatActivity {
         Log.d(TAG, "Views initialized");
     }
 
-    private void loadVideoData() {
-        currentVideo = databaseHelper.getVideoById(videoId);
-        if (currentVideo == null) {
-            showError("Video not found");
-            finish();
-            return;
-        }
-
-        // Debug video information
-        VideoDebugHelper.debugVideo(this, currentVideo);
-
-        // Get coach data
-        Coach coach = databaseHelper.getCoachByEmail(coachEmail);
-        if (coach == null) {
-            showError("Coach profile not found");
-            finish();
-            return;
-        }
-        coachId = coach.getId();
-
-        // Set video info
-        videoTitleText.setText(currentVideo.getVideoTitle());
-        String studentName = databaseHelper.getStudentNameById(currentVideo.getStudentId());
-        studentNameText.setText("Student: " + studentName);
-
-        // Load existing annotations
-        loadAnnotations();
-
-        Log.d(TAG, "Video data loaded - Title: " + currentVideo.getVideoTitle());
-        Log.d(TAG, "Video path: " + currentVideo.getVideoPath());
-    }
+//    private void loadVideoData() {
+//        currentVideo = databaseHelper.getVideoById(videoId);
+//        if (currentVideo == null) {
+//            showError("Video not found");
+//            finish();
+//            return;
+//        }
+//
+//        // Debug video information
+//        VideoDebugHelper.debugVideo(this, currentVideo);
+//
+//        // Get coach data
+//        Coach coach = databaseHelper.getCoachByEmail(coachEmail);
+//        if (coach == null) {
+//            showError("Coach profile not found");
+//            finish();
+//            return;
+//        }
+//        coachId = coach.getId();
+//
+//        // Set video info
+//        videoTitleText.setText(currentVideo.getVideoTitle());
+//        String studentName = databaseHelper.getStudentNameById(currentVideo.getStudentId());
+//        studentNameText.setText("Student: " + studentName);
+//
+//        // Load existing annotations
+//        loadAnnotations();
+//
+//        Log.d(TAG, "Video data loaded - Title: " + currentVideo.getVideoTitle());
+//        Log.d(TAG, "Video path: " + currentVideo.getVideoPath());
+//    }
 
     private void setupVideoPlayer() {
         File videoFile = new File(currentVideo.getVideoPath());
