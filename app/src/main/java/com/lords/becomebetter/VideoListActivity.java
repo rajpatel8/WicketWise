@@ -65,7 +65,10 @@ public class VideoListActivity extends AppCompatActivity {
     }
 
     private void loadVideos() {
-        videosList = databaseHelper.getVideosByCoachId(coachId);
+        // Get video submissions instead of old videos table
+        videosList = databaseHelper.getVideoSubmissionsAsVideos(coachId);
+
+        android.util.Log.d("VideoList", "📊 Found " + videosList.size() + " video submissions for coach " + coachId);
 
         if (videosList.isEmpty()) {
             videosRecyclerView.setVisibility(View.GONE);
@@ -83,6 +86,8 @@ public class VideoListActivity extends AppCompatActivity {
             videosRecyclerView.setAdapter(videoAdapter);
         }
     }
+
+
 
     private void setupClickListeners() {
         backBtn.setOnClickListener(v -> onBackPressed());

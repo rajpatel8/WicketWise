@@ -1,6 +1,7 @@
 package com.lords.becomebetter;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -33,6 +34,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class EnhancedVideoUploadActivity extends AppCompatActivity {
@@ -69,6 +71,12 @@ public class EnhancedVideoUploadActivity extends AppCompatActivity {
         setContentView(R.layout.activity_enhanced_video_upload);
 
         databaseHelper = new DatabaseHelper(this);
+
+        // ADD THESE TEST LINES:
+        android.util.Log.d("VIDEO_UPLOAD", "🧪 Testing coach functionality...");
+        List<Coach> testCoaches = databaseHelper.getCoachesForStudent(1);
+        android.util.Log.d("VIDEO_UPLOAD", "📊 Test result: " + testCoaches.size() + " coaches found");
+
         studentEmail = getIntent().getStringExtra("studentEmail");
         selectedCoachIds = new ArrayList<>();
         availableCoaches = new ArrayList<>();
@@ -77,7 +85,7 @@ public class EnhancedVideoUploadActivity extends AppCompatActivity {
 
         initializeViews();
         loadStudentData();
-        loadAvailableCoaches();
+        loadAvailableCoaches();  // This should now work!
         setupClickListeners();
     }
 
@@ -172,39 +180,45 @@ public class EnhancedVideoUploadActivity extends AppCompatActivity {
     }
 
     private void showCoachSelectionDialog() {
+        android.util.Log.d("SIMPLE_DIALOG", "🎯 Opening SIMPLE coach dialog...");
+
         if (availableCoaches.isEmpty()) {
-            Toast.makeText(this, "No coaches available. Please get accepted by coaches first.",
-                    Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "No coaches available!", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        String[] coachNames = new String[availableCoaches.size()];
-        boolean[] checkedItems = new boolean[availableCoaches.size()];
-
-        for (int i = 0; i < availableCoaches.size(); i++) {
-            Coach coach = availableCoaches.get(i);
-            coachNames[i] = coach.getName() + " (" + coach.getSpecialization() + ")";
-            checkedItems[i] = selectedCoachIds.contains(coach.getId());
+        // Create a simple list of coach names
+        List<String> coachNamesList = new ArrayList<>();
+        for (Coach coach : availableCoaches) {
+            coachNamesList.add(coach.getName() + " - " + coach.getSpecialization());
         }
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Select Coaches for Feedback");
-        builder.setMessage("Choose which coaches you want feedback from:");
+        // Convert to array
+        String[] coachArray = coachNamesList.toArray(new String[0]);
 
-        builder.setMultiChoiceItems(coachNames, checkedItems, (dialog, which, isChecked) -> {
-            int coachId = availableCoaches.get(which).getId();
-            if (isChecked) {
-                if (!selectedCoachIds.contains(coachId)) {
-                    selectedCoachIds.add(coachId);
-                }
-            } else {
-                selectedCoachIds.remove(Integer.valueOf(coachId));
+        android.util.Log.d("SIMPLE_DIALOG", "📝 Coach array: " + Arrays.toString(coachArray));
+
+        // Create simple AlertDialog with single choice items
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Select a Coach");
+        builder.setItems(coachArray, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // Clear previous selections and add the selected coach
+                selectedCoachIds.clear();
+                selectedCoachIds.add(availableCoaches.get(which).getId());
+
+                android.util.Log.d("SIMPLE_DIALOG", "✅ Selected coach: " + availableCoaches.get(which).getName());
+
+                updateSelectedCoachesDisplay();
+                dialog.dismiss();
             }
         });
 
-        builder.setPositiveButton("OK", (dialog, which) -> updateSelectedCoachesDisplay());
         builder.setNegativeButton("Cancel", null);
         builder.show();
+
+        android.util.Log.d("SIMPLE_DIALOG", "🚀 Simple dialog shown");
     }
 
     private void updateSelectedCoachesDisplay() {

@@ -364,6 +364,8 @@
 
                     </com.google.android.material.card.MaterialCardView>
 
+                    <!-- Replace the existing bookSessionBtn section in activity_dashboard.xml -->
+
                     <com.google.android.material.card.MaterialCardView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -378,18 +380,19 @@
                             android:id="@+id/bookSessionBtn"
                             android:layout_width="match_parent"
                             android:layout_height="100dp"
-                            android:text="Book Session"
+                            android:text="Video Review\n&amp; Upload"
                             android:textColor="@color/brand_secondary"
-                            android:textSize="16sp"
+                            android:textSize="14sp"
                             android:textStyle="bold"
                             app:backgroundTint="@color/brand_light"
                             app:cornerRadius="16dp"
-                            app:icon="@drawable/ic_calendar"
+                            app:icon="@drawable/ic_video_upload"
                             app:iconTint="@color/brand_secondary"
                             app:iconGravity="top"
                             app:iconPadding="8dp" />
 
                     </com.google.android.material.card.MaterialCardView>
+
 
                 </LinearLayout>
 

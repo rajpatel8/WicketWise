@@ -7,11 +7,12 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import java.util.ArrayList;
 import java.util.List;
+import android.util.Log;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "CricketCoaching.db";
-    private static final int DATABASE_VERSION = 3; // Updated version for new tables
+    private static final int DATABASE_VERSION = 4; // Updated version for new tables
 
     // Table names
     private static final String TABLE_COACHES = "coaches";
@@ -173,6 +174,27 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 + "FOREIGN KEY(" + COLUMN_COACH_ID + ") REFERENCES " + TABLE_COACHES + "(" + COLUMN_ID + ")"
                 + ")";
 
+        // *** ADD THIS: Video submissions table (MISSING!) ***
+        String CREATE_VIDEO_SUBMISSIONS = "CREATE TABLE " + TABLE_VIDEO_SUBMISSIONS + "("
+                + COLUMN_SUBMISSION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + COLUMN_SUBMISSION_TITLE + " TEXT NOT NULL,"
+                + COLUMN_SUBMISSION_DESCRIPTION + " TEXT,"
+                + COLUMN_SUBMISSION_VIDEO_PATH + " TEXT NOT NULL,"
+                + COLUMN_SUBMISSION_STUDENT_ID + " INTEGER NOT NULL,"
+                + COLUMN_SUBMISSION_DATE + " DATETIME DEFAULT CURRENT_TIMESTAMP,"
+                + COLUMN_SUBMISSION_STATUS + " TEXT DEFAULT 'pending',"
+                + "FOREIGN KEY(" + COLUMN_SUBMISSION_STUDENT_ID + ") REFERENCES " + TABLE_STUDENTS + "(" + COLUMN_ID + ")"
+                + ")";
+
+        String CREATE_COACH_SELECTIONS = "CREATE TABLE " + TABLE_COACH_SELECTIONS + "("
+                + COLUMN_SELECTION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + COLUMN_SUBMISSION_ID + " INTEGER NOT NULL,"
+                + COLUMN_SELECTED_COACH_ID + " INTEGER NOT NULL,"
+                + COLUMN_SELECTION_STATUS + " TEXT DEFAULT 'pending',"
+                + "FOREIGN KEY(" + COLUMN_SUBMISSION_ID + ") REFERENCES " + TABLE_VIDEO_SUBMISSIONS + "(" + COLUMN_SUBMISSION_ID + "),"
+                + "FOREIGN KEY(" + COLUMN_SELECTED_COACH_ID + ") REFERENCES " + TABLE_COACHES + "(" + COLUMN_ID + ")"
+                + ")";
+
         // *** NEW: Create coach requests table ***
         String CREATE_COACH_REQUESTS_TABLE = "CREATE TABLE " + TABLE_COACH_REQUESTS + "("
                 + COLUMN_REQUEST_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -193,10 +215,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_COACH_CODES_TABLE);
         db.execSQL(CREATE_VIDEOS_TABLE);
         db.execSQL(CREATE_ANNOTATIONS_TABLE);
-        db.execSQL(CREATE_COACH_REQUESTS_TABLE); // *** NEW TABLE ***
+        db.execSQL(CREATE_VIDEO_SUBMISSIONS);      // *** ADD THIS LINE ***
+        db.execSQL(CREATE_COACH_SELECTIONS);       // Move this AFTER video_submissions
+        db.execSQL(CREATE_COACH_REQUESTS_TABLE);
 
         // Insert default coach codes
         insertDefaultCoachCodes(db);
+
+        android.util.Log.d("DatabaseHelper", "✅ All tables created including video_submissions");
     }
 
 //    @Override
@@ -512,27 +538,7 @@ public long addAnnotation(Annotation annotation) {
         return result > 0;
     }
 
-    // Get all coaches (for student to choose from)
-    public List<Coach> getAllCoaches() {
-        List<Coach> coaches = new ArrayList<>();
-        SQLiteDatabase db = this.getReadableDatabase();
-        String query = "SELECT * FROM " + TABLE_COACHES + " ORDER BY " + COLUMN_NAME;
-        Cursor cursor = db.rawQuery(query, null);
 
-        if (cursor.moveToFirst()) {
-            do {
-                Coach coach = new Coach();
-                coach.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)));
-                coach.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)));
-                coach.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)));
-                coach.setExperienceYears(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_EXPERIENCE_YEARS)));
-                coach.setSpecialization(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SPECIALIZATION)));
-                coaches.add(coach);
-            } while (cursor.moveToNext());
-        }
-        cursor.close();
-        return coaches;
-    }
 
     // Get coach name by ID
     public String getCoachNameById(int coachId) {
@@ -1389,28 +1395,6 @@ public long addAnnotation(Annotation annotation) {
     }
 
     // Get student by ID method
-    public Student getStudentById(int studentId) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        String query = "SELECT * FROM " + TABLE_STUDENTS + " WHERE " + COLUMN_ID + " = ?";
-
-        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(studentId)});
-
-        Student student = null;
-        if (cursor.moveToFirst()) {
-            student = new Student();
-            student.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)));
-            student.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)));
-            student.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)));
-            student.setPassword(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD)));
-            student.setPhone(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PHONE)));
-            student.setAge(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_AGE)));
-            student.setSkillLevel(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SKILL_LEVEL)));
-            student.setCoachId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_COACH_ID)));
-            student.setCreatedAt(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CREATED_AT)));
-        }
-        cursor.close();
-        return student;
-    }
 
     private void createVideoFeedbackTables(SQLiteDatabase db) {
         // Video Submissions table
@@ -1777,25 +1761,25 @@ public long addAnnotation(Annotation annotation) {
 
 // ============= HELPER METHODS FOR COACH-STUDENT RELATIONSHIPS =============
 
-    public List<Coach> getCoachesForStudent(int studentId) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        String query = "SELECT DISTINCT c.* FROM " + TABLE_COACHES + " c " +
-                "INNER JOIN " + TABLE_COACH_REQUESTS + " cr ON c." + COLUMN_ID + " = cr." + COLUMN_REQUEST_COACH_ID + " " +
-                "WHERE cr." + COLUMN_REQUEST_STUDENT_ID + " = ? AND cr." + COLUMN_REQUEST_STATUS + " = ?";
-
-        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(studentId), CoachRequest.STATUS_ACCEPTED});
-        List<Coach> coaches = new ArrayList<>();
-
-        if (cursor.moveToFirst()) {
-            do {
-                Coach coach = cursorToCoach(cursor);
-                coaches.add(coach);
-            } while (cursor.moveToNext());
-        }
-
-        cursor.close();
-        return coaches;
-    }
+//    public List<Coach> getCoachesForStudent(int studentId) {
+//        SQLiteDatabase db = this.getReadableDatabase();
+//        String query = "SELECT DISTINCT c.* FROM " + TABLE_COACHES + " c " +
+//                "INNER JOIN " + TABLE_COACH_REQUESTS + " cr ON c." + COLUMN_ID + " = cr." + COLUMN_REQUEST_COACH_ID + " " +
+//                "WHERE cr." + COLUMN_REQUEST_STUDENT_ID + " = ? AND cr." + COLUMN_REQUEST_STATUS + " = ?";
+//
+//        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(studentId), CoachRequest.STATUS_ACCEPTED});
+//        List<Coach> coaches = new ArrayList<>();
+//
+//        if (cursor.moveToFirst()) {
+//            do {
+//                Coach coach = cursorToCoach(cursor);
+//                coaches.add(coach);
+//            } while (cursor.moveToNext());
+//        }
+//
+//        cursor.close();
+//        return coaches;
+//    }
 
     public int getVideoSubmissionCount(int studentId) {
         SQLiteDatabase db = this.getReadableDatabase();
@@ -1849,5 +1833,371 @@ public long addAnnotation(Annotation annotation) {
         return count;
     }
 
+    // ADD THIS METHOD to your DatabaseHelper.java class
 
+    /**
+     * Get all coaches that have accepted this student (coaches available for video feedback)
+     * This method looks for coaches who have accepted requests from the student
+     */
+
+    // ADD THIS HELPER METHOD if it doesn't exist
+//    public Student getStudentById(int studentId) {
+//        SQLiteDatabase db = this.getReadableDatabase();
+//        String query = "SELECT * FROM " + TABLE_STUDENTS + " WHERE " + COLUMN_ID + " = ?";
+//
+//        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(studentId)});
+//
+//        Student student = null;
+//        if (cursor.moveToFirst()) {
+//            student = cursorToStudent(cursor);
+//        }
+//        cursor.close();
+//        return student;
+//    }
+
+    public Student getStudentById(int studentId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_STUDENTS + " WHERE " + COLUMN_ID + " = ?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(studentId)});
+
+        Student student = null;
+        if (cursor.moveToFirst()) {
+            student = new Student();
+            student.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)));
+            student.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)));
+            student.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)));
+            student.setPassword(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD)));
+            student.setPhone(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PHONE)));
+            student.setAge(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_AGE)));
+            student.setSkillLevel(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SKILL_LEVEL)));
+            student.setCoachId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_COACH_ID)));
+            student.setCreatedAt(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CREATED_AT)));
+        }
+        cursor.close();
+        return student;
+    }
+
+
+    // ADD THIS HELPER METHOD if it doesn't exist
+    public Coach getCoachById(int coachId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_COACHES + " WHERE " + COLUMN_ID + " = ?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(coachId)});
+
+        Coach coach = null;
+        if (cursor.moveToFirst()) {
+            coach = cursorToCoach(cursor);
+        }
+        cursor.close();
+        return coach;
+    }
+
+// ADD required import at the top of DatabaseHelper.java
+
+
+    // ADD this method to your DatabaseHelper.java class
+// This includes debugging to see what's happening
+
+
+    /**
+     * Get all coaches available for this student to upload videos to
+     * First tries to find coaches through accepted requests, then falls back to direct assignment
+     */
+    public List<Coach> getCoachesForStudent(int studentId) {
+        Log.d("DatabaseHelper", "=== DEBUG getCoachesForStudent ===");
+        Log.d("DatabaseHelper", "Looking for coaches for student ID: " + studentId);
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        List<Coach> coaches = new ArrayList<>();
+
+        // Method 1: Check for accepted coach requests
+        String query1 = "SELECT DISTINCT c.* FROM " + TABLE_COACHES + " c " +
+                "INNER JOIN " + TABLE_COACH_REQUESTS + " cr ON c." + COLUMN_ID + " = cr." + COLUMN_REQUEST_COACH_ID + " " +
+                "WHERE cr." + COLUMN_REQUEST_STUDENT_ID + " = ? AND cr." + COLUMN_REQUEST_STATUS + " = ? " +
+                "ORDER BY c." + COLUMN_NAME + " ASC";
+
+        Log.d("DatabaseHelper", "Query 1 (accepted requests): " + query1);
+        Cursor cursor1 = db.rawQuery(query1, new String[]{String.valueOf(studentId), CoachRequest.STATUS_ACCEPTED});
+
+        Log.d("DatabaseHelper", "Accepted requests cursor count: " + cursor1.getCount());
+
+        if (cursor1.moveToFirst()) {
+            do {
+                Coach coach = cursorToCoach(cursor1);
+                coaches.add(coach);
+                Log.d("DatabaseHelper", "Found coach through accepted request: " + coach.getName() + " (ID: " + coach.getId() + ")");
+            } while (cursor1.moveToNext());
+        }
+        cursor1.close();
+
+        // Method 2: Check for direct coach assignment (fallback)
+        if (coaches.isEmpty()) {
+            Log.d("DatabaseHelper", "No coaches found through requests, checking direct assignment...");
+
+            String query2 = "SELECT * FROM " + TABLE_STUDENTS + " WHERE " + COLUMN_ID + " = ?";
+            Cursor cursor2 = db.rawQuery(query2, new String[]{String.valueOf(studentId)});
+
+            if (cursor2.moveToFirst()) {
+                int coachId = cursor2.getInt(cursor2.getColumnIndexOrThrow(COLUMN_COACH_ID));
+                Log.d("DatabaseHelper", "Student's direct coach ID: " + coachId);
+
+                if (coachId > 0) {
+                    String query3 = "SELECT * FROM " + TABLE_COACHES + " WHERE " + COLUMN_ID + " = ?";
+                    Cursor cursor3 = db.rawQuery(query3, new String[]{String.valueOf(coachId)});
+
+                    if (cursor3.moveToFirst()) {
+                        Coach coach = cursorToCoach(cursor3);
+                        coaches.add(coach);
+                        Log.d("DatabaseHelper", "Found coach through direct assignment: " + coach.getName() + " (ID: " + coach.getId() + ")");
+                    }
+                    cursor3.close();
+                }
+            }
+            cursor2.close();
+        }
+
+        // Method 3: FOR TESTING ONLY - Return all coaches if none found
+        if (coaches.isEmpty()) {
+            Log.d("DatabaseHelper", "No coaches found, returning all coaches for testing...");
+
+            String query4 = "SELECT * FROM " + TABLE_COACHES + " ORDER BY " + COLUMN_NAME + " ASC";
+            Cursor cursor4 = db.rawQuery(query4, null);
+
+            Log.d("DatabaseHelper", "Total coaches in database: " + cursor4.getCount());
+
+            if (cursor4.moveToFirst()) {
+                do {
+                    Coach coach = cursorToCoach(cursor4);
+                    coaches.add(coach);
+                    Log.d("DatabaseHelper", "Added coach for testing: " + coach.getName() + " (ID: " + coach.getId() + ")");
+                } while (cursor4.moveToNext());
+            }
+            cursor4.close();
+        }
+
+        Log.d("DatabaseHelper", "Final result: " + coaches.size() + " coaches found for student " + studentId);
+        Log.d("DatabaseHelper", "=== END DEBUG ===");
+
+        return coaches;
+    }
+
+    // STEP 1: Add these methods to your DatabaseHelper.java file
+
+    // Simple method to get all coaches (for testing)
+//    public List<Coach> getCoachesForStudent(int studentId) {
+//        android.util.Log.d("COACH_DEBUG", "🚀 getCoachesForStudent called!");
+//
+//        List<Coach> coaches = new ArrayList<>();
+//
+//        // Create test coach 1
+//        Coach coach1 = new Coach();
+//        coach1.setId(1);
+//        coach1.setName("John Smith");
+//        coach1.setEmail("john@cricket.com");
+//        coach1.setPhone("555-0001");
+//        coach1.setExperienceYears(10);
+//        coach1.setSpecialization("Batting Coach");
+//        coach1.setCertification("Level 3");
+//        coaches.add(coach1);
+//
+//        // Create test coach 2
+//        Coach coach2 = new Coach();
+//        coach2.setId(2);
+//        coach2.setName("Sarah Wilson");
+//        coach2.setEmail("sarah@cricket.com");
+//        coach2.setPhone("555-0002");
+//        coach2.setExperienceYears(8);
+//        coach2.setSpecialization("Bowling Coach");
+//        coach2.setCertification("Level 2");
+//        coaches.add(coach2);
+//
+//        // Create test coach 3
+//        Coach coach3 = new Coach();
+//        coach3.setId(3);
+//        coach3.setName("Mike Johnson");
+//        coach3.setEmail("mike@cricket.com");
+//        coach3.setPhone("555-0003");
+//        coach3.setExperienceYears(12);
+//        coach3.setSpecialization("All-Round Coach");
+//        coach3.setCertification("Level 4");
+//        coaches.add(coach3);
+//
+//        android.util.Log.d("COACH_DEBUG", "✅ Returning " + coaches.size() + " test coaches");
+//
+//        return coaches;
+//    }
+
+    // Get all coaches from database
+    public List<Coach> getAllCoaches() {
+        android.util.Log.d("DatabaseHelper", "🏏 Getting all coaches from database...");
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        List<Coach> coaches = new ArrayList<>();
+
+        String query = "SELECT * FROM " + TABLE_COACHES + " ORDER BY " + COLUMN_NAME + " ASC";
+        Cursor cursor = db.rawQuery(query, null);
+
+        android.util.Log.d("DatabaseHelper", "📈 Cursor count: " + cursor.getCount());
+
+        if (cursor.moveToFirst()) {
+            do {
+                Coach coach = cursorToCoach(cursor);
+                coaches.add(coach);
+                android.util.Log.d("DatabaseHelper", "✅ Added coach: " + coach.getName() + " (ID: " + coach.getId() + ")");
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+
+        android.util.Log.d("DatabaseHelper", "🎯 Returning " + coaches.size() + " coaches");
+        return coaches;
+    }
+
+    // Create test coaches if database is empty
+    public void ensureTestCoaches() {
+        android.util.Log.d("DatabaseHelper", "🧪 Checking if test coaches need to be created...");
+
+        List<Coach> existingCoaches = getAllCoaches();
+
+        if (existingCoaches.isEmpty()) {
+            android.util.Log.d("DatabaseHelper", "📝 No coaches found, creating test data...");
+            createTestCoaches();
+        } else {
+            android.util.Log.d("DatabaseHelper", "✅ Found " + existingCoaches.size() + " existing coaches");
+        }
+    }
+
+    // Create some test coaches
+    private void createTestCoaches() {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        // Coach 1
+        ContentValues coach1 = new ContentValues();
+        coach1.put(COLUMN_NAME, "Coach Smith");
+        coach1.put(COLUMN_EMAIL, "smith@cricket.com");
+        coach1.put(COLUMN_PASSWORD, "password123");
+        coach1.put(COLUMN_PHONE, "555-0001");
+        coach1.put(COLUMN_EXPERIENCE_YEARS, 10);
+        coach1.put(COLUMN_SPECIALIZATION, "Batting");
+        coach1.put(COLUMN_CERTIFICATION, "Level 3");
+        coach1.put(COLUMN_CREATED_AT, getCurrentTimestamp());
+
+        long id1 = db.insert(TABLE_COACHES, null, coach1);
+        android.util.Log.d("DatabaseHelper", "✅ Created Coach Smith (ID: " + id1 + ")");
+
+        // Coach 2
+        ContentValues coach2 = new ContentValues();
+        coach2.put(COLUMN_NAME, "Coach Johnson");
+        coach2.put(COLUMN_EMAIL, "johnson@cricket.com");
+        coach2.put(COLUMN_PASSWORD, "password123");
+        coach2.put(COLUMN_PHONE, "555-0002");
+        coach2.put(COLUMN_EXPERIENCE_YEARS, 8);
+        coach2.put(COLUMN_SPECIALIZATION, "Bowling");
+        coach2.put(COLUMN_CERTIFICATION, "Level 2");
+        coach2.put(COLUMN_CREATED_AT, getCurrentTimestamp());
+
+        long id2 = db.insert(TABLE_COACHES, null, coach2);
+        android.util.Log.d("DatabaseHelper", "✅ Created Coach Johnson (ID: " + id2 + ")");
+
+        // Coach 3
+        ContentValues coach3 = new ContentValues();
+        coach3.put(COLUMN_NAME, "Coach Wilson");
+        coach3.put(COLUMN_EMAIL, "wilson@cricket.com");
+        coach3.put(COLUMN_PASSWORD, "password123");
+        coach3.put(COLUMN_PHONE, "555-0003");
+        coach3.put(COLUMN_EXPERIENCE_YEARS, 12);
+        coach3.put(COLUMN_SPECIALIZATION, "All-Round");
+        coach3.put(COLUMN_CERTIFICATION, "Level 4");
+        coach3.put(COLUMN_CREATED_AT, getCurrentTimestamp());
+
+        long id3 = db.insert(TABLE_COACHES, null, coach3);
+        android.util.Log.d("DatabaseHelper", "✅ Created Coach Wilson (ID: " + id3 + ")");
+    }
+
+    // Helper method for timestamp
+//    private String getCurrentTimestamp() {
+//        return String.valueOf(System.currentTimeMillis());
+//    }
+
+// STEP 2: Add this to EnhancedVideoUploadActivity.java onCreate method
+// Replace your loadAvailableCoaches() method call with this:
+
+/*
+private void loadAvailableCoaches() {
+    android.util.Log.d("EnhancedVideoUpload", "🎯 Starting loadAvailableCoaches...");
+
+    // Ensure we have test coaches
+    databaseHelper.ensureTestCoaches();
+
+    // Get coaches for this student
+    availableCoaches = databaseHelper.getCoachesForStudent(studentId);
+
+    android.util.Log.d("EnhancedVideoUpload", "📊 Available coaches: " + availableCoaches.size());
+
+    if (availableCoaches.isEmpty()) {
+        android.util.Log.d("EnhancedVideoUpload", "❌ No coaches found - showing no coaches message");
+        noCoachesText.setVisibility(View.VISIBLE);
+        selectCoachesBtn.setEnabled(false);
+        selectCoachesBtn.setText("No Coaches Available");
+    } else {
+        android.util.Log.d("EnhancedVideoUpload", "✅ Coaches found - enabling selection");
+        noCoachesText.setVisibility(View.GONE);
+        selectCoachesBtn.setEnabled(true);
+        selectCoachesBtn.setText("Select Coaches (" + availableCoaches.size() + " available)");
+
+        // Log each coach
+        for (Coach coach : availableCoaches) {
+            android.util.Log.d("EnhancedVideoUpload", "🏏 Coach: " + coach.getName() + " - " + coach.getSpecialization());
+        }
+    }
+}
+*/
+public List<Video> getVideoSubmissionsAsVideos(int coachId) {
+    List<Video> videos = new ArrayList<>();
+    SQLiteDatabase db = this.getReadableDatabase();
+
+    // Get video submissions for this coach through coach selections
+    String query = "SELECT DISTINCT vs.*, s." + COLUMN_NAME + " as student_name " +
+            "FROM " + TABLE_VIDEO_SUBMISSIONS + " vs " +
+            "INNER JOIN " + TABLE_COACH_SELECTIONS + " cs ON vs." + COLUMN_SUBMISSION_ID + " = cs." + COLUMN_SUBMISSION_ID + " " +
+            "INNER JOIN " + TABLE_STUDENTS + " s ON vs." + COLUMN_SUBMISSION_STUDENT_ID + " = s." + COLUMN_ID + " " +
+            "WHERE cs." + COLUMN_SELECTED_COACH_ID + " = ? " +
+            "ORDER BY vs." + COLUMN_SUBMISSION_DATE + " DESC";
+
+    Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(coachId)});
+
+    android.util.Log.d("DatabaseHelper", "🔍 Query for coach " + coachId + " submissions:");
+    android.util.Log.d("DatabaseHelper", "📈 Found " + cursor.getCount() + " submissions");
+
+    if (cursor.moveToFirst()) {
+        do {
+            // Convert VideoSubmission to Video object for compatibility
+            Video video = new Video();
+
+            // Map submission fields to video fields
+            video.setVideoId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_SUBMISSION_ID)));
+            video.setStudentId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_SUBMISSION_STUDENT_ID)));
+            video.setCoachId(coachId); // Set current coach
+            video.setVideoPath(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SUBMISSION_VIDEO_PATH)));
+            video.setVideoTitle(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SUBMISSION_TITLE)));
+            video.setVideoDescription(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SUBMISSION_DESCRIPTION)));
+            video.setUploadDate(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SUBMISSION_DATE)));
+            video.setStatus(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SUBMISSION_STATUS)));
+            video.setCreatedAt(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SUBMISSION_DATE)));
+
+            // Set default values for missing fields
+            video.setVideoDuration(0); // Will be calculated when needed
+            video.setThumbnailPath(""); // Can be generated later
+
+            videos.add(video);
+
+            android.util.Log.d("DatabaseHelper", "✅ Added video: " + video.getVideoTitle() + " from student " + cursor.getString(cursor.getColumnIndexOrThrow("student_name")));
+        } while (cursor.moveToNext());
+    }
+    cursor.close();
+
+    android.util.Log.d("DatabaseHelper", "🎯 Returning " + videos.size() + " videos for coach");
+    return videos;
+}
 }
