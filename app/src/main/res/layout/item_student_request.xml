@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/statusCard"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
@@ -12,59 +13,46 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="16dp">
 
-        <!-- Coach Info Header -->
+        <!-- Header with status indicator -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="8dp">
 
-            <!-- Coach Icon -->
-            <ImageView
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:src="@drawable/ic_person"
-                android:background="@drawable/circle_background"
-                android:backgroundTint="@color/cricket_green_light"
-                android:padding="12dp"
-                app:tint="@color/cricket_green_primary"
-                android:layout_marginEnd="16dp" />
+            <View
+                android:id="@+id/statusIndicator"
+                android:layout_width="4dp"
+                android:layout_height="20dp"
+                android:background="@color/cricket_green_primary"
+                android:layout_marginEnd="12dp" />
 
-            <LinearLayout
+            <TextView
+                android:id="@+id/coachNameText"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:orientation="vertical">
+                android:text="Coach: Coach Name"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp"
+                android:textStyle="bold" />
 
-                <!-- Coach Name -->
-                <TextView
-                    android:id="@+id/coachNameText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Coach Name"
-                    android:textColor="@color/text_primary"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="4dp" />
-
-                <!-- Request Status -->
-                <TextView
-                    android:id="@+id/statusText"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="PENDING"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:textColor="@color/warning_color"
-                    android:background="@drawable/rounded_background"
-                    android:backgroundTint="@color/background_secondary"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="6dp" />
-
-            </LinearLayout>
+            <TextView
+                android:id="@+id/statusText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="PENDING"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:background="@drawable/rounded_background"
+                android:backgroundTint="@color/warning_color"
+                android:textColor="@color/white"
+                android:padding="6dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp" />
 
         </LinearLayout>
 
@@ -75,11 +63,8 @@
             android:layout_height="wrap_content"
             android:text="Requested: 2024-06-24"
             android:textColor="@color/text_secondary"
-            android:textSize="16sp"
-            android:layout_marginBottom="16dp"
-            android:drawableStart="@android:drawable/ic_menu_today"
-            android:drawablePadding="8dp"
-            android:gravity="center_vertical" />
+            android:textSize="12sp"
+            android:layout_marginBottom="12dp" />
 
         <!-- Your Message Section -->
         <TextView
@@ -87,9 +72,9 @@
             android:layout_height="wrap_content"
             android:text="Your Message:"
             android:textColor="@color/text_primary"
-            android:textSize="16sp"
+            android:textSize="12sp"
             android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
+            android:layout_marginBottom="4dp" />
 
         <TextView
             android:id="@+id/messageText"
@@ -97,43 +82,24 @@
             android:layout_height="wrap_content"
             android:text="I would like you to be my coach because..."
             android:textColor="@color/text_primary"
-            android:textSize="16sp"
-            android:lineSpacingExtra="4dp"
+            android:textSize="14sp"
             android:background="@drawable/rounded_background"
             android:backgroundTint="@color/background_light"
-            android:padding="16dp"
-            android:layout_marginBottom="16dp" />
+            android:padding="12dp"
+            android:layout_marginBottom="8dp" />
 
         <!-- Response Message (shown when request is responded to) -->
-        <LinearLayout
-            android:id="@+id/responseLayout"
+        <TextView
+            android:id="@+id/responseText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone">
-
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Coach Response:"
-                android:textColor="@color/text_primary"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="8dp" />
-
-            <TextView
-                android:id="@+id/responseText"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Welcome to my coaching program!"
-                android:textSize="16sp"
-                android:textColor="@color/text_primary"
-                android:lineSpacingExtra="4dp"
-                android:background="@drawable/rounded_background"
-                android:backgroundTint="@color/success_light"
-                android:padding="16dp" />
-
-        </LinearLayout>
+            android:text="Coach response: Welcome to my coaching program!"
+            android:textSize="14sp"
+            android:textColor="@color/text_primary"
+            android:background="@drawable/rounded_background"
+            android:backgroundTint="@color/success_light"
+            android:padding="12dp"
+            android:visibility="gone" />
 
     </LinearLayout>
 

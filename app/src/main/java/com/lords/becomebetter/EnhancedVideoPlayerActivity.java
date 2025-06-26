@@ -5,19 +5,13 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
-import android.graphics.Matrix;
-import android.graphics.PointF;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.view.GestureDetector;
-import android.view.MotionEvent;
-import android.view.ScaleGestureDetector;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -53,19 +47,20 @@ public class EnhancedVideoPlayerActivity extends AppCompatActivity {
     private View annotationOverlay;
     private ImageButton playPauseBtn, backBtn, fullscreenBtn;
     private Button recordVoiceBtn, saveAnnotationBtn, saveFeedbackBtn;
-    private SeekBar videoSeekBar, zoomSeekBar;
-    private TextView currentTimeText, totalTimeText, zoomLevelText, voiceRecordingStatus;
+    private SeekBar videoSeekBar;
+    private TextView currentTimeText, totalTimeText, voiceRecordingStatus;
     private TextView videoTitleText, studentNameText, submissionDateText;
-//    private LinearLayout voiceRecordingsLayout, controlsLayout;
     private TextInputEditText feedbackTextEdit;
 
-    // Zoom and gesture handling
-    private ScaleGestureDetector scaleDetector;
-    private GestureDetector gestureDetector;
-    private float scaleFactor = 1.0f;
-    private float translateX = 0f, translateY = 0f;
-    private PointF lastPan = new PointF();
-    private Matrix videoMatrix;
+    // Removed zoom-related variables
+    // private ScaleGestureDetector scaleDetector;
+    // private GestureDetector gestureDetector;
+    // private float scaleFactor = 1.0f;
+    // private float translateX = 0f, translateY = 0f;
+    // private PointF lastPan = new PointF();
+    // private Matrix videoMatrix;
+    // private SeekBar zoomSeekBar;
+    // private TextView zoomLevelText;
 
     // Voice recording
     private MediaRecorder mediaRecorder;
@@ -87,6 +82,7 @@ public class EnhancedVideoPlayerActivity extends AppCompatActivity {
     private boolean isPlaying = false;
     private int videoDuration = 0;
     private int currentPosition = 0;
+    private Runnable updateRunnable;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,11 +103,9 @@ public class EnhancedVideoPlayerActivity extends AppCompatActivity {
         updateHandler = new Handler();
 
         initializeViews();
-        setupGestureDetectors();
         loadVideoSubmission();
         setupVideoPlayer();
         setupVoiceRecording();
-        setupZoomControls();
         setupClickListeners();
 
         // Handle different user types
@@ -127,132 +121,51 @@ public class EnhancedVideoPlayerActivity extends AppCompatActivity {
             hideEditingControls();
         }
     }
-    private void setupCoachView() {
-        // Coach can edit and provide feedback
-        // This is the existing functionality
-    }
-
-    private void showFeedbackOverlay() {
-        // Create a semi-transparent overlay showing feedback info
-        if (currentFeedback != null) {
-            // Update feedback text display
-            if (feedbackTextEdit != null && currentFeedback.getFeedbackText() != null) {
-                feedbackTextEdit.setText(currentFeedback.getFeedbackText());
-            }
-
-            // Show voice recordings with play buttons
-            updateVoiceRecordingsDisplay();
-
-            // Show coach info
-            if (currentFeedback.getCoachName() != null) {
-                // You can add a TextView to show coach name
-                TextView coachInfoText = findViewById(R.id.coachInfoText);
-                if (coachInfoText != null) {
-                    coachInfoText.setText("Feedback from: " + currentFeedback.getCoachName());
-                    coachInfoText.setVisibility(View.VISIBLE);
-                }
-            }
-        }
-    }
-
-    // Add method to play voice recordings for students
-    private void playVoiceRecording(VoiceRecording recording) {
-        try {
-            // Seek video to the timestamp of the voice recording
-            if (videoView != null && recording.getVideoTimestamp() > 0) {
-                videoView.seekTo(recording.getVideoTimestamp());
-            }
-
-            // Play the voice recording
-            MediaPlayer mediaPlayer = new MediaPlayer();
-            mediaPlayer.setDataSource(recording.getRecordingPath());
-            mediaPlayer.prepare();
-            mediaPlayer.start();
-
-            mediaPlayer.setOnCompletionListener(mp -> {
-                mp.release();
-                Toast.makeText(this, "Voice feedback completed", Toast.LENGTH_SHORT).show();
-            });
-
-            Toast.makeText(this, "Playing voice feedback at " + formatTime(recording.getVideoTimestamp()),
-                    Toast.LENGTH_SHORT).show();
-
-        } catch (Exception e) {
-            Log.e(TAG, "Error playing voice recording", e);
-            Toast.makeText(this, "Error playing voice feedback", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void setupStudentView(int studentId, boolean showFeedback) {
-        // Student can only view, not edit
-        isViewOnly = true;
-
-        if (showFeedback) {
-            // Load and display all feedback for this submission
-            DatabaseHelper databaseHelper = new DatabaseHelper(this);
-            List<VideoFeedback> feedbacks = databaseHelper.getVideoFeedbacks(submissionId);
-
-            if (!feedbacks.isEmpty()) {
-                currentFeedback = feedbacks.get(0); // Show most recent feedback
-                loadExistingFeedback();
-                showFeedbackOverlay();
-            }
-        }
-
-        // Hide coach-specific controls
-        if (recordVoiceBtn != null) recordVoiceBtn.setVisibility(View.GONE);
-        if (saveAnnotationBtn != null) saveAnnotationBtn.setVisibility(View.GONE);
-        if (saveFeedbackBtn != null) saveFeedbackBtn.setVisibility(View.GONE);
-        if (feedbackTextEdit != null) feedbackTextEdit.setEnabled(false);
-    }
 
     private void initializeViews() {
-        // Video components
         videoView = findViewById(R.id.videoView);
         annotationOverlay = findViewById(R.id.annotationOverlay);
-
-        // Control buttons
         playPauseBtn = findViewById(R.id.playPauseBtn);
         backBtn = findViewById(R.id.backBtn);
         fullscreenBtn = findViewById(R.id.fullscreenBtn);
         recordVoiceBtn = findViewById(R.id.recordVoiceBtn);
         saveAnnotationBtn = findViewById(R.id.saveAnnotationBtn);
         saveFeedbackBtn = findViewById(R.id.saveFeedbackBtn);
-
-        // Seek bars
         videoSeekBar = findViewById(R.id.videoSeekBar);
-        zoomSeekBar = findViewById(R.id.zoomSeekBar);
-
-        // Text views
         currentTimeText = findViewById(R.id.currentTimeText);
         totalTimeText = findViewById(R.id.totalTimeText);
-        zoomLevelText = findViewById(R.id.zoomLevelText);
         voiceRecordingStatus = findViewById(R.id.voiceRecordingStatus);
         videoTitleText = findViewById(R.id.videoTitleText);
         studentNameText = findViewById(R.id.studentNameText);
         submissionDateText = findViewById(R.id.submissionDateText);
-
-        // Layouts
-        voiceRecordingsLayout = findViewById(R.id.voiceRecordingsLayout);
-        controlsLayout = (ScrollView) findViewById(R.id.controlsLayout);
-
-        // Feedback input
         feedbackTextEdit = findViewById(R.id.feedbackTextEdit);
+        voiceRecordingsLayout = findViewById(R.id.voiceRecordingsLayout);
+        controlsLayout = findViewById(R.id.controlsLayout);
 
-        // Initial states
+        // Hide voice recording status initially
         voiceRecordingStatus.setVisibility(View.GONE);
-        zoomLevelText.setText("1.0x");
+
+        // Initialize update runnable for video progress
+        updateRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (isPlaying && videoView != null) {
+                    try {
+                        currentPosition = videoView.getCurrentPosition();
+                        videoSeekBar.setProgress(currentPosition);
+                        currentTimeText.setText(formatTime(currentPosition));
+                        updateHandler.postDelayed(this, 100);
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error updating video progress", e);
+                    }
+                }
+            }
+        };
     }
 
-    private void setupGestureDetectors() {
-        scaleDetector = new ScaleGestureDetector(this, new ScaleListener());
-        gestureDetector = new GestureDetector(this, new GestureListener());
-
-        videoView.setOnTouchListener((v, event) -> {
-            scaleDetector.onTouchEvent(event);
-            gestureDetector.onTouchEvent(event);
-            return true;
-        });
+    private void setupCoachView() {
+        // Coach can edit and provide feedback
+        // This is the existing functionality
     }
 
     private void loadVideoSubmission() {
@@ -290,40 +203,70 @@ public class EnhancedVideoPlayerActivity extends AppCompatActivity {
         // Load voice recordings
         voiceRecordings = currentFeedback.getVoiceRecordings();
         updateVoiceRecordingsDisplay();
-
-        // Load annotations (implement as needed)
-        // currentAnnotations = loadAnnotationsFromJson(currentFeedback.getAnnotationData());
     }
 
     private void setupVideoPlayer() {
         try {
-            Uri videoUri = Uri.parse(videoSubmission.getVideoPath());
+            // Validate video file first
+            File videoFile = new File(videoSubmission.getVideoPath());
+            if (!videoFile.exists()) {
+                Toast.makeText(this, "Video file not found", Toast.LENGTH_LONG).show();
+                finish();
+                return;
+            }
+
+            Log.d(TAG, "Setting up video: " + videoSubmission.getVideoPath());
+
+            Uri videoUri = Uri.fromFile(videoFile);
             videoView.setVideoURI(videoUri);
 
-            videoView.setOnPreparedListener(mp -> {
-                videoDuration = mp.getDuration();
-                totalTimeText.setText(formatTime(videoDuration));
-                videoSeekBar.setMax(videoDuration);
-                mp.setLooping(false);
+            videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+                    Log.d(TAG, "Video prepared successfully");
+                    videoDuration = mp.getDuration();
+                    totalTimeText.setText(formatTime(videoDuration));
+                    videoSeekBar.setMax(videoDuration);
+                    mp.setLooping(false);
+
+                    // Enable play button
+                    playPauseBtn.setEnabled(true);
+                    Toast.makeText(EnhancedVideoPlayerActivity.this, "Video ready to play", Toast.LENGTH_SHORT).show();
+                }
             });
 
-            videoView.setOnCompletionListener(mp -> {
-                isPlaying = false;
-                playPauseBtn.setImageResource(android.R.drawable.ic_media_play);
-                updateHandler.removeCallbacks(updateRunnable);
+            videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                @Override
+                public void onCompletion(MediaPlayer mp) {
+                    isPlaying = false;
+                    playPauseBtn.setImageResource(android.R.drawable.ic_media_play);
+                    updateHandler.removeCallbacks(updateRunnable);
+                }
             });
 
-            videoView.setOnErrorListener((mp, what, extra) -> {
-                Log.e(TAG, "Video error: " + what + ", " + extra);
-                Toast.makeText(this, "Error playing video", Toast.LENGTH_SHORT).show();
-                return true;
+            videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                @Override
+                public boolean onError(MediaPlayer mp, int what, int extra) {
+                    Log.e(TAG, "Video error: " + what + ", " + extra);
+                    String errorMsg = "Error playing video";
+                    switch (what) {
+                        case MediaPlayer.MEDIA_ERROR_UNKNOWN:
+                            errorMsg = "Unknown video error";
+                            break;
+                        case MediaPlayer.MEDIA_ERROR_SERVER_DIED:
+                            errorMsg = "Media server died";
+                            break;
+                    }
+                    Toast.makeText(EnhancedVideoPlayerActivity.this, errorMsg, Toast.LENGTH_SHORT).show();
+                    return true;
+                }
             });
 
             // Setup seek bar
             videoSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
                 @Override
                 public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                    if (fromUser) {
+                    if (fromUser && videoView != null) {
                         videoView.seekTo(progress);
                         currentPosition = progress;
                         currentTimeText.setText(formatTime(progress));
@@ -337,37 +280,16 @@ public class EnhancedVideoPlayerActivity extends AppCompatActivity {
                 public void onStopTrackingTouch(SeekBar seekBar) {}
             });
 
+            // Disable play button until video is prepared
+            playPauseBtn.setEnabled(false);
+
         } catch (Exception e) {
             Log.e(TAG, "Error setting up video player", e);
-            Toast.makeText(this, "Error loading video", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Error loading video: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
-    private void setupZoomControls() {
-        zoomSeekBar.setMax(300); // 100% to 400% zoom
-        zoomSeekBar.setProgress(100); // Start at 100%
-
-        zoomSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser) {
-                    float newScaleFactor = progress / 100.0f;
-                    if (newScaleFactor < 1.0f) newScaleFactor = 1.0f;
-                    if (newScaleFactor > 4.0f) newScaleFactor = 4.0f;
-
-                    scaleFactor = newScaleFactor;
-                    applyTransformation();
-                    zoomLevelText.setText(String.format("%.1fx", scaleFactor));
-                }
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {}
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {}
-        });
-    }
+    // Removed setupZoomControls() and setupGestureDetectors() methods
 
     private void setupVoiceRecording() {
         recordVoiceBtn.setOnClickListener(v -> {
@@ -384,7 +306,9 @@ public class EnhancedVideoPlayerActivity extends AppCompatActivity {
 
         playPauseBtn.setOnClickListener(v -> togglePlayPause());
 
-        fullscreenBtn.setOnClickListener(v -> toggleFullscreen());
+        if (fullscreenBtn != null) {
+            fullscreenBtn.setOnClickListener(v -> toggleFullscreen());
+        }
 
         saveAnnotationBtn.setOnClickListener(v -> saveAnnotations());
 
@@ -399,22 +323,38 @@ public class EnhancedVideoPlayerActivity extends AppCompatActivity {
     }
 
     private void togglePlayPause() {
-        if (isPlaying) {
-            videoView.pause();
-            isPlaying = false;
-            playPauseBtn.setImageResource(android.R.drawable.ic_media_play);
-            updateHandler.removeCallbacks(updateRunnable);
-        } else {
-            videoView.start();
-            isPlaying = true;
-            playPauseBtn.setImageResource(android.R.drawable.ic_media_pause);
-            updateHandler.post(updateRunnable);
+        try {
+            if (videoView == null) {
+                Toast.makeText(this, "Video not ready", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (isPlaying) {
+                videoView.pause();
+                isPlaying = false;
+                playPauseBtn.setImageResource(android.R.drawable.ic_media_play);
+                updateHandler.removeCallbacks(updateRunnable);
+                Log.d(TAG, "Video paused");
+            } else {
+                videoView.start();
+                isPlaying = true;
+                playPauseBtn.setImageResource(android.R.drawable.ic_media_pause);
+                updateHandler.post(updateRunnable);
+                Log.d(TAG, "Video started");
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error toggling play/pause", e);
+            Toast.makeText(this, "Error controlling video playback", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void toggleFullscreen() {
-        // Implement fullscreen toggle
-        // This would typically involve hiding system UI and adjusting layout
+        // Simple fullscreen toggle - hide/show controls
+        if (controlsLayout.getVisibility() == View.VISIBLE) {
+            controlsLayout.setVisibility(View.GONE);
+        } else {
+            controlsLayout.setVisibility(View.VISIBLE);
+        }
     }
 
     private void startVoiceRecording() {
@@ -431,11 +371,8 @@ public class EnhancedVideoPlayerActivity extends AppCompatActivity {
                 togglePlayPause();
             }
 
-            String fileName = "voice_feedback_" + System.currentTimeMillis() + ".3gp";
-            currentVoiceRecordingPath = new File(getExternalFilesDir("voice_recordings"), fileName).getAbsolutePath();
-
-            // Ensure directory exists
-            new File(currentVoiceRecordingPath).getParentFile().mkdirs();
+            // Prepare recording
+            currentVoiceRecordingPath = getExternalFilesDir(null) + "/voice_" + System.currentTimeMillis() + ".3gp";
 
             mediaRecorder = new MediaRecorder();
             mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
@@ -450,66 +387,93 @@ public class EnhancedVideoPlayerActivity extends AppCompatActivity {
             recordVoiceBtn.setText("Stop Recording");
             recordVoiceBtn.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
             voiceRecordingStatus.setVisibility(View.VISIBLE);
-            voiceRecordingStatus.setText("🎤 Recording voice feedback at " + formatTime(currentPosition));
+            voiceRecordingStatus.setText("Recording voice feedback...");
+
+            Toast.makeText(this, "Voice recording started", Toast.LENGTH_SHORT).show();
 
         } catch (IOException e) {
-            Log.e(TAG, "Failed to start recording", e);
-            Toast.makeText(this, "Failed to start voice recording", Toast.LENGTH_SHORT).show();
+            Log.e(TAG, "Error starting voice recording", e);
+            Toast.makeText(this, "Failed to start recording", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void stopVoiceRecording() {
-        if (mediaRecorder != null) {
-            try {
+        try {
+            if (mediaRecorder != null) {
                 mediaRecorder.stop();
                 mediaRecorder.release();
                 mediaRecorder = null;
-
-                isRecordingVoice = false;
-                recordVoiceBtn.setText("Record Voice");
-                recordVoiceBtn.setBackgroundTintList(ColorStateList.valueOf(Color.GREEN));
-
-                // Create voice recording object
-                VoiceRecording recording = new VoiceRecording();
-                recording.setRecordingPath(currentVoiceRecordingPath);
-                recording.setVideoTimestamp(currentPosition);
-                recording.setTitle("Voice note at " + formatTime(currentPosition));
-
-                voiceRecordings.add(recording);
-                updateVoiceRecordingsDisplay();
-
-                voiceRecordingStatus.setText("✅ Voice feedback recorded successfully!");
-
-                // Hide status after 3 seconds
-                updateHandler.postDelayed(() ->
-                        voiceRecordingStatus.setVisibility(View.GONE), 3000);
-
-            } catch (RuntimeException e) {
-                Log.e(TAG, "Failed to stop recording", e);
-                Toast.makeText(this, "Failed to stop recording", Toast.LENGTH_SHORT).show();
             }
+
+            isRecordingVoice = false;
+            recordVoiceBtn.setText("Record Voice");
+            recordVoiceBtn.setBackgroundTintList(ColorStateList.valueOf(
+                    ContextCompat.getColor(this, R.color.cricket_green_primary)));
+            voiceRecordingStatus.setVisibility(View.GONE);
+
+            // Create voice recording object
+            VoiceRecording recording = new VoiceRecording();
+            recording.setRecordingPath(currentVoiceRecordingPath);
+            recording.setVideoTimestamp(currentPosition);
+            recording.setDuration(0); // You can calculate duration if needed
+
+            voiceRecordings.add(recording);
+            updateVoiceRecordingsDisplay();
+
+            Toast.makeText(this, "Voice recording saved", Toast.LENGTH_SHORT).show();
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error stopping voice recording", e);
+            Toast.makeText(this, "Failed to stop recording", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void updateVoiceRecordingsDisplay() {
         voiceRecordingsLayout.removeAllViews();
 
-        for (VoiceRecording recording : voiceRecordings) {
-            View recordingView = getLayoutInflater().inflate(R.layout.item_voice_recording,
-                    voiceRecordingsLayout, false);
+        for (int i = 0; i < voiceRecordings.size(); i++) {
+            VoiceRecording recording = voiceRecordings.get(i);
+            View recordingView = getLayoutInflater().inflate(R.layout.item_voice_recording, voiceRecordingsLayout, false);
 
             TextView titleText = recordingView.findViewById(R.id.recordingTitleText);
             TextView timestampText = recordingView.findViewById(R.id.recordingTimestampText);
             Button playBtn = recordingView.findViewById(R.id.playRecordingBtn);
             Button deleteBtn = recordingView.findViewById(R.id.deleteRecordingBtn);
 
-            titleText.setText(recording.getDisplayTitle());
-            timestampText.setText("At: " + recording.getFormattedVideoTimestamp());
+            titleText.setText("Voice note " + (i + 1));
+            timestampText.setText("At: " + formatTime(recording.getVideoTimestamp()));
 
             playBtn.setOnClickListener(v -> playVoiceRecording(recording));
             deleteBtn.setOnClickListener(v -> deleteVoiceRecording(recording));
 
             voiceRecordingsLayout.addView(recordingView);
+        }
+    }
+
+    private void playVoiceRecording(VoiceRecording recording) {
+        try {
+            // Seek video to the timestamp of the voice recording
+            if (videoView != null && recording.getVideoTimestamp() > 0) {
+                videoView.seekTo(recording.getVideoTimestamp());
+            }
+
+            // Play the voice recording
+            MediaPlayer mediaPlayer = new MediaPlayer();
+            mediaPlayer.setDataSource(recording.getRecordingPath());
+            mediaPlayer.prepare();
+            mediaPlayer.start();
+
+            mediaPlayer.setOnCompletionListener(mp -> {
+                mp.release();
+                Toast.makeText(this, "Voice feedback completed", Toast.LENGTH_SHORT).show();
+            });
+
+            Toast.makeText(this, "Playing voice feedback at " + formatTime(recording.getVideoTimestamp()),
+                    Toast.LENGTH_SHORT).show();
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error playing voice recording", e);
+            Toast.makeText(this, "Error playing voice feedback", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -531,7 +495,6 @@ public class EnhancedVideoPlayerActivity extends AppCompatActivity {
 
     private void saveAnnotations() {
         // Implement annotation saving
-        // This would save the current annotations to the database
         Toast.makeText(this, "Annotations saved", Toast.LENGTH_SHORT).show();
     }
 
@@ -561,114 +524,68 @@ public class EnhancedVideoPlayerActivity extends AppCompatActivity {
         }
     }
 
-    private void applyTransformation() {
-        ViewGroup.LayoutParams params = videoView.getLayoutParams();
+    private void setupStudentView(int studentId, boolean showFeedback) {
+        // Student can only view, not edit
+        isViewOnly = true;
 
-        // Calculate new dimensions
-        int originalWidth = videoView.getWidth();
-        int originalHeight = videoView.getHeight();
-
-        params.width = (int)(originalWidth * scaleFactor);
-        params.height = (int)(originalHeight * scaleFactor);
-
-        videoView.setLayoutParams(params);
-        videoView.setTranslationX(translateX);
-        videoView.setTranslationY(translateY);
-    }
-
-    // Gesture listeners
-    private class ScaleListener extends ScaleGestureDetector.SimpleOnScaleGestureListener {
-        @Override
-        public boolean onScale(ScaleGestureDetector detector) {
-            scaleFactor *= detector.getScaleFactor();
-            scaleFactor = Math.max(1.0f, Math.min(scaleFactor, 4.0f));
-
-            applyTransformation();
-            zoomSeekBar.setProgress((int)(scaleFactor * 100));
-            zoomLevelText.setText(String.format("%.1fx", scaleFactor));
-
-            return true;
+        if (showFeedback) {
+            showFeedbackOverlay();
         }
     }
 
-    private class GestureListener extends GestureDetector.SimpleOnGestureListener {
-        @Override
-        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
-            if (scaleFactor > 1.0f) {
-                translateX -= distanceX;
-                translateY -= distanceY;
-                applyTransformation();
+    private void showFeedbackOverlay() {
+        // Create a semi-transparent overlay showing feedback info
+        if (currentFeedback != null) {
+            // Update feedback text display
+            if (feedbackTextEdit != null && currentFeedback.getFeedbackText() != null) {
+                feedbackTextEdit.setText(currentFeedback.getFeedbackText());
             }
-            return true;
-        }
-    }
 
-    // Update runnable for video progress
-    private Runnable updateRunnable = new Runnable() {
-        @Override
-        public void run() {
-            if (isPlaying && videoView != null) {
-                currentPosition = videoView.getCurrentPosition();
-                videoSeekBar.setProgress(currentPosition);
-                currentTimeText.setText(formatTime(currentPosition));
-                updateHandler.postDelayed(this, 1000);
+            // Show voice recordings with play buttons
+            updateVoiceRecordingsDisplay();
+
+            // Show coach info in title or as toast since we don't have a dedicated TextView
+            if (currentFeedback.getCoachName() != null) {
+                Toast.makeText(this, "Feedback from: " + currentFeedback.getCoachName(), Toast.LENGTH_LONG).show();
             }
         }
-    };
+    }
+
+    // Removed applyTransformation() and gesture listener classes
 
     private String formatTime(int milliseconds) {
-        int seconds = milliseconds / 1000;
-        int minutes = seconds / 60;
-        seconds = seconds % 60;
+        int totalSeconds = milliseconds / 1000;
+        int minutes = totalSeconds / 60;
+        int seconds = totalSeconds % 60;
         return String.format("%02d:%02d", minutes, seconds);
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
         if (requestCode == REQUEST_RECORD_AUDIO) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 startVoiceRecording();
             } else {
-                Toast.makeText(this, "Audio permission required for voice feedback",
-                        Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Audio recording permission denied", Toast.LENGTH_SHORT).show();
             }
         }
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (isPlaying) {
-            togglePlayPause();
-        }
-        updateHandler.removeCallbacks(updateRunnable);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        // Cleanup
         if (mediaRecorder != null) {
-            mediaRecorder.release();
+            try {
+                mediaRecorder.release();
+            } catch (Exception e) {
+                Log.e(TAG, "Error releasing media recorder", e);
+            }
         }
-        updateHandler.removeCallbacks(updateRunnable);
-    }
 
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        // Return to appropriate screen based on user type
-        Intent intent;
-        if (coachEmail != null) {
-            intent = new Intent(this, VideoListActivity.class);
-            intent.putExtra("coachEmail", coachEmail);
-        } else {
-            intent = new Intent(this, StudentProfileActivity.class);
-            intent.putExtra("userEmail", videoSubmission.getStudentName());
+        if (updateHandler != null) {
+            updateHandler.removeCallbacks(updateRunnable);
         }
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(intent);
     }
 }
