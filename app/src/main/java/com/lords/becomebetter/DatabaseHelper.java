@@ -255,7 +255,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_COACH_SELECTIONS);
         db.execSQL(CREATE_VIDEO_FEEDBACKS);
         db.execSQL(CREATE_VOICE_RECORDINGS);
-
+        insertDefaultCoachCodes(db);
         Log.d("DatabaseHelper", "All tables created successfully!");
     }
 
@@ -328,7 +328,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 //        onCreate(db);
 //    }
 
-    private void insertDefaultCoachCodes(SQLiteDatabase db) {
+    public void insertDefaultCoachCodes(SQLiteDatabase db) {
         // Insert some default 6-digit codes for coaches
         String[] defaultCodes = {"123456", "789012", "345678", "901234", "567890"};
 
