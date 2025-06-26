@@ -242,7 +242,7 @@ public class CoachRequestsActivity extends AppCompatActivity {
                 // Set status color
                 int statusColor = Color.parseColor(request.getStatusColor());
                 statusText.setTextColor(statusColor);
-                statusIndicator.setBackgroundColor(statusColor);
+//                statusIndicator.setBackgroundColor(statusColor);
 
                 // Show/hide action buttons based on status
                 if (request.isPending()) {
