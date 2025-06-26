@@ -328,6 +328,21 @@
 
             </androidx.cardview.widget.CardView>
 
+            <TextView
+                android:id="@+id/coachInfoText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Feedback from: Coach Name"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="12dp"
+                android:drawableStart="@drawable/ic_person"
+                android:drawableTint="@color/brand_primary"
+                android:drawablePadding="8dp"
+                android:gravity="center_vertical"
+                android:visibility="gone" />
+
             <!-- Action Buttons -->
             <LinearLayout
                 android:layout_width="match_parent"

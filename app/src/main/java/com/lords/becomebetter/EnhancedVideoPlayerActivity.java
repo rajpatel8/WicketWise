@@ -21,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,6 +45,9 @@ public class EnhancedVideoPlayerActivity extends AppCompatActivity {
     private static final String TAG = "EnhancedVideoPlayer";
     private static final int REQUEST_RECORD_AUDIO = 1001;
 
+    private LinearLayout voiceRecordingsLayout;
+    private ScrollView controlsLayout;
+
     // UI Components
     private VideoView videoView;
     private View annotationOverlay;
@@ -52,7 +56,7 @@ public class EnhancedVideoPlayerActivity extends AppCompatActivity {
     private SeekBar videoSeekBar, zoomSeekBar;
     private TextView currentTimeText, totalTimeText, zoomLevelText, voiceRecordingStatus;
     private TextView videoTitleText, studentNameText, submissionDateText;
-    private LinearLayout voiceRecordingsLayout, controlsLayout;
+//    private LinearLayout voiceRecordingsLayout, controlsLayout;
     private TextInputEditText feedbackTextEdit;
 
     // Zoom and gesture handling
@@ -230,7 +234,7 @@ public class EnhancedVideoPlayerActivity extends AppCompatActivity {
 
         // Layouts
         voiceRecordingsLayout = findViewById(R.id.voiceRecordingsLayout);
-        controlsLayout = findViewById(R.id.controlsLayout);
+        controlsLayout = (ScrollView) findViewById(R.id.controlsLayout);
 
         // Feedback input
         feedbackTextEdit = findViewById(R.id.feedbackTextEdit);

@@ -18,6 +18,10 @@ public class DashboardActivity extends AppCompatActivity {
     private TextView welcomeText, userNameText, userTypeText;
     private Button logoutBtn, viewProfileBtn, editProfileBtn;
     private Button viewStudentsBtn, manageSessionsBtn, findCoachBtn, bookSessionBtn;
+
+    // ADD THESE MISSING STUDENT VIDEO BUTTONS:
+    private Button uploadVideoBtn, viewFeedbackBtn;
+
     private LinearLayout coachActionsLayout, studentActionsLayout;
 
     private String userType;
@@ -28,10 +32,17 @@ public class DashboardActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
 
+        databaseHelper = new DatabaseHelper(this);
+
         getUserInfo();
         initializeViews();
         setupUserInterface();
         setupClickListeners();
+
+        // Update student dashboard if it's a student
+        if ("student".equals(userType)) {
+            updateStudentDashboard();
+        }
     }
 
     private void getUserInfo() {
@@ -63,6 +74,10 @@ public class DashboardActivity extends AppCompatActivity {
         // Student-specific buttons
         findCoachBtn = findViewById(R.id.findCoachBtn);
         bookSessionBtn = findViewById(R.id.bookSessionBtn);
+
+        // ADD THESE MISSING STUDENT VIDEO BUTTONS:
+        uploadVideoBtn = findViewById(R.id.uploadVideoBtn);
+        viewFeedbackBtn = findViewById(R.id.viewFeedbackBtn);
 
         // Layouts for conditional visibility
         coachActionsLayout = findViewById(R.id.coachActionsLayout);
@@ -110,7 +125,7 @@ public class DashboardActivity extends AppCompatActivity {
             bookSessionBtn.setOnClickListener(v -> viewMyRequests());
         }
 
-        // ADD THESE NEW STUDENT ACTIONS:
+        // ADD THESE MISSING STUDENT VIDEO CLICK LISTENERS:
         if (uploadVideoBtn != null) {
             uploadVideoBtn.setOnClickListener(v -> uploadVideo());
         }
@@ -119,11 +134,32 @@ public class DashboardActivity extends AppCompatActivity {
         }
     }
 
-//    private void uploadVideo() {
-//        Intent intent = new Intent(this, EnhancedVideoUploadActivity.class);
-//        intent.putExtra("userEmail", userEmail);
-//        startActivity(intent);
-//    }
+    // STUDENT VIDEO FUNCTIONALITY
+    private void uploadVideo() {
+        DatabaseHelper databaseHelper = new DatabaseHelper(this);
+        Student student = databaseHelper.getStudentByEmail(userEmail);
+
+        if (student != null) {
+            // Check if student has assigned coaches
+            List<Coach> availableCoaches = databaseHelper.getCoachesForStudent(student.getId());
+
+            if (availableCoaches.isEmpty()) {
+                // Show dialog to guide student to find coaches first
+                showFindCoachDialog();
+                return;
+            }
+
+            // Launch enhanced video upload activity
+            Intent intent = new Intent(this, EnhancedVideoUploadActivity.class);
+            intent.putExtra("studentEmail", userEmail);
+            intent.putExtra("studentId", student.getId());
+            intent.putExtra("studentName", student.getName());
+            startActivityForResult(intent, 300);
+
+        } else {
+            Toast.makeText(this, "Student profile not found", Toast.LENGTH_SHORT).show();
+        }
+    }
 
     private void viewMyFeedback() {
         Intent intent = new Intent(this, StudentFeedbackListActivity.class);
@@ -155,7 +191,7 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     private void updateStudentStats(int feedbackCount, int pendingUploads) {
-        // Find stats text views (you may need to add these to your layout)
+        // Find stats text views
         TextView feedbackCountText = findViewById(R.id.feedbackCountText);
         TextView uploadsCountText = findViewById(R.id.uploadsCountText);
 
@@ -168,131 +204,7 @@ public class DashboardActivity extends AppCompatActivity {
         }
     }
 
-    private void uploadVideo() {
-        DatabaseHelper databaseHelper = new DatabaseHelper(this);
-        Student student = databaseHelper.getStudentByEmail(userEmail);
-
-        if (student != null) {
-            // Check if student has assigned coaches
-            List<Coach> availableCoaches = databaseHelper.getCoachesForStudent(student.getId());
-
-            if (availableCoaches.isEmpty()) {
-                // Show dialog to guide student to find coaches first
-                showFindCoachDialog();
-                return;
-            }
-
-            // Launch enhanced video upload activity
-            Intent intent = new Intent(this, EnhancedVideoUploadActivity.class);
-            intent.putExtra("studentEmail", userEmail);
-            intent.putExtra("studentId", student.getId());
-            intent.putExtra("studentName", student.getName());
-            startActivityForResult(intent, 300);
-
-        } else {
-            Toast.makeText(this, "Student profile not found", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void performLogout() {
-        // Clear any saved session data if you implement it later
-        // For now, just return to login screen
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
-    }
-
-    private void viewVideos() {
-        Intent intent = new Intent(this, VideoListActivity.class);
-        intent.putExtra("coachEmail", userEmail);
-        startActivity(intent);
-    }
-
-    private void viewProfile() {
-        if ("coach".equals(userType)) {
-            Intent intent = new Intent(this, CoachProfileActivity.class);
-            intent.putExtra("userEmail", userEmail);
-            startActivity(intent);
-        } else {
-            Intent intent = new Intent(this, StudentProfileActivity.class);
-            intent.putExtra("userEmail", userEmail);
-            startActivity(intent);
-        }
-    }
-
-    private void editProfile() {
-        if ("coach".equals(userType)) {
-            Intent intent = new Intent(this, EditCoachProfileActivity.class);
-            intent.putExtra("userEmail", userEmail);
-            startActivity(intent);
-        } else {
-            Intent intent = new Intent(this, EditStudentProfileActivity.class);
-            intent.putExtra("userEmail", userEmail);
-            startActivity(intent);
-        }
-    }
-
-    private void manageSessions() {
-        // For now, redirect to video management
-        viewVideos();
-    }
-
-    private void viewStudents() {
-        // Remove the "coming soon" message and implement the actual functionality
-        Intent intent = new Intent(this, ViewStudentsActivity.class);
-        intent.putExtra("coachEmail", userEmail);
-        startActivity(intent);
-    }
-
-
-//    private void findCoach() {
-//        // Navigate to SimpleFindCoachActivity for students
-//        Intent intent = new Intent(this, SimpleFindCoachActivity.class);
-//        intent.putExtra("studentEmail", userEmail);
-//        // We need to get the student ID, but for now we can pass 0
-//        intent.putExtra("studentId", 0);
-//        startActivity(intent);
-//    }
-
-//    private void bookSession() {
-//        showComingSoonMessage("Book Session");
-//        // TODO: Implement session booking for students
-//        // Intent intent = new Intent(this, BookSessionActivity.class);
-//        // intent.putExtra("studentEmail", userEmail);
-//        // startActivity(intent);
-//    }
-
-    private void showComingSoonMessage(String feature) {
-        Toast.makeText(this, feature + " feature coming in next update! 🚀", Toast.LENGTH_SHORT).show();
-    }
-
-    private String capitalizeUserType(String type) {
-        if (type == null || type.isEmpty()) {
-            return "User";
-        }
-        return type.substring(0, 1).toUpperCase() + type.substring(1).toLowerCase();
-    }
-
-    private String extractNameFromEmail(String email) {
-        if (email == null || email.isEmpty()) {
-            return "User";
-        }
-        // Extract name part before @ symbol
-        String namePart = email.split("@")[0];
-        // Replace dots and underscores with spaces and capitalize
-        return namePart.replace(".", " ").replace("_", " ");
-    }
-
-    @Override
-    public void onBackPressed() {
-        // Prevent going back to login screen accidentally
-        // Show confirmation dialog or just ignore
-        super.onBackPressed();
-        Toast.makeText(this, "Use logout button to exit", Toast.LENGTH_SHORT).show();
-    }
-
-    // Updated Coach methods
+    // COACH FUNCTIONALITY
     private void viewMyStudents() {
         DatabaseHelper databaseHelper = new DatabaseHelper(this);
         Coach coach = databaseHelper.getCoachByEmail(userEmail);
@@ -321,7 +233,7 @@ public class DashboardActivity extends AppCompatActivity {
         }
     }
 
-    // Updated Student methods
+    // STUDENT FUNCTIONALITY
     private void findCoach() {
         DatabaseHelper databaseHelper = new DatabaseHelper(this);
         Student student = databaseHelper.getStudentByEmail(userEmail);
@@ -336,44 +248,21 @@ public class DashboardActivity extends AppCompatActivity {
         }
     }
 
-
-
-    // Updated DashboardActivity.java - Replace bookSession() method and add new video functionality
-
-    private void bookSession() {
-        // Replace "Book Session" with "Video Review & Upload" functionality
-        Intent intent = new Intent(this, EnhancedVideoUploadActivity.class);
-        intent.putExtra("studentEmail", userEmail);
-        startActivityForResult(intent, 300); // Use result code 300 for video upload
-    }
-
-    // Add this new method for comprehensive video management
-    private void openVideoReviewAndUpload() {
-        // Create an intent to enhanced video upload activity
-        Intent intent = new Intent(this, EnhancedVideoUploadActivity.class);
-        intent.putExtra("studentEmail", userEmail);
-
-        // Get student data for better context
+    private void viewMyRequests() {
         DatabaseHelper databaseHelper = new DatabaseHelper(this);
         Student student = databaseHelper.getStudentByEmail(userEmail);
 
         if (student != null) {
+            Intent intent = new Intent(this, StudentRequestsActivity.class);
+            intent.putExtra("studentEmail", userEmail);
             intent.putExtra("studentId", student.getId());
-            intent.putExtra("studentName", student.getName());
-
-            // Check if student has assigned coaches
-            List<Coach> availableCoaches = databaseHelper.getCoachesForStudent(student.getId());
-            if (availableCoaches.isEmpty()) {
-                // Show dialog to guide student to find coaches first
-                showFindCoachDialog();
-                return;
-            }
+            startActivity(intent);
+        } else {
+            Toast.makeText(this, "Student profile not found", Toast.LENGTH_SHORT).show();
         }
-
-        startActivityForResult(intent, 300);
     }
 
-    // Add helper method to guide students without coaches
+    // HELPER METHODS
     private void showFindCoachDialog() {
         new androidx.appcompat.app.AlertDialog.Builder(this)
                 .setTitle("No Coaches Available")
@@ -393,8 +282,58 @@ public class DashboardActivity extends AppCompatActivity {
                 .show();
     }
 
+    private void performLogout() {
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
 
-    // MODIFY THIS METHOD to also handle video upload results
+    private void viewProfile() {
+        if ("coach".equals(userType)) {
+            Intent intent = new Intent(this, CoachProfileActivity.class);
+            intent.putExtra("userEmail", userEmail);
+            startActivity(intent);
+        } else {
+            Intent intent = new Intent(this, StudentProfileActivity.class);
+            intent.putExtra("userEmail", userEmail);
+            startActivity(intent);
+        }
+    }
+
+    private void editProfile() {
+        if ("coach".equals(userType)) {
+            Intent intent = new Intent(this, EditCoachProfileActivity.class);
+            intent.putExtra("userEmail", userEmail);
+            startActivity(intent);
+        } else {
+            Intent intent = new Intent(this, EditStudentProfileActivity.class);
+            intent.putExtra("userEmail", userEmail);
+            startActivity(intent);
+        }
+    }
+
+    private String capitalizeUserType(String type) {
+        if (type == null || type.isEmpty()) {
+            return "User";
+        }
+        return type.substring(0, 1).toUpperCase() + type.substring(1).toLowerCase();
+    }
+
+    private String extractNameFromEmail(String email) {
+        if (email == null || email.isEmpty()) {
+            return "User";
+        }
+        String namePart = email.split("@")[0];
+        return namePart.replace(".", " ").replace("_", " ");
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Toast.makeText(this, "Use logout button to exit", Toast.LENGTH_SHORT).show();
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -404,12 +343,16 @@ public class DashboardActivity extends AppCompatActivity {
             Toast.makeText(this, "🎥 Video uploaded successfully! Your coaches will review it soon.",
                     Toast.LENGTH_LONG).show();
 
-            // Optional: Show additional success feedback
+            // Refresh student dashboard
+            if ("student".equals(userType)) {
+                updateStudentDashboard();
+            }
+
+            // Show additional success feedback
             showVideoUploadSuccessSnackbar();
         }
     }
 
-    // ADD THIS METHOD for better success feedback
     private void showVideoUploadSuccessSnackbar() {
         try {
             com.google.android.material.snackbar.Snackbar snackbar =
@@ -420,7 +363,6 @@ public class DashboardActivity extends AppCompatActivity {
                     );
 
             snackbar.setAction("View Profile", v -> {
-                // Navigate to student profile
                 Intent intent = new Intent(this, StudentProfileActivity.class);
                 intent.putExtra("userEmail", userEmail);
                 startActivity(intent);
@@ -428,27 +370,7 @@ public class DashboardActivity extends AppCompatActivity {
 
             snackbar.show();
         } catch (Exception e) {
-            // Fallback if snackbar fails
             Toast.makeText(this, "Check your profile to see uploaded videos", Toast.LENGTH_SHORT).show();
         }
     }
-
-    // OPTIONAL: ADD THIS METHOD if you want to keep the requests functionality accessible
-    private void viewMyRequests() {
-        DatabaseHelper databaseHelper = new DatabaseHelper(this);
-        Student student = databaseHelper.getStudentByEmail(userEmail);
-
-        if (student != null) {
-            Intent intent = new Intent(this, StudentRequestsActivity.class);
-            intent.putExtra("studentEmail", userEmail);
-            intent.putExtra("studentId", student.getId());
-            startActivity(intent);
-        } else {
-            Toast.makeText(this, "Student profile not found", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-// ADD REQUIRED IMPORT at the top of the file
-
-
 }

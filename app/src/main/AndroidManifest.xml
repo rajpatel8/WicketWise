@@ -204,6 +204,12 @@
             android:theme="@style/Theme.BecomeBetter"
             android:parentActivityName=".DashboardActivity" />
 
+        <activity
+            android:name=".StudentFeedbackListActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.BecomeBetter"
+            android:parentActivityName=".DashboardActivity" />
 
     </application>
 

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="@color/card_background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Video Title -->
+        <TextView
+            android:id="@+id/videoTitleText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Video Title"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/text_primary"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Coach Info -->
+        <TextView
+            android:id="@+id/coachNameText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Coach: John Doe"
+            android:textSize="14sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginBottom="4dp" />
+
+        <!-- Feedback Date -->
+        <TextView
+            android:id="@+id/feedbackDateText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Reviewed: Jan 15, 2025"
+            android:textSize="12sp"
+            android:textColor="@color/text_hint"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Feedback Snippet -->
+        <TextView
+            android:id="@+id/feedbackSnippetText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Great improvement in your technique! Keep practicing the follow-through..."
+            android:textSize="14sp"
+            android:textColor="@color/text_secondary"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/rounded_background"
+            android:backgroundTint="@color/feedback_background"
+            android:padding="12dp"
+            android:maxLines="3"
+            android:ellipsize="end" />
+
+        <!-- Actions -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end">
+
+            <Button
+                android:id="@+id/viewFeedbackBtn"
+                style="@style/Widget.Material3.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="View Feedback"
+                android:textSize="12sp"
+                android:backgroundTint="@color/cricket_green_primary"
+                android:drawableStart="@drawable/ic_play"
+                android:drawableTint="@color/white"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="8dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
