@@ -569,27 +569,7 @@ public long addAnnotation(Annotation annotation) {
     }
 
     // Get student by email
-    public Student getStudentByEmail(String email) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        String query = "SELECT * FROM " + TABLE_STUDENTS + " WHERE " + COLUMN_EMAIL + " = ?";
-        Cursor cursor = db.rawQuery(query, new String[]{email});
 
-        Student student = null;
-        if (cursor.moveToFirst()) {
-            student = new Student();
-            student.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)));
-            student.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)));
-            student.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)));
-            student.setPassword(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD)));
-            student.setPhone(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PHONE)));
-            student.setAge(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_AGE)));
-            student.setSkillLevel(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SKILL_LEVEL)));
-            student.setCoachId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_COACH_ID)));
-            student.setCreatedAt(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CREATED_AT)));
-        }
-        cursor.close();
-        return student;
-    }
 
     // Update coach profile
     public boolean updateCoach(Coach coach) {
@@ -768,6 +748,117 @@ public long addAnnotation(Annotation annotation) {
         }
         cursor.close();
         return students;
+    }
+
+    public boolean hasFeedbackForSubmission(int submissionId, int coachId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        // Check if table exists first
+        if (!tableExists(db, TABLE_VIDEO_FEEDBACKS)) {
+            return false;
+        }
+
+        String query = "SELECT COUNT(*) FROM " + TABLE_VIDEO_FEEDBACKS +
+                " WHERE " + COLUMN_SUBMISSION_ID + " = ? AND " + COLUMN_FEEDBACK_COACH_ID + " = ?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(submissionId), String.valueOf(coachId)});
+
+        int count = 0;
+        if (cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+        }
+        cursor.close();
+
+        return count > 0;
+    }
+
+    public VideoFeedback getVideoFeedback(int submissionId, int coachId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        if (!tableExists(db, TABLE_VIDEO_FEEDBACKS)) {
+            return null;
+        }
+
+        String query = "SELECT vf.*, c.name as coach_name, c.email as coach_email " +
+                "FROM " + TABLE_VIDEO_FEEDBACKS + " vf " +
+                "INNER JOIN " + TABLE_COACHES + " c ON vf." + COLUMN_FEEDBACK_COACH_ID + " = c." + COLUMN_ID + " " +
+                "WHERE vf." + COLUMN_SUBMISSION_ID + " = ? AND vf." + COLUMN_FEEDBACK_COACH_ID + " = ?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(submissionId), String.valueOf(coachId)});
+        VideoFeedback feedback = null;
+
+        if (cursor.moveToFirst()) {
+            feedback = cursorToVideoFeedback(cursor);
+
+            // Load voice recordings
+            List<VoiceRecording> voiceRecordings = getVoiceRecordings(feedback.getFeedbackId());
+            feedback.setVoiceRecordings(voiceRecordings);
+        }
+
+        cursor.close();
+        return feedback;
+    }
+
+// 4. Add method to save complete video feedback
+
+    public boolean saveVideoFeedback(VideoFeedback feedback) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        try {
+            db.beginTransaction();
+
+            ContentValues values = new ContentValues();
+            values.put(COLUMN_SUBMISSION_ID, feedback.getSubmissionId());
+            values.put(COLUMN_FEEDBACK_COACH_ID, feedback.getCoachId());
+            values.put(COLUMN_FEEDBACK_TEXT, feedback.getFeedbackText());
+            values.put(COLUMN_FEEDBACK_ANNOTATION_DATA, feedback.getAnnotationData());
+            values.put(COLUMN_FEEDBACK_RATING, feedback.getRating());
+            values.put(COLUMN_FEEDBACK_STATUS, feedback.getStatus());
+
+            long feedbackId;
+            if (feedback.getFeedbackId() > 0) {
+                // Update existing feedback
+                int rows = db.update(TABLE_VIDEO_FEEDBACKS, values,
+                        COLUMN_FEEDBACK_ID + " = ?",
+                        new String[]{String.valueOf(feedback.getFeedbackId())});
+                feedbackId = feedback.getFeedbackId();
+            } else {
+                // Insert new feedback
+                feedbackId = db.insert(TABLE_VIDEO_FEEDBACKS, null, values);
+                feedback.setFeedbackId((int)feedbackId);
+            }
+
+            if (feedbackId > 0) {
+                // Save voice recordings
+                saveVoiceRecordings((int)feedbackId, feedback.getVoiceRecordings());
+
+                // Update submission status
+                updateSubmissionStatus(feedback.getSubmissionId(), "reviewed");
+
+                db.setTransactionSuccessful();
+                return true;
+            }
+
+        } catch (Exception e) {
+            Log.e("DatabaseHelper", "Error saving video feedback", e);
+        } finally {
+            db.endTransaction();
+        }
+
+        return false;
+    }
+
+// 5. Add method to update submission status
+
+    public void updateSubmissionStatus(int submissionId, String status) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_SUBMISSION_STATUS, status);
+
+        db.update(TABLE_VIDEO_SUBMISSIONS, values,
+                COLUMN_SUBMISSION_ID + " = ?",
+                new String[]{String.valueOf(submissionId)});
     }
 
     // Inner class for assignment statistics
@@ -1678,61 +1769,28 @@ public long addAnnotation(Annotation annotation) {
 
 // ============= VIDEO FEEDBACK METHODS =============
 
-    public boolean saveVideoFeedback(VideoFeedback feedback) {
-        SQLiteDatabase db = this.getWritableDatabase();
 
-        ContentValues values = new ContentValues();
-        values.put(COLUMN_SUBMISSION_ID, feedback.getSubmissionId());
-        values.put(COLUMN_FEEDBACK_COACH_ID, feedback.getCoachId());
-        values.put(COLUMN_FEEDBACK_TEXT, feedback.getFeedbackText());
-        values.put(COLUMN_FEEDBACK_ANNOTATION_DATA, feedback.getAnnotationData());
-        values.put(COLUMN_FEEDBACK_VOICE_RECORDING_PATH, feedback.getVoiceRecordingPath());
-        values.put(COLUMN_FEEDBACK_RATING, feedback.getRating());
-        values.put(COLUMN_FEEDBACK_STATUS, feedback.getStatus());
-
-        long feedbackId;
-        if (feedback.getFeedbackId() > 0) {
-            // Update existing feedback
-            int result = db.update(TABLE_VIDEO_FEEDBACKS, values,
-                    COLUMN_FEEDBACK_ID + " = ?",
-                    new String[]{String.valueOf(feedback.getFeedbackId())});
-            feedbackId = feedback.getFeedbackId();
-        } else {
-            // Insert new feedback
-            feedbackId = db.insert(TABLE_VIDEO_FEEDBACKS, null, values);
-            feedback.setFeedbackId((int) feedbackId);
-        }
-
-        if (feedbackId > 0) {
-            // Save voice recordings
-            saveVoiceRecordings(feedback.getFeedbackId(), feedback.getVoiceRecordings());
-            return true;
-        }
-
-        return false;
-    }
-
-    public VideoFeedback getVideoFeedback(int submissionId, int coachId) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        String query = "SELECT vf.*, c." + COLUMN_NAME + " as coach_name, c." + COLUMN_EMAIL + " as coach_email " +
-                "FROM " + TABLE_VIDEO_FEEDBACKS + " vf " +
-                "INNER JOIN " + TABLE_COACHES + " c ON vf." + COLUMN_FEEDBACK_COACH_ID + " = c." + COLUMN_ID + " " +
-                "WHERE vf." + COLUMN_SUBMISSION_ID + " = ? AND vf." + COLUMN_FEEDBACK_COACH_ID + " = ?";
-
-        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(submissionId), String.valueOf(coachId)});
-        VideoFeedback feedback = null;
-
-        if (cursor.moveToFirst()) {
-            feedback = cursorToVideoFeedback(cursor);
-
-            // Load voice recordings
-            List<VoiceRecording> voiceRecordings = getVoiceRecordings(feedback.getFeedbackId());
-            feedback.setVoiceRecordings(voiceRecordings);
-        }
-
-        cursor.close();
-        return feedback;
-    }
+//    public VideoFeedback getVideoFeedback(int submissionId, int coachId) {
+//        SQLiteDatabase db = this.getReadableDatabase();
+//        String query = "SELECT vf.*, c." + COLUMN_NAME + " as coach_name, c." + COLUMN_EMAIL + " as coach_email " +
+//                "FROM " + TABLE_VIDEO_FEEDBACKS + " vf " +
+//                "INNER JOIN " + TABLE_COACHES + " c ON vf." + COLUMN_FEEDBACK_COACH_ID + " = c." + COLUMN_ID + " " +
+//                "WHERE vf." + COLUMN_SUBMISSION_ID + " = ? AND vf." + COLUMN_FEEDBACK_COACH_ID + " = ?";
+//
+//        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(submissionId), String.valueOf(coachId)});
+//        VideoFeedback feedback = null;
+//
+//        if (cursor.moveToFirst()) {
+//            feedback = cursorToVideoFeedback(cursor);
+//
+//            // Load voice recordings
+//            List<VoiceRecording> voiceRecordings = getVoiceRecordings(feedback.getFeedbackId());
+//            feedback.setVoiceRecordings(voiceRecordings);
+//        }
+//
+//        cursor.close();
+//        return feedback;
+//    }
 
 //    public List<VideoFeedback> getVideoFeedbacks(int submissionId) {
 //        SQLiteDatabase db = this.getReadableDatabase();
@@ -1793,47 +1851,6 @@ public long addAnnotation(Annotation annotation) {
     }
 
 // ============= VOICE RECORDING METHODS =============
-
-    private void saveVoiceRecordings(int feedbackId, List<VoiceRecording> recordings) {
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        // First, delete existing recordings for this feedback
-        db.delete(TABLE_VOICE_RECORDINGS, COLUMN_FEEDBACK_ID + " = ?",
-                new String[]{String.valueOf(feedbackId)});
-
-        // Insert new recordings
-        for (VoiceRecording recording : recordings) {
-            ContentValues values = new ContentValues();
-            values.put(COLUMN_FEEDBACK_ID, feedbackId);
-            values.put(COLUMN_RECORDING_PATH, recording.getRecordingPath());
-            values.put(COLUMN_RECORDING_DURATION, recording.getDuration());
-            values.put(COLUMN_RECORDING_TIMESTAMP, recording.getVideoTimestamp());
-            values.put(COLUMN_RECORDING_TITLE, recording.getTitle());
-
-            long recordingId = db.insert(TABLE_VOICE_RECORDINGS, null, values);
-            recording.setRecordingId((int) recordingId);
-        }
-    }
-
-    public List<VoiceRecording> getVoiceRecordings(int feedbackId) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        String query = "SELECT * FROM " + TABLE_VOICE_RECORDINGS +
-                " WHERE " + COLUMN_FEEDBACK_ID + " = ? " +
-                " ORDER BY " + COLUMN_RECORDING_TIMESTAMP + " ASC";
-
-        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(feedbackId)});
-        List<VoiceRecording> recordings = new ArrayList<>();
-
-        if (cursor.moveToFirst()) {
-            do {
-                VoiceRecording recording = cursorToVoiceRecording(cursor);
-                recordings.add(recording);
-            } while (cursor.moveToNext());
-        }
-
-        cursor.close();
-        return recordings;
-    }
 
     private VoiceRecording cursorToVoiceRecording(Cursor cursor) {
         VoiceRecording recording = new VoiceRecording();
@@ -1943,6 +1960,35 @@ public long addAnnotation(Annotation annotation) {
 //        cursor.close();
 //        return student;
 //    }
+
+    public List<VideoSubmission> getSubmissionsWithFeedbackForStudent(int studentId) {
+        List<VideoSubmission> submissions = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query = "SELECT DISTINCT vs.*, s.name as student_name " +
+                "FROM " + TABLE_VIDEO_SUBMISSIONS + " vs " +
+                "INNER JOIN " + TABLE_STUDENTS + " s ON vs." + COLUMN_SUBMISSION_STUDENT_ID + " = s." + COLUMN_ID + " " +
+                "INNER JOIN " + TABLE_VIDEO_FEEDBACKS + " vf ON vs." + COLUMN_SUBMISSION_ID + " = vf." + COLUMN_SUBMISSION_ID + " " +
+                "WHERE vs." + COLUMN_SUBMISSION_STUDENT_ID + " = ? " +
+                "ORDER BY vf." + COLUMN_FEEDBACK_DATE + " DESC";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(studentId)});
+
+        if (cursor.moveToFirst()) {
+            do {
+                VideoSubmission submission = cursorToVideoSubmission(cursor);
+
+                // Load feedbacks for this submission
+                List<VideoFeedback> feedbacks = getVideoFeedbacks(submission.getSubmissionId());
+                submission.setFeedbacks(feedbacks);
+
+                submissions.add(submission);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        return submissions;
+    }
 
     public Student getStudentById(int studentId) {
         SQLiteDatabase db = this.getReadableDatabase();
@@ -2301,4 +2347,131 @@ public List<Video> getVideoSubmissionsAsVideos(int coachId) {
     android.util.Log.d("DatabaseHelper", "🎯 Returning " + videos.size() + " videos for coach");
     return videos;
 }
+    public int getFeedbackCountForStudent(int studentId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        if (!tableExists(db, TABLE_VIDEO_FEEDBACKS)) {
+            return 0;
+        }
+
+        String query = "SELECT COUNT(DISTINCT vf." + COLUMN_FEEDBACK_ID + ") " +
+                "FROM " + TABLE_VIDEO_FEEDBACKS + " vf " +
+                "INNER JOIN " + TABLE_VIDEO_SUBMISSIONS + " vs ON vf." + COLUMN_SUBMISSION_ID + " = vs." + COLUMN_SUBMISSION_ID + " " +
+                "WHERE vs." + COLUMN_SUBMISSION_STUDENT_ID + " = ?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(studentId)});
+
+        int count = 0;
+        if (cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+        }
+        cursor.close();
+
+        return count;
+    }
+
+    // Method to get pending submissions count for a student
+    public int getPendingSubmissionsCount(int studentId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        if (!tableExists(db, TABLE_VIDEO_SUBMISSIONS)) {
+            return 0;
+        }
+
+        String query = "SELECT COUNT(*) FROM " + TABLE_VIDEO_SUBMISSIONS +
+                " WHERE " + COLUMN_SUBMISSION_STUDENT_ID + " = ? AND " + COLUMN_SUBMISSION_STATUS + " = 'pending'";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(studentId)});
+
+        int count = 0;
+        if (cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+        }
+        cursor.close();
+
+        return count;
+    }
+
+    // Method to get voice recordings for a feedback
+    public List<VoiceRecording> getVoiceRecordings(int feedbackId) {
+        List<VoiceRecording> recordings = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        if (!tableExists(db, TABLE_VOICE_RECORDINGS)) {
+            return recordings;
+        }
+
+        String query = "SELECT * FROM " + TABLE_VOICE_RECORDINGS +
+                " WHERE " + COLUMN_FEEDBACK_ID + " = ? " +
+                "ORDER BY " + COLUMN_RECORDING_TIMESTAMP + " ASC";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(feedbackId)});
+
+        if (cursor.moveToFirst()) {
+            do {
+                VoiceRecording recording = new VoiceRecording();
+                recording.setRecordingId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_RECORDING_ID)));
+                recording.setFeedbackId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_ID)));
+                recording.setRecordingPath(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_RECORDING_PATH)));
+                recording.setDuration(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_RECORDING_DURATION)));
+                recording.setVideoTimestamp(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_RECORDING_TIMESTAMP)));
+                recording.setTitle(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_RECORDING_TITLE)));
+
+                recordings.add(recording);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        return recordings;
+    }
+
+    // Method to save voice recordings for a feedback
+    private void saveVoiceRecordings(int feedbackId, List<VoiceRecording> recordings) {
+        if (recordings == null || recordings.isEmpty()) {
+            return;
+        }
+
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        // First, delete existing recordings for this feedback
+        db.delete(TABLE_VOICE_RECORDINGS, COLUMN_FEEDBACK_ID + " = ?",
+                new String[]{String.valueOf(feedbackId)});
+
+        // Insert new recordings
+        for (VoiceRecording recording : recordings) {
+            ContentValues values = new ContentValues();
+            values.put(COLUMN_FEEDBACK_ID, feedbackId);
+            values.put(COLUMN_RECORDING_PATH, recording.getRecordingPath());
+            values.put(COLUMN_RECORDING_DURATION, recording.getDuration());
+            values.put(COLUMN_RECORDING_TIMESTAMP, recording.getVideoTimestamp());
+            values.put(COLUMN_RECORDING_TITLE, recording.getTitle());
+
+            db.insert(TABLE_VOICE_RECORDINGS, null, values);
+        }
+    }
+
+    // Method to get student by email
+    public Student getStudentByEmail(String email) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT * FROM " + TABLE_STUDENTS + " WHERE " + COLUMN_EMAIL + " = ?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{email});
+
+        Student student = null;
+        if (cursor.moveToFirst()) {
+            student = new Student();
+            student.setId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID)));
+            student.setName(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)));
+            student.setEmail(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EMAIL)));
+            student.setPassword(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PASSWORD)));
+            student.setPhone(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_PHONE)));
+            student.setAge(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_AGE)));
+            student.setSkillLevel(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SKILL_LEVEL)));
+            student.setCoachId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_COACH_ID)));
+            student.setCreatedAt(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CREATED_AT)));
+        }
+        cursor.close();
+        return student;
+    }
+
 }

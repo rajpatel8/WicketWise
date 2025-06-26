@@ -107,8 +107,64 @@ public class DashboardActivity extends AppCompatActivity {
             findCoachBtn.setOnClickListener(v -> findCoach());
         }
         if (bookSessionBtn != null) {
-            // CHANGE THIS LINE - Replace viewMyRequests() with uploadVideo()
-            bookSessionBtn.setOnClickListener(v -> uploadVideo());
+            bookSessionBtn.setOnClickListener(v -> viewMyRequests());
+        }
+
+        // ADD THESE NEW STUDENT ACTIONS:
+        if (uploadVideoBtn != null) {
+            uploadVideoBtn.setOnClickListener(v -> uploadVideo());
+        }
+        if (viewFeedbackBtn != null) {
+            viewFeedbackBtn.setOnClickListener(v -> viewMyFeedback());
+        }
+    }
+
+//    private void uploadVideo() {
+//        Intent intent = new Intent(this, EnhancedVideoUploadActivity.class);
+//        intent.putExtra("userEmail", userEmail);
+//        startActivity(intent);
+//    }
+
+    private void viewMyFeedback() {
+        Intent intent = new Intent(this, StudentFeedbackListActivity.class);
+        intent.putExtra("studentEmail", userEmail);
+        startActivity(intent);
+    }
+
+    private void updateStudentDashboard() {
+        if ("student".equals(userType)) {
+            DatabaseHelper databaseHelper = new DatabaseHelper(this);
+            Student student = databaseHelper.getStudentByEmail(userEmail);
+
+            if (student != null) {
+                // Get feedback count
+                int feedbackCount = databaseHelper.getFeedbackCountForStudent(student.getId());
+
+                // Update UI to show feedback count
+                if (viewFeedbackBtn != null && feedbackCount > 0) {
+                    viewFeedbackBtn.setText("View Feedback (" + feedbackCount + ")");
+                }
+
+                // Get pending uploads count
+                int pendingUploads = databaseHelper.getPendingSubmissionsCount(student.getId());
+
+                // Show dashboard stats
+                updateStudentStats(feedbackCount, pendingUploads);
+            }
+        }
+    }
+
+    private void updateStudentStats(int feedbackCount, int pendingUploads) {
+        // Find stats text views (you may need to add these to your layout)
+        TextView feedbackCountText = findViewById(R.id.feedbackCountText);
+        TextView uploadsCountText = findViewById(R.id.uploadsCountText);
+
+        if (feedbackCountText != null) {
+            feedbackCountText.setText(String.valueOf(feedbackCount));
+        }
+
+        if (uploadsCountText != null) {
+            uploadsCountText.setText(String.valueOf(pendingUploads));
         }
     }
 

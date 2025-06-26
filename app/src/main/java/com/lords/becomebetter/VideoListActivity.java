@@ -188,57 +188,46 @@ public class VideoListActivity extends AppCompatActivity {
                 // Format upload date
                 uploadDateText.setText("Uploaded: " + formatUploadDate(video.getUploadDate()));
 
-                // Set status based on whether it's been reviewed
-                String status = video.getStatus();
-                if ("submitted".equals(status)) {
+                // Check if feedback exists for this submission
+                boolean hasFeedback = databaseHelper.hasFeedbackForSubmission(video.getVideoId(), coachId);
+
+                // Set status based on feedback
+                if (hasFeedback) {
+                    statusText.setText("Feedback Given");
+                    statusText.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.success_color));
+                    if (statusIndicator != null) {
+                        statusIndicator.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.success_color));
+                    }
+                    reviewBtn.setText("Review Feedback");
+                    annotateBtn.setText("Edit Feedback");
+                } else {
                     statusText.setText("Pending Review");
                     statusText.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.warning_color));
                     if (statusIndicator != null) {
                         statusIndicator.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.warning_color));
                     }
-                } else if ("reviewed".equals(status)) {
-                    statusText.setText("Reviewed");
-                    statusText.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.success_color));
-                    if (statusIndicator != null) {
-                        statusIndicator.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.success_color));
-                    }
-                } else {
-                    statusText.setText("Unknown");
-                    statusText.setTextColor(ContextCompat.getColor(itemView.getContext(), R.color.text_secondary));
-                    if (statusIndicator != null) {
-                        statusIndicator.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.text_secondary));
-                    }
-                }
-
-                // Update button text based on status
-                if ("reviewed".equals(status)) {
-                    reviewBtn.setText("View Again");
-                    annotateBtn.setVisibility(View.VISIBLE);
-                    annotateBtn.setText("View Annotations");
-                } else {
                     reviewBtn.setText("Review Video");
-                    annotateBtn.setVisibility(View.VISIBLE);
-                    annotateBtn.setText("Add Feedback");
+                    annotateBtn.setText("Give Feedback");
                 }
 
-                // Set click listeners - pass the correct video ID
+                // Set click listeners - Now use EnhancedVideoPlayerActivity
                 reviewBtn.setOnClickListener(v -> {
-                    Log.d("VideoList", "🎬 Opening video player for video ID: " + video.getVideoId());
-                    Intent intent = new Intent(VideoListActivity.this, VideoPlayerActivity.class);
-                    intent.putExtra("videoId", video.getVideoId());
+                    Log.d("VideoList", "🎬 Opening enhanced video player for video ID: " + video.getVideoId());
+                    Intent intent = new Intent(VideoListActivity.this, EnhancedVideoPlayerActivity.class);
+                    intent.putExtra("submissionId", video.getVideoId());
+                    intent.putExtra("coachId", coachId);
                     intent.putExtra("coachEmail", coachEmail);
-                    intent.putExtra("viewOnly", true);
-                    intent.putExtra("isSubmission", true); // Add this flag
+                    intent.putExtra("viewOnly", true); // View only mode
                     startActivity(intent);
                 });
 
                 annotateBtn.setOnClickListener(v -> {
-                    Log.d("VideoList", "✏️ Opening video player for annotation, video ID: " + video.getVideoId());
-                    Intent intent = new Intent(VideoListActivity.this, VideoPlayerActivity.class);
-                    intent.putExtra("videoId", video.getVideoId());
+                    Log.d("VideoList", "✏️ Opening enhanced video player for feedback, video ID: " + video.getVideoId());
+                    Intent intent = new Intent(VideoListActivity.this, EnhancedVideoPlayerActivity.class);
+                    intent.putExtra("submissionId", video.getVideoId());
+                    intent.putExtra("coachId", coachId);
                     intent.putExtra("coachEmail", coachEmail);
-                    intent.putExtra("viewOnly", false);
-                    intent.putExtra("isSubmission", true); // Add this flag
+                    intent.putExtra("viewOnly", false); // Feedback mode
                     startActivityForResult(intent, 100);
                 });
             }

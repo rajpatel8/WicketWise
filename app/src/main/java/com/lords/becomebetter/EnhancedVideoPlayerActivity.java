@@ -89,11 +89,13 @@ public class EnhancedVideoPlayerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_enhanced_video_player);
 
-        // Get intent data
+        // Get intent data - support both coach and student access
         submissionId = getIntent().getIntExtra("submissionId", 0);
         coachId = getIntent().getIntExtra("coachId", 0);
         coachEmail = getIntent().getStringExtra("coachEmail");
+        int studentId = getIntent().getIntExtra("studentId", 0);
         isViewOnly = getIntent().getBooleanExtra("viewOnly", false);
+        boolean showFeedback = getIntent().getBooleanExtra("showFeedback", false);
 
         // Initialize data structures
         voiceRecordings = new ArrayList<>();
@@ -108,9 +110,96 @@ public class EnhancedVideoPlayerActivity extends AppCompatActivity {
         setupZoomControls();
         setupClickListeners();
 
+        // Handle different user types
+        if (studentId > 0) {
+            // Student viewing their feedback
+            setupStudentView(studentId, showFeedback);
+        } else if (coachId > 0) {
+            // Coach providing/viewing feedback
+            setupCoachView();
+        }
+
         if (isViewOnly) {
             hideEditingControls();
         }
+    }
+    private void setupCoachView() {
+        // Coach can edit and provide feedback
+        // This is the existing functionality
+    }
+
+    private void showFeedbackOverlay() {
+        // Create a semi-transparent overlay showing feedback info
+        if (currentFeedback != null) {
+            // Update feedback text display
+            if (feedbackTextEdit != null && currentFeedback.getFeedbackText() != null) {
+                feedbackTextEdit.setText(currentFeedback.getFeedbackText());
+            }
+
+            // Show voice recordings with play buttons
+            updateVoiceRecordingsDisplay();
+
+            // Show coach info
+            if (currentFeedback.getCoachName() != null) {
+                // You can add a TextView to show coach name
+                TextView coachInfoText = findViewById(R.id.coachInfoText);
+                if (coachInfoText != null) {
+                    coachInfoText.setText("Feedback from: " + currentFeedback.getCoachName());
+                    coachInfoText.setVisibility(View.VISIBLE);
+                }
+            }
+        }
+    }
+
+    // Add method to play voice recordings for students
+    private void playVoiceRecording(VoiceRecording recording) {
+        try {
+            // Seek video to the timestamp of the voice recording
+            if (videoView != null && recording.getVideoTimestamp() > 0) {
+                videoView.seekTo(recording.getVideoTimestamp());
+            }
+
+            // Play the voice recording
+            MediaPlayer mediaPlayer = new MediaPlayer();
+            mediaPlayer.setDataSource(recording.getRecordingPath());
+            mediaPlayer.prepare();
+            mediaPlayer.start();
+
+            mediaPlayer.setOnCompletionListener(mp -> {
+                mp.release();
+                Toast.makeText(this, "Voice feedback completed", Toast.LENGTH_SHORT).show();
+            });
+
+            Toast.makeText(this, "Playing voice feedback at " + formatTime(recording.getVideoTimestamp()),
+                    Toast.LENGTH_SHORT).show();
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error playing voice recording", e);
+            Toast.makeText(this, "Error playing voice feedback", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void setupStudentView(int studentId, boolean showFeedback) {
+        // Student can only view, not edit
+        isViewOnly = true;
+
+        if (showFeedback) {
+            // Load and display all feedback for this submission
+            DatabaseHelper databaseHelper = new DatabaseHelper(this);
+            List<VideoFeedback> feedbacks = databaseHelper.getVideoFeedbacks(submissionId);
+
+            if (!feedbacks.isEmpty()) {
+                currentFeedback = feedbacks.get(0); // Show most recent feedback
+                loadExistingFeedback();
+                showFeedbackOverlay();
+            }
+        }
+
+        // Hide coach-specific controls
+        if (recordVoiceBtn != null) recordVoiceBtn.setVisibility(View.GONE);
+        if (saveAnnotationBtn != null) saveAnnotationBtn.setVisibility(View.GONE);
+        if (saveFeedbackBtn != null) saveFeedbackBtn.setVisibility(View.GONE);
+        if (feedbackTextEdit != null) feedbackTextEdit.setEnabled(false);
     }
 
     private void initializeViews() {
@@ -417,27 +506,6 @@ public class EnhancedVideoPlayerActivity extends AppCompatActivity {
             deleteBtn.setOnClickListener(v -> deleteVoiceRecording(recording));
 
             voiceRecordingsLayout.addView(recordingView);
-        }
-    }
-
-    private void playVoiceRecording(VoiceRecording recording) {
-        try {
-            MediaPlayer mediaPlayer = new MediaPlayer();
-            mediaPlayer.setDataSource(recording.getRecordingPath());
-            mediaPlayer.prepare();
-            mediaPlayer.start();
-
-            // Seek video to recording timestamp
-            videoView.seekTo(recording.getVideoTimestamp());
-            currentPosition = recording.getVideoTimestamp();
-            videoSeekBar.setProgress(currentPosition);
-            currentTimeText.setText(formatTime(currentPosition));
-
-            mediaPlayer.setOnCompletionListener(mp -> mp.release());
-
-        } catch (IOException e) {
-            Log.e(TAG, "Error playing voice recording", e);
-            Toast.makeText(this, "Error playing voice recording", Toast.LENGTH_SHORT).show();
         }
     }
 
