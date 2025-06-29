@@ -160,8 +160,9 @@ public class EditStudentProfileActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        // Return to student profile
-        Intent intent = new Intent(this, StudentProfileActivity.class);
+        // Return to dashboard
+        Intent intent = new Intent(this, DashboardActivity.class);
+        intent.putExtra("userType", "student");
         intent.putExtra("userEmail", userEmail);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);

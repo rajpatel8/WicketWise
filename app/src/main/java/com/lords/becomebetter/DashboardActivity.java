@@ -178,7 +178,7 @@ public class DashboardActivity extends AppCompatActivity {
 
                 // Update UI to show feedback count
                 if (viewFeedbackBtn != null && feedbackCount > 0) {
-                    viewFeedbackBtn.setText("View Feedback (" + feedbackCount + ")");
+                    viewFeedbackBtn.setText("Feedback (" + feedbackCount + ")");
                 }
 
                 // Get pending uploads count

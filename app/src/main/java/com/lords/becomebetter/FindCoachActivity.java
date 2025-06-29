@@ -229,10 +229,12 @@ public class FindCoachActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        // Return to student profile
-        Intent intent = new Intent(this, StudentProfileActivity.class);
+        // Return to dashboard instead of student profile
+        Intent intent = new Intent(this, DashboardActivity.class);
         intent.putExtra("userEmail", studentEmail);
+        intent.putExtra("userType", "student"); // Add user type for dashboard
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
+        finish(); // Close this activity
     }
 }

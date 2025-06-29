@@ -54,6 +54,7 @@
     </LinearLayout>
 
     <!-- Filter Buttons -->
+    <!-- Filter Buttons - FIXED with proper text size and styling -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -65,21 +66,26 @@
             android:id="@+id/viewPendingBtn"
             style="@style/Widget.Material3.Button"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_weight="1"
             android:text="Pending"
+            android:textSize="16sp"
+            android:textStyle="bold"
             android:backgroundTint="@color/cricket_green_primary"
             android:textColor="@color/white"
             android:layout_marginEnd="8dp" />
 
         <Button
             android:id="@+id/viewAllBtn"
-            style="@style/Widget.Material3.Button.TextButton"
+            style="@style/Widget.Material3.Button"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_weight="1"
             android:text="All Requests"
-            android:textColor="@color/text_secondary"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:backgroundTint="@color/text_secondary"
+            android:textColor="@color/white"
             android:layout_marginStart="8dp" />
 
     </LinearLayout>

@@ -32,6 +32,8 @@ public class SimpleFindCoachActivity extends AppCompatActivity {
     private int studentId;
     private Student currentStudent;
 
+    private String userEmail;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,6 +42,8 @@ public class SimpleFindCoachActivity extends AppCompatActivity {
         databaseHelper = new DatabaseHelper(this);
         studentEmail = getIntent().getStringExtra("studentEmail");
         studentId = getIntent().getIntExtra("studentId", 0);
+        userEmail = getIntent().getStringExtra("userEmail");
+        currentStudent = databaseHelper.getStudentByEmail(studentEmail);
 
         initializeViews();
         loadStudentData();
@@ -268,9 +272,10 @@ public class SimpleFindCoachActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        // Return to student profile
-        Intent intent = new Intent(this, StudentProfileActivity.class);
-        intent.putExtra("userEmail", studentEmail);
+        // Return to dashboard
+        Intent intent = new Intent(this, DashboardActivity.class);
+        intent.putExtra("userType", "student");
+        intent.putExtra("userEmail", userEmail);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }

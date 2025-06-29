@@ -155,6 +155,7 @@
         android:layout_marginBottom="16dp" />
 
     <!-- Action Buttons -->
+    <!-- Action Buttons - FIXED with better text size and height -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -164,35 +165,42 @@
         <Button
             android:id="@+id/reviewVideoBtn"
             android:layout_width="0dp"
-            android:layout_height="48dp"
+            android:layout_height="60dp"
             android:layout_weight="1"
             android:layout_marginEnd="8dp"
-            android:text="Quick View"
-            android:textColor="@color/cricket_green_primary"
-            android:textSize="14sp"
+            android:text="REVIEW VIDEO"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textAllCaps="true"
             android:background="@drawable/button_outline_background"
             android:drawableStart="@drawable/ic_play_arrow"
             android:drawableTint="@color/cricket_green_primary"
-            android:drawablePadding="6dp"
-            android:gravity="center" />
+            android:drawablePadding="8dp"
+            android:gravity="center"
+            android:maxLines="2"
+            android:lineSpacingMultiplier="0.8" />
 
         <!-- Annotate Button -->
         <Button
             android:id="@+id/annotateVideoBtn"
             android:layout_width="0dp"
-            android:layout_height="48dp"
+            android:layout_height="60dp"
             android:layout_weight="1"
             android:layout_marginStart="8dp"
-            android:text="Start Review"
+            android:text="GIVE FEEDBACK"
             android:textColor="@color/white"
-            android:textSize="14sp"
+            android:textSize="16sp"
             android:textStyle="bold"
+            android:textAllCaps="true"
             android:background="@drawable/button_background"
-            android:backgroundTint="@color/cricket_green_primary"
+            android:backgroundTint="@color/white"
             android:drawableStart="@drawable/ic_video_camera"
             android:drawableTint="@color/white"
-            android:drawablePadding="6dp"
-            android:gravity="center" />
+            android:drawablePadding="8dp"
+            android:gravity="center"
+            android:maxLines="2"
+            android:lineSpacingMultiplier="0.8" />
 
     </LinearLayout>
 

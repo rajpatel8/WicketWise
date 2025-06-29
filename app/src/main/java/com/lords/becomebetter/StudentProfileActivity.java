@@ -15,10 +15,8 @@ public class StudentProfileActivity extends AppCompatActivity {
     private TextView nameText, emailText, phoneText, ageText,
             skillLevelText, coachText, joinedDateText;
     private Button editProfileBtn, findCoachBtn;
-    private ImageButton backBtn;  // Changed from Button to ImageButton
+    private ImageButton backBtn;
     private ImageView profileIcon;
-
-    private Button uploadVideoBtn;
 
     private DatabaseHelper databaseHelper;
     private Student currentStudent;
@@ -39,7 +37,6 @@ public class StudentProfileActivity extends AppCompatActivity {
 
     private void initializeViews() {
         // Profile info views
-        uploadVideoBtn = findViewById(R.id.uploadVideoBtn);
         nameText = findViewById(R.id.studentNameText);
         emailText = findViewById(R.id.studentEmailText);
         phoneText = findViewById(R.id.studentPhoneText);
@@ -53,17 +50,7 @@ public class StudentProfileActivity extends AppCompatActivity {
         findCoachBtn = findViewById(R.id.findCoachBtn);
         backBtn = findViewById(R.id.backBtn);
         profileIcon = findViewById(R.id.profileIcon);
-
-        // DEBUG: Check if uploadVideoBtn is found
-        if (uploadVideoBtn == null) {
-            Toast.makeText(this, "ERROR: Upload video button not found in layout!", Toast.LENGTH_LONG).show();
-        } else {
-            Toast.makeText(this, "SUCCESS: Upload video button found!", Toast.LENGTH_SHORT).show();
-            // Force visibility for debugging
-            uploadVideoBtn.setVisibility(View.VISIBLE);
-        }
     }
-
 
     private void loadStudentProfile() {
         if (userEmail == null || userEmail.isEmpty()) {
@@ -107,14 +94,12 @@ public class StudentProfileActivity extends AppCompatActivity {
         String coachName = databaseHelper.getCoachNameById(currentStudent.getCoachId());
         coachText.setText(coachName);
 
-        // Show/hide buttons based on coach assignment
+        // Show/hide find coach button based on assignment
         if (currentStudent.getCoachId() == 0) {
             findCoachBtn.setVisibility(View.VISIBLE);
-            uploadVideoBtn.setVisibility(View.GONE); // Hide upload button when no coach
             coachText.setTextColor(getResources().getColor(R.color.text_secondary));
         } else {
             findCoachBtn.setVisibility(View.GONE);
-            uploadVideoBtn.setVisibility(View.VISIBLE); // Show upload button when coach assigned
             coachText.setTextColor(getResources().getColor(R.color.text_primary));
         }
 
@@ -130,18 +115,6 @@ public class StudentProfileActivity extends AppCompatActivity {
             Intent intent = new Intent(this, EditStudentProfileActivity.class);
             intent.putExtra("userEmail", userEmail);
             startActivityForResult(intent, 100);
-        });
-
-        uploadVideoBtn.setOnClickListener(v -> {
-            if (currentStudent.getCoachId() == 0) {
-                Toast.makeText(this, "Please assign a coach first before uploading videos",
-                        Toast.LENGTH_LONG).show();
-                return;
-            }
-
-            Intent intent = new Intent(this, VideoUploadActivity.class);
-            intent.putExtra("studentEmail", userEmail);
-            startActivityForResult(intent, 200);
         });
 
         findCoachBtn.setOnClickListener(v -> {
@@ -168,10 +141,6 @@ public class StudentProfileActivity extends AppCompatActivity {
             // Profile was updated, reload the data
             loadStudentProfile();
             Toast.makeText(this, "Profile updated successfully!", Toast.LENGTH_SHORT).show();
-        } else if (requestCode == 200 && resultCode == RESULT_OK) {
-            // Video was uploaded successfully
-            Toast.makeText(this, "Video uploaded successfully! Your coach will review it soon.",
-                    Toast.LENGTH_LONG).show();
         }
     }
 
@@ -213,7 +182,4 @@ public class StudentProfileActivity extends AppCompatActivity {
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }
-
-
-
 }
