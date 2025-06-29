@@ -222,12 +222,23 @@ public class VideoListActivity extends AppCompatActivity {
                 });
 
                 annotateBtn.setOnClickListener(v -> {
-                    Log.d("VideoList", "✏️ Opening enhanced video player for feedback, video ID: " + video.getVideoId());
-                    Intent intent = new Intent(VideoListActivity.this, EnhancedVideoPlayerActivity.class);
-                    intent.putExtra("submissionId", video.getVideoId());
-                    intent.putExtra("coachId", coachId);
-                    intent.putExtra("coachEmail", coachEmail);
-                    intent.putExtra("viewOnly", false); // Feedback mode
+                    Log.d("VideoList", "✏️ Opening video player for annotation, video ID: " + video.getVideoId());
+
+                    // DEBUG: Check if video exists in database
+                    DatabaseHelper db = new DatabaseHelper(VideoListActivity.this);
+                    Video checkVideo = db.getVideoById(video.getVideoId());
+                    if (checkVideo == null) {
+                        Log.e("VideoList", "❌ Video ID " + video.getVideoId() + " not found in database!");
+                        Toast.makeText(VideoListActivity.this, "Video not found in database. ID: " + video.getVideoId(), Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    Log.d("VideoList", "✅ Video found: " + checkVideo.getVideoTitle());
+
+                    Intent intent = new Intent(VideoListActivity.this, VideoPlayerActivity.class);
+                    intent.putExtra(VideoPlayerActivity.EXTRA_VIDEO_ID, video.getVideoId());
+                    intent.putExtra(VideoPlayerActivity.EXTRA_COACH_ID, coachId);
+                    intent.putExtra(VideoPlayerActivity.EXTRA_VIEW_ONLY, false);
                     startActivityForResult(intent, 100);
                 });
             }

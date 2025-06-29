@@ -1,53 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/black"
-    tools:context=".VideoPlayerActivity">
+    android:background="@color/black">
 
-    <!-- Header -->
+    <!-- Header with video info -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="16dp"
         android:background="@color/cricket_green_primary"
+        android:padding="16dp"
         android:gravity="center_vertical">
 
         <ImageButton
-            android:id="@+id/backBtn"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:id="@+id/backButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_arrow_back"
-            android:contentDescription="Back"
-            app:tint="@color/white" />
+            android:tint="@color/white"
+            android:contentDescription="Back" />
 
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp">
+            android:layout_marginStart="16dp">
 
             <TextView
-                android:id="@+id/videoTitleText"
+                android:id="@+id/titleText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Video Title"
                 android:textColor="@color/white"
-                android:textSize="16sp"
+                android:textSize="18sp"
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/studentNameText"
+                android:id="@+id/studentText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Student: Name"
+                android:text="Student Name"
                 android:textColor="@color/white"
                 android:textSize="12sp"
                 android:alpha="0.8"
@@ -55,9 +52,20 @@
 
         </LinearLayout>
 
+        <Button
+            android:id="@+id/saveButton"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="Save"
+            android:textColor="@color/cricket_green_primary"
+            android:background="@drawable/btn_white_rounded"
+            android:paddingHorizontal="16dp"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
     </LinearLayout>
 
-    <!-- Video Container with Overlay -->
+    <!-- Main video container with annotation overlay -->
     <FrameLayout
         android:id="@+id/videoContainer"
         android:layout_width="match_parent"
@@ -79,6 +87,62 @@
             android:layout_height="match_parent"
             android:background="@android:color/transparent" />
 
+        <!-- Cricket Tools Panel (Side) -->
+        <LinearLayout
+            android:id="@+id/cricketToolsPanel"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="end|center_vertical"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/tools_panel_background"
+            android:padding="8dp">
+
+            <ImageButton
+                android:id="@+id/fieldLayoutTool"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/cricket_tool_button"
+                android:src="@drawable/ic_cricket_field"
+                android:tint="@color/white"
+                android:contentDescription="Field Layout"
+                android:scaleType="centerInside" />
+
+            <ImageButton
+                android:id="@+id/playerMarkerTool"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/cricket_tool_button"
+                android:src="@drawable/ic_player_marker"
+                android:contentDescription="Player Markers"
+                android:scaleType="centerInside"
+                app:tint="@color/white" />
+
+            <ImageButton
+                android:id="@+id/ballPathTool"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/cricket_tool_button"
+                android:src="@drawable/ic_ball_path"
+                android:contentDescription="Ball Path"
+                android:scaleType="centerInside"
+                app:tint="@color/white" />
+
+            <ImageButton
+                android:id="@+id/notesTool"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/cricket_tool_button"
+                android:src="@drawable/ic_note"
+                android:contentDescription="Notes"
+                android:scaleType="centerInside"
+                app:tint="@color/white" />
+
+        </LinearLayout>
+
         <!-- Instruction Text -->
         <TextView
             android:layout_width="wrap_content"
@@ -86,13 +150,149 @@
             android:text="💡 Tap and draw on the video to add annotations"
             android:textColor="@color/white"
             android:textSize="12sp"
-            android:background="@color/black"
-            android:padding="8dp"
+            android:background="@drawable/instruction_background"
+            android:padding="12dp"
             android:layout_gravity="bottom|center_horizontal"
-            android:layout_marginBottom="8dp"
-            android:alpha="0.8" />
+            android:layout_marginBottom="120dp"
+            android:alpha="0.9" />
 
     </FrameLayout>
+
+    <!-- Drawing Tools Panel -->
+    <LinearLayout
+        android:id="@+id/drawingToolsPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/cricket_green_dark"
+        android:padding="12dp"
+        android:gravity="center">
+
+        <!-- Drawing Tools Row 1 -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/penTool"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/drawing_tool_button"
+                android:src="@drawable/ic_pen"
+                android:tint="@color/white"
+                android:contentDescription="Pen Tool"
+                android:scaleType="centerInside" />
+
+            <ImageButton
+                android:id="@+id/highlighterTool"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/drawing_tool_button"
+                android:src="@drawable/ic_highlighter"
+                android:tint="@color/white"
+                android:contentDescription="Highlighter Tool"
+                android:scaleType="centerInside" />
+
+            <ImageButton
+                android:id="@+id/arrowTool"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/drawing_tool_button"
+                android:src="@drawable/ic_arrow"
+                android:tint="@color/white"
+                android:contentDescription="Arrow Tool"
+                android:scaleType="centerInside" />
+
+            <ImageButton
+                android:id="@+id/circleTool"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/drawing_tool_button"
+                android:src="@drawable/ic_circle"
+                android:tint="@color/white"
+                android:contentDescription="Circle Tool"
+                android:scaleType="centerInside" />
+
+            <ImageButton
+                android:id="@+id/rectangleTool"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/drawing_tool_button"
+                android:src="@drawable/ic_rectangle"
+                android:tint="@color/white"
+                android:contentDescription="Rectangle Tool"
+                android:scaleType="centerInside" />
+
+        </LinearLayout>
+
+        <!-- Divider -->
+        <View
+            android:layout_width="1dp"
+            android:layout_height="48dp"
+            android:background="@color/white"
+            android:alpha="0.3"
+            android:layout_marginHorizontal="12dp" />
+
+        <!-- Action Tools -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <ImageButton
+                android:id="@+id/colorPicker"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/color_picker_button"
+                android:src="@drawable/ic_color_palette"
+                android:tint="@color/cricket_green_primary"
+                android:contentDescription="Color Picker"
+                android:scaleType="centerInside" />
+
+            <ImageButton
+                android:id="@+id/undoButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/action_tool_button"
+                android:src="@drawable/ic_undo"
+                android:tint="@color/white"
+                android:contentDescription="Undo"
+                android:scaleType="centerInside" />
+
+            <ImageButton
+                android:id="@+id/redoButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/action_tool_button"
+                android:src="@drawable/ic_redo"
+                android:tint="@color/white"
+                android:contentDescription="Redo"
+                android:scaleType="centerInside" />
+
+            <ImageButton
+                android:id="@+id/clearButton"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/action_tool_button"
+                android:src="@drawable/ic_clear"
+                android:tint="@color/white"
+                android:contentDescription="Clear All"
+                android:scaleType="centerInside" />
+
+        </LinearLayout>
+
+    </LinearLayout>
 
     <!-- Video Controls -->
     <LinearLayout
@@ -108,99 +308,76 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="12dp">
 
             <TextView
-                android:id="@+id/currentTimeText"
+                android:id="@+id/timeDisplay"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="00:00"
+                android:text="00:00 / 00:00"
                 android:textColor="@color/white"
-                android:textSize="12sp"
-                android:minWidth="40dp" />
+                android:textSize="14sp"
+                android:minWidth="100dp" />
 
             <SeekBar
-                android:id="@+id/videoSeekBar"
+                android:id="@+id/seekBar"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginHorizontal="12dp"
+                android:layout_marginHorizontal="16dp"
                 android:progressTint="@color/white"
-                android:thumbTint="@color/white" />
+                android:thumbTint="@color/white"
+                android:progressBackgroundTint="@color/cricket_green_light" />
 
             <TextView
-                android:id="@+id/totalTimeText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="00:00"
-                android:textColor="@color/white"
-                android:textSize="12sp"
-                android:minWidth="40dp"
-                android:gravity="end" />
+                android:text="🎬"
+                android:textSize="16sp"
+                android:layout_marginStart="8dp" />
 
         </LinearLayout>
 
-        <!-- Play Controls -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center"
-            android:layout_marginBottom="16dp">
-
-            <ImageButton
-                android:id="@+id/playPauseBtn"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
-                android:background="@drawable/rounded_background"
-                android:backgroundTint="@color/white"
-                android:src="@drawable/ic_play_arrow"
-                android:contentDescription="Play/Pause"
-                app:tint="@color/cricket_green_primary" />
-
-        </LinearLayout>
-
-        <!-- Annotation Controls -->
+        <!-- Control Buttons -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center">
 
-            <Button
-                android:id="@+id/clearAnnotationsBtn"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="8dp"
-                android:text="Clear"
-                android:textColor="@color/white"
-                android:textSize="14sp"
-                android:background="@drawable/button_outline_background"
-                android:backgroundTint="@android:color/transparent"
-                app:strokeColor="@color/white"
-                app:strokeWidth="2dp"
-                android:drawableStart="@drawable/ic_close"
-                android:drawableTint="@color/white"
-                android:drawablePadding="8dp"
-                android:gravity="center" />
+            <ImageButton
+                android:id="@+id/backwardButton"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_marginEnd="16dp"
+                android:background="@drawable/video_control_button"
+                android:src="@drawable/ic_backward_10"
+                android:tint="@color/cricket_green_primary"
+                android:contentDescription="Backward 10s"
+                android:scaleType="centerInside" />
 
-            <Button
-                android:id="@+id/saveAnnotationsBtn"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:layout_marginStart="8dp"
-                android:text="Save Annotations"
-                android:textColor="@color/cricket_green_primary"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:background="@drawable/button_background"
-                android:backgroundTint="@color/white"
-                android:drawableStart="@drawable/ic_check"
-                android:drawableTint="@color/cricket_green_primary"
-                android:drawablePadding="8dp"
-                android:gravity="center" />
+            <ImageButton
+                android:id="@+id/playPauseButton"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:layout_marginHorizontal="16dp"
+                android:background="@drawable/play_pause_button"
+                android:src="@drawable/ic_play"
+                android:tint="@color/cricket_green_primary"
+                android:contentDescription="Play/Pause"
+                android:scaleType="centerInside"
+                android:elevation="4dp" />
+
+            <ImageButton
+                android:id="@+id/forwardButton"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_marginStart="16dp"
+                android:background="@drawable/video_control_button"
+                android:src="@drawable/ic_forward_10"
+                android:tint="@color/cricket_green_primary"
+                android:contentDescription="Forward 10s"
+                android:scaleType="centerInside" />
 
         </LinearLayout>
 
