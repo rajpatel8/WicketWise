@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
@@ -82,6 +83,8 @@ public class VideoPlayerActivity extends AppCompatActivity {
     private int currentColor = android.graphics.Color.GREEN;
     private float currentStrokeWidth = 8f;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -103,7 +106,7 @@ public class VideoPlayerActivity extends AppCompatActivity {
 
         // Setup controls
         setupVideoControls();
-        setupDrawingTools();
+        setupDrawingToolsWithScroll() ;
         setupCricketTools();
 
         // Load video and annotations
@@ -130,6 +133,146 @@ public class VideoPlayerActivity extends AppCompatActivity {
             Toast.makeText(this, "Error: Invalid video ID", Toast.LENGTH_SHORT).show();
             finish();
             return;
+        }
+    }
+
+    private void highlightActiveToolWithScroll(ImageButton activeTool) {
+        // Reset all drawing tools to normal state
+        ImageButton[] drawingTools = {penTool, highlighterTool, arrowTool, circleTool, rectangleTool, colorPicker, undoButton, redoButton, clearButton};
+
+        for (ImageButton tool : drawingTools) {
+            if (tool != null) {
+                tool.setSelected(false);
+                tool.setAlpha(0.7f);
+            }
+        }
+
+        // Highlight the active tool
+        if (activeTool != null) {
+            activeTool.setSelected(true);
+            activeTool.setAlpha(1.0f);
+
+            // Add animation
+            activeTool.animate()
+                    .scaleX(1.1f)
+                    .scaleY(1.1f)
+                    .setDuration(100)
+                    .withEndAction(() -> {
+                        activeTool.animate()
+                                .scaleX(1.0f)
+                                .scaleY(1.0f)
+                                .setDuration(100)
+                                .start();
+                    })
+                    .start();
+
+            // AUTO-SCROLL to the active tool
+            scrollToActiveTool(activeTool);
+        }
+    }
+
+    private void setupDrawingToolsWithScroll() {
+        if (viewOnly) return;
+
+        // Initialize scrollable toolbar
+        initializeScrollableToolbar();
+
+        // Set click listeners with auto-scroll
+        penTool.setOnClickListener(v -> {
+            annotationOverlay.setActiveTool(AnnotationOverlay.DrawingTool.PEN);
+            highlightActiveToolWithScroll(penTool);
+            Log.d(TAG, "🖊️ Pen tool selected");
+        });
+
+        highlighterTool.setOnClickListener(v -> {
+            annotationOverlay.setActiveTool(AnnotationOverlay.DrawingTool.HIGHLIGHTER);
+            highlightActiveToolWithScroll(highlighterTool);
+            Log.d(TAG, "🖍️ Highlighter tool selected");
+        });
+
+        arrowTool.setOnClickListener(v -> {
+            annotationOverlay.setActiveTool(AnnotationOverlay.DrawingTool.ARROW);
+            highlightActiveToolWithScroll(arrowTool);
+            Log.d(TAG, "➡️ Arrow tool selected");
+        });
+
+        circleTool.setOnClickListener(v -> {
+            annotationOverlay.setActiveTool(AnnotationOverlay.DrawingTool.CIRCLE);
+            highlightActiveToolWithScroll(circleTool);
+            Log.d(TAG, "⭕ Circle tool selected");
+        });
+
+        rectangleTool.setOnClickListener(v -> {
+            annotationOverlay.setActiveTool(AnnotationOverlay.DrawingTool.RECTANGLE);
+            highlightActiveToolWithScroll(rectangleTool);
+            Log.d(TAG, "⬛ Rectangle tool selected");
+        });
+
+        colorPicker.setOnClickListener(v -> {
+            showColorPicker();
+            highlightActiveToolWithScroll(colorPicker);
+            Log.d(TAG, "🎨 Color picker opened");
+        });
+
+        undoButton.setOnClickListener(v -> {
+            annotationOverlay.undo();
+            updateUndoRedoButtons();
+            highlightActiveToolWithScroll(undoButton);
+            Log.d(TAG, "↶ Undo action");
+        });
+
+        redoButton.setOnClickListener(v -> {
+            annotationOverlay.redo();
+            updateUndoRedoButtons();
+            highlightActiveToolWithScroll(redoButton);
+            Log.d(TAG, "↷ Redo action");
+        });
+
+        clearButton.setOnClickListener(v -> {
+            showClearConfirmation();
+            highlightActiveToolWithScroll(clearButton);
+            Log.d(TAG, "🗑️ Clear confirmation dialog");
+        });
+
+        // Set pen as default tool and scroll to it
+        highlightActiveToolWithScroll(penTool);
+        annotationOverlay.setActiveTool(AnnotationOverlay.DrawingTool.PEN);
+    }
+
+    private void scrollToActiveTool(ImageButton activeTool) {
+        HorizontalScrollView scrollView = findViewById(R.id.drawingToolsScrollView);
+
+        if (scrollView != null && activeTool != null) {
+            scrollView.post(() -> {
+                int toolX = activeTool.getLeft();
+                int toolWidth = activeTool.getWidth();
+                int scrollViewWidth = scrollView.getWidth();
+
+                // Calculate scroll position to center the tool
+                int scrollX = toolX - (scrollViewWidth / 2) + (toolWidth / 2);
+
+                // Ensure scroll position is within bounds
+                scrollX = Math.max(0, scrollX);
+
+                // Smooth scroll to the tool
+                scrollView.smoothScrollTo(scrollX, 0);
+            });
+        }
+    }
+
+
+    private void initializeScrollableToolbar() {
+        HorizontalScrollView scrollView = findViewById(R.id.drawingToolsScrollView);
+
+        if (scrollView != null) {
+            // Enable smooth scrolling
+            scrollView.setSmoothScrollingEnabled(true);
+
+            // Enable scroll bar fading
+            scrollView.setScrollBarFadeDuration(3000);
+            scrollView.setScrollbarFadingEnabled(true);
+
+            Log.d(TAG, "📜 Scrollable toolbar initialized");
         }
     }
 
@@ -366,28 +509,29 @@ public class VideoPlayerActivity extends AppCompatActivity {
         Log.d(TAG, "🔍 Loading video with ID: " + videoId);
 
         try {
-            Video video = databaseHelper.getVideoById(videoId);
-            if (video == null) {
-                Log.e(TAG, "❌ Video not found for ID: " + videoId);
-                Toast.makeText(this, "Video not found", Toast.LENGTH_SHORT).show();
+            // FIXED: Use getVideoSubmissionById instead of getVideoById
+            VideoSubmission videoSubmission = databaseHelper.getVideoSubmissionById(videoId);
+            if (videoSubmission == null) {
+                Log.e(TAG, "❌ Video submission not found for ID: " + videoId);
+                Toast.makeText(this, "Video submission not found", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            Log.d(TAG, "✅ Video found: " + video.getVideoTitle());
+            Log.d(TAG, "✅ Video submission found: " + videoSubmission.getTitle());
 
             // Set video info
             if (titleText != null) {
-                titleText.setText(video.getVideoTitle());
+                titleText.setText(videoSubmission.getTitle());
             }
 
             // Get student info
-            Student student = databaseHelper.getStudentById(video.getStudentId());
+            Student student = databaseHelper.getStudentById(videoSubmission.getStudentId());
             if (student != null && studentText != null) {
                 studentText.setText(student.getName());
             }
 
             // CRITICAL: Load video file properly
-            String videoPath = video.getVideoPath();
+            String videoPath = videoSubmission.getVideoPath();
             Log.d(TAG, "📁 Video path: " + videoPath);
 
             if (videoPath != null && !videoPath.isEmpty() && videoView != null) {
@@ -418,7 +562,7 @@ public class VideoPlayerActivity extends AppCompatActivity {
                 Toast.makeText(this, "Invalid video path", Toast.LENGTH_SHORT).show();
             }
 
-            // Load annotations
+            // Load annotations - FIXED: Use submission ID for annotations
             if (annotationOverlay != null) {
                 List<Annotation> annotations = databaseHelper.getAnnotationsByVideoId(videoId);
                 annotationOverlay.loadVideoAnnotations(annotations);

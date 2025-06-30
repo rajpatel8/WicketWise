@@ -6,12 +6,12 @@
     android:orientation="vertical"
     android:background="@color/black">
 
-    <!-- Header with video info -->
+    <!-- Header with title and student info -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/cricket_green_dark"
         android:orientation="horizontal"
-        android:background="@color/cricket_green_primary"
         android:padding="16dp"
         android:gravity="center_vertical">
 
@@ -19,7 +19,7 @@
             android:id="@+id/backButton"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_arrow_back"
             android:tint="@color/white"
             android:contentDescription="Back" />
@@ -29,7 +29,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:layout_marginStart="16dp">
+            android:layout_marginStart="12dp">
 
             <TextView
                 android:id="@+id/titleText"
@@ -46,10 +46,8 @@
                 android:layout_height="wrap_content"
                 android:text="Student Name"
                 android:textColor="@color/white"
-                android:textSize="12sp"
-                android:alpha="0.8"
-                android:layout_marginTop="2dp" />
-
+                android:textSize="14sp"
+                android:alpha="0.8" />
         </LinearLayout>
 
         <Button
@@ -87,210 +85,266 @@
             android:layout_height="match_parent"
             android:background="@android:color/transparent" />
 
-        <!-- Cricket Tools Panel (Side) -->
+        <!-- Cricket Tools Panel (Side) - OPTIMIZED sizing -->
         <LinearLayout
             android:id="@+id/cricketToolsPanel"
-            android:layout_width="60dp"
+            android:layout_width="52dp"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:layout_gravity="end|center_vertical"
-            android:layout_marginEnd="16dp"
-            android:background="@drawable/tools_panel_background"
-            android:padding="8dp">
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/tools_panel_background_improved"
+            android:padding="4dp"
+            android:elevation="8dp">
 
+            <!-- Field Layout Tool -->
             <ImageButton
                 android:id="@+id/fieldLayoutTool"
                 android:layout_width="44dp"
                 android:layout_height="44dp"
-                android:layout_marginBottom="8dp"
-                android:background="@drawable/cricket_tool_button"
-                android:src="@drawable/ic_cricket_field"
-                android:tint="@color/white"
+                android:layout_marginBottom="4dp"
+                android:background="@drawable/annotation_tool_selector"
+                android:src="@drawable/ic_grid_view"
                 android:contentDescription="Field Layout"
-                android:scaleType="centerInside" />
+                android:scaleType="centerInside"
+                android:padding="8dp"
+                app:tint="@color/white" />
 
+            <!-- Player Marker Tool -->
             <ImageButton
                 android:id="@+id/playerMarkerTool"
                 android:layout_width="44dp"
                 android:layout_height="44dp"
-                android:layout_marginBottom="8dp"
-                android:background="@drawable/cricket_tool_button"
-                android:src="@drawable/ic_player_marker"
+                android:layout_marginBottom="4dp"
+                android:background="@drawable/annotation_tool_selector"
+                android:src="@drawable/ic_person_pin"
                 android:contentDescription="Player Markers"
                 android:scaleType="centerInside"
+                android:padding="8dp"
                 app:tint="@color/white" />
 
+            <!-- Ball Path Tool -->
             <ImageButton
                 android:id="@+id/ballPathTool"
                 android:layout_width="44dp"
                 android:layout_height="44dp"
-                android:layout_marginBottom="8dp"
-                android:background="@drawable/cricket_tool_button"
-                android:src="@drawable/ic_ball_path"
+                android:layout_marginBottom="4dp"
+                android:background="@drawable/annotation_tool_selector"
+                android:src="@drawable/ic_timeline"
                 android:contentDescription="Ball Path"
                 android:scaleType="centerInside"
+                android:padding="8dp"
                 app:tint="@color/white" />
 
+            <!-- Notes Tool -->
             <ImageButton
                 android:id="@+id/notesTool"
                 android:layout_width="44dp"
                 android:layout_height="44dp"
-                android:background="@drawable/cricket_tool_button"
-                android:src="@drawable/ic_note"
+                android:background="@drawable/annotation_tool_selector"
+                android:src="@drawable/ic_note_add"
                 android:contentDescription="Notes"
                 android:scaleType="centerInside"
+                android:padding="8dp"
                 app:tint="@color/white" />
 
         </LinearLayout>
 
-        <!-- Instruction Text -->
+        <!-- Instruction Text - IMPROVED positioning -->
         <TextView
+            android:id="@+id/instructionText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="💡 Tap and draw on the video to add annotations"
             android:textColor="@color/white"
-            android:textSize="12sp"
-            android:background="@drawable/instruction_background"
+            android:textSize="13sp"
+            android:background="@drawable/instruction_background_improved"
             android:padding="12dp"
             android:layout_gravity="bottom|center_horizontal"
-            android:layout_marginBottom="120dp"
-            android:alpha="0.9" />
+            android:layout_marginBottom="140dp"
+            android:alpha="0.9"
+            android:drawablePadding="8dp" />
 
     </FrameLayout>
 
-    <!-- Drawing Tools Panel -->
+    <!-- ========================================== -->
+    <!-- FIXED: SCROLLABLE Drawing Tools Panel -->
+    <!-- ========================================== -->
     <LinearLayout
-        android:id="@+id/drawingToolsPanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:background="@color/cricket_green_dark"
-        android:padding="12dp"
-        android:gravity="center">
+        android:orientation="vertical"
+        android:elevation="4dp">
 
-        <!-- Drawing Tools Row 1 -->
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="horizontal"
-            android:gravity="center">
-
-            <ImageButton
-                android:id="@+id/penTool"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/drawing_tool_button"
-                android:src="@drawable/ic_pen"
-                android:tint="@color/white"
-                android:contentDescription="Pen Tool"
-                android:scaleType="centerInside" />
-
-            <ImageButton
-                android:id="@+id/highlighterTool"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/drawing_tool_button"
-                android:src="@drawable/ic_highlighter"
-                android:tint="@color/white"
-                android:contentDescription="Highlighter Tool"
-                android:scaleType="centerInside" />
-
-            <ImageButton
-                android:id="@+id/arrowTool"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/drawing_tool_button"
-                android:src="@drawable/ic_arrow"
-                android:tint="@color/white"
-                android:contentDescription="Arrow Tool"
-                android:scaleType="centerInside" />
-
-            <ImageButton
-                android:id="@+id/circleTool"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/drawing_tool_button"
-                android:src="@drawable/ic_circle"
-                android:tint="@color/white"
-                android:contentDescription="Circle Tool"
-                android:scaleType="centerInside" />
-
-            <ImageButton
-                android:id="@+id/rectangleTool"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="@drawable/drawing_tool_button"
-                android:src="@drawable/ic_rectangle"
-                android:tint="@color/white"
-                android:contentDescription="Rectangle Tool"
-                android:scaleType="centerInside" />
-
-        </LinearLayout>
-
-        <!-- Divider -->
-        <View
-            android:layout_width="1dp"
-            android:layout_height="48dp"
-            android:background="@color/white"
-            android:alpha="0.3"
-            android:layout_marginHorizontal="12dp" />
-
-        <!-- Action Tools -->
-        <LinearLayout
+        <!-- Tool Category Label (Optional) -->
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center">
+            android:text="Drawing Tools"
+            android:textColor="@color/white"
+            android:textSize="12sp"
+            android:alpha="0.7"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="4dp" />
 
-            <ImageButton
-                android:id="@+id/colorPicker"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/color_picker_button"
-                android:src="@drawable/ic_color_palette"
-                android:tint="@color/cricket_green_primary"
-                android:contentDescription="Color Picker"
-                android:scaleType="centerInside" />
+        <!-- HORIZONTAL SCROLL VIEW for drawing tools -->
+        <HorizontalScrollView
+            android:id="@+id/drawingToolsScrollView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:fadeScrollbars="true"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="8dp">
 
-            <ImageButton
-                android:id="@+id/undoButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/action_tool_button"
-                android:src="@drawable/ic_undo"
-                android:tint="@color/white"
-                android:contentDescription="Undo"
-                android:scaleType="centerInside" />
+            <LinearLayout
+                android:id="@+id/drawingToolsPanel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-            <ImageButton
-                android:id="@+id/redoButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_marginEnd="8dp"
-                android:background="@drawable/action_tool_button"
-                android:src="@drawable/ic_redo"
-                android:tint="@color/white"
-                android:contentDescription="Redo"
-                android:scaleType="centerInside" />
+                <!-- Pen Tool -->
+                <ImageButton
+                    android:id="@+id/penTool"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginEnd="12dp"
+                    android:background="@drawable/annotation_tool_selector"
+                    android:src="@drawable/ic_edit"
+                    android:contentDescription="Pen"
+                    android:scaleType="centerInside"
+                    android:padding="12dp"
+                    app:tint="@color/white" />
 
-            <ImageButton
-                android:id="@+id/clearButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="@drawable/action_tool_button"
-                android:src="@drawable/ic_clear"
-                android:tint="@color/white"
-                android:contentDescription="Clear All"
-                android:scaleType="centerInside" />
+                <!-- Highlighter Tool -->
+                <ImageButton
+                    android:id="@+id/highlighterTool"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginEnd="12dp"
+                    android:background="@drawable/annotation_tool_selector"
+                    android:src="@drawable/ic_highlight"
+                    android:contentDescription="Highlighter"
+                    android:scaleType="centerInside"
+                    android:padding="12dp"
+                    app:tint="@color/white" />
 
-        </LinearLayout>
+                <!-- Arrow Tool -->
+                <ImageButton
+                    android:id="@+id/arrowTool"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginEnd="12dp"
+                    android:background="@drawable/annotation_tool_selector"
+                    android:src="@drawable/ic_arrow_forward"
+                    android:contentDescription="Arrow"
+                    android:scaleType="centerInside"
+                    android:padding="12dp"
+                    app:tint="@color/white" />
+
+                <!-- Circle Tool -->
+                <ImageButton
+                    android:id="@+id/circleTool"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginEnd="12dp"
+                    android:background="@drawable/annotation_tool_selector"
+                    android:src="@drawable/ic_circle"
+                    android:contentDescription="Circle"
+                    android:scaleType="centerInside"
+                    android:padding="12dp"
+                    app:tint="@color/white" />
+
+                <!-- Rectangle Tool -->
+                <ImageButton
+                    android:id="@+id/rectangleTool"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginEnd="12dp"
+                    android:background="@drawable/annotation_tool_selector"
+                    android:src="@drawable/ic_rectangle"
+                    android:contentDescription="Rectangle"
+                    android:scaleType="centerInside"
+                    android:padding="12dp"
+                    app:tint="@color/white" />
+
+                <!-- Color Picker -->
+                <ImageButton
+                    android:id="@+id/colorPicker"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginEnd="16dp"
+                    android:background="@drawable/annotation_tool_selector"
+                    android:src="@drawable/ic_palette"
+                    android:contentDescription="Color"
+                    android:scaleType="centerInside"
+                    android:padding="12dp"
+                    app:tint="@color/white" />
+
+                <!-- SEPARATOR LINE -->
+                <View
+                    android:layout_width="2dp"
+                    android:layout_height="32dp"
+                    android:background="@color/white"
+                    android:alpha="0.3"
+                    android:layout_marginHorizontal="8dp" />
+
+                <!-- Undo Button -->
+                <ImageButton
+                    android:id="@+id/undoButton"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginEnd="12dp"
+                    android:background="@drawable/annotation_tool_selector"
+                    android:src="@drawable/ic_undo"
+                    android:contentDescription="Undo"
+                    android:scaleType="centerInside"
+                    android:padding="12dp"
+                    app:tint="@color/white" />
+
+                <!-- Redo Button -->
+                <ImageButton
+                    android:id="@+id/redoButton"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginEnd="12dp"
+                    android:background="@drawable/annotation_tool_selector"
+                    android:src="@drawable/ic_redo"
+                    android:contentDescription="Redo"
+                    android:scaleType="centerInside"
+                    android:padding="12dp"
+                    app:tint="@color/white" />
+
+                <!-- Clear Button -->
+                <ImageButton
+                    android:id="@+id/clearButton"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginEnd="12dp"
+                    android:background="@drawable/annotation_tool_selector"
+                    android:src="@drawable/ic_delete"
+                    android:contentDescription="Clear All"
+                    android:scaleType="centerInside"
+                    android:padding="12dp"
+                    app:tint="@color/white" />
+
+            </LinearLayout>
+
+        </HorizontalScrollView>
+
+        <!-- Scroll Indicator (Optional) -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="← Swipe to see more tools →"
+            android:textColor="@color/white"
+            android:textSize="10sp"
+            android:alpha="0.6"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="4dp" />
 
     </LinearLayout>
 
@@ -298,17 +352,17 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/cricket_green_dark"
         android:orientation="vertical"
-        android:background="@color/cricket_green_primary"
         android:padding="16dp">
 
-        <!-- Time and Seek Bar -->
+        <!-- Seek Bar -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginBottom="12dp">
+            android:layout_marginBottom="16dp">
 
             <TextView
                 android:id="@+id/timeDisplay"
@@ -316,58 +370,49 @@
                 android:layout_height="wrap_content"
                 android:text="00:00 / 00:00"
                 android:textColor="@color/white"
-                android:textSize="14sp"
-                android:minWidth="100dp" />
+                android:textSize="12sp"
+                android:layout_marginEnd="12dp" />
 
             <SeekBar
                 android:id="@+id/seekBar"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:layout_marginHorizontal="16dp"
-                android:progressTint="@color/white"
-                android:thumbTint="@color/white"
-                android:progressBackgroundTint="@color/cricket_green_light" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="🎬"
-                android:textSize="16sp"
-                android:layout_marginStart="8dp" />
+                android:progressTint="@color/cricket_green_primary"
+                android:thumbTint="@color/cricket_green_primary" />
 
         </LinearLayout>
 
-        <!-- Control Buttons -->
+        <!-- Video Controls -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center">
 
+            <!-- Rewind Button -->
             <ImageButton
                 android:id="@+id/backwardButton"
                 android:layout_width="56dp"
                 android:layout_height="56dp"
                 android:layout_marginEnd="16dp"
                 android:background="@drawable/video_control_button"
-                android:src="@drawable/ic_backward_10"
-                android:tint="@color/cricket_green_primary"
-                android:contentDescription="Backward 10s"
-                android:scaleType="centerInside" />
+                android:src="@drawable/ic_replay_10"
+                android:contentDescription="Rewind 10s"
+                app:tint="@color/white" />
 
+            <!-- Play/Pause Button -->
             <ImageButton
                 android:id="@+id/playPauseButton"
                 android:layout_width="72dp"
                 android:layout_height="72dp"
                 android:layout_marginHorizontal="16dp"
-                android:background="@drawable/play_pause_button"
-                android:src="@drawable/ic_play"
-                android:tint="@color/cricket_green_primary"
+                android:background="@drawable/video_control_button_large"
+                android:src="@drawable/ic_play_arrow"
                 android:contentDescription="Play/Pause"
-                android:scaleType="centerInside"
-                android:elevation="4dp" />
+                app:tint="@color/white" />
 
+            <!-- Forward Button -->
             <ImageButton
                 android:id="@+id/forwardButton"
                 android:layout_width="56dp"
@@ -375,9 +420,8 @@
                 android:layout_marginStart="16dp"
                 android:background="@drawable/video_control_button"
                 android:src="@drawable/ic_forward_10"
-                android:tint="@color/cricket_green_primary"
                 android:contentDescription="Forward 10s"
-                android:scaleType="centerInside" />
+                app:tint="@color/white" />
 
         </LinearLayout>
 

@@ -4,15 +4,15 @@
     <item android:state_pressed="true">
         <shape android:shape="oval">
             <solid android:color="@color/cricket_green_primary" />
-            <stroke android:width="2dp" android:color="@color/white" />
+            <stroke android:width="3dp" android:color="@color/white" />
         </shape>
     </item>
 
     <!-- Normal State -->
     <item>
         <shape android:shape="oval">
-            <solid android:color="#60FFFFFF" />
-            <stroke android:width="2dp" android:color="@color/white" />
+            <solid android:color="@color/cricket_green_primary" />
+            <stroke android:width="3dp" android:color="@color/white" />
         </shape>
     </item>
 </selector>

@@ -221,20 +221,23 @@ public class VideoListActivity extends AppCompatActivity {
                     startActivity(intent);
                 });
 
+                // FIXED: VideoListActivity.java - Replace the annotateBtn.setOnClickListener section
+
                 annotateBtn.setOnClickListener(v -> {
                     Log.d("VideoList", "✏️ Opening video player for annotation, video ID: " + video.getVideoId());
 
-                    // DEBUG: Check if video exists in database
+                    // FIXED: Check if video submission exists in database (not video table)
                     DatabaseHelper db = new DatabaseHelper(VideoListActivity.this);
-                    Video checkVideo = db.getVideoById(video.getVideoId());
-                    if (checkVideo == null) {
-                        Log.e("VideoList", "❌ Video ID " + video.getVideoId() + " not found in database!");
-                        Toast.makeText(VideoListActivity.this, "Video not found in database. ID: " + video.getVideoId(), Toast.LENGTH_LONG).show();
+                    VideoSubmission checkSubmission = db.getVideoSubmissionById(video.getVideoId());
+                    if (checkSubmission == null) {
+                        Log.e("VideoList", "❌ Video Submission ID " + video.getVideoId() + " not found in database!");
+                        Toast.makeText(VideoListActivity.this, "Video submission not found in database. ID: " + video.getVideoId(), Toast.LENGTH_LONG).show();
                         return;
                     }
 
-                    Log.d("VideoList", "✅ Video found: " + checkVideo.getVideoTitle());
+                    Log.d("VideoList", "✅ Video submission found: " + checkSubmission.getTitle());
 
+                    // FIXED: Pass submission ID to VideoPlayerActivity with correct parameter
                     Intent intent = new Intent(VideoListActivity.this, VideoPlayerActivity.class);
                     intent.putExtra(VideoPlayerActivity.EXTRA_VIDEO_ID, video.getVideoId());
                     intent.putExtra(VideoPlayerActivity.EXTRA_COACH_ID, coachId);

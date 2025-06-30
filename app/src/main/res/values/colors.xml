@@ -114,4 +114,10 @@
     <color name="voice_recording_accent">#FF6B6B</color>
     <color name="annotation_color">#4ECDC4</color>
 
+<!--    <color name="black">#000000</color>-->
+<!--    <color name="white">#FFFFFF</color>-->
+<!--    <color name="black_transparent">#80000000</color>-->
+<!--    <color name="success_color">#4CAF50</color>-->
+<!--    <color name="warning_color">#FF9800</color>-->
+
 </resources>
