@@ -386,38 +386,68 @@ public class VideoPlayerActivity extends AppCompatActivity {
         // Existing 10-second controls
         backwardButton.setOnClickListener(v -> {
             if (isVideoReady) {
-                int newPosition = Math.max(0, videoView.getCurrentPosition() - 10000); // 10 seconds back
+                int newPosition = Math.max(0, videoView.getCurrentPosition() - 10000);
                 videoView.seekTo(newPosition);
                 seekBar.setProgress(newPosition);
                 updateAnnotationOverlay();
+                Log.d(TAG, "⏪ 10s backward");
             }
         });
 
         forwardButton.setOnClickListener(v -> {
             if (isVideoReady) {
                 int newPosition = Math.min(videoView.getDuration(),
-                        videoView.getCurrentPosition() + 10000); // 10 seconds forward
+                        videoView.getCurrentPosition() + 10000);
                 videoView.seekTo(newPosition);
                 seekBar.setProgress(newPosition);
                 updateAnnotationOverlay();
+                Log.d(TAG, "⏩ 10s forward");
             }
         });
 
-        // ADD THESE NEW FRAME-BY-FRAME CONTROLS
-        frameBackwardButton.setOnClickListener(v -> {
-            if (isVideoReady) {
-                seekOneFrameBackward();
-            }
-        });
+        // ADD FRAME CONTROL LISTENERS
+        if (frameBackwardButton != null) {
+            frameBackwardButton.setOnClickListener(v -> {
+                if (isVideoReady) {
+                    seekOneFrameBackward();
+                }
+            });
+        }
 
-        frameForwardButton.setOnClickListener(v -> {
-            if (isVideoReady) {
-                seekOneFrameForward();
+        if (frameForwardButton != null) {
+            frameForwardButton.setOnClickListener(v -> {
+                if (isVideoReady) {
+                    seekOneFrameForward();
+                }
+            });
+        }
+
+        // Seek bar listener
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser && isVideoReady) {
+                    videoView.seekTo(progress);
+                    updateAnnotationOverlay();
+                    updateTimeDisplay();
+                    Log.d(TAG, "🎯 Seek to: " + progress);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                // Pause updates while seeking
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                // Resume updates
             }
         });
 
         saveButton.setOnClickListener(v -> saveAnnotations());
     }
+
 
     /**
      * Setup drawing tool buttons
@@ -532,7 +562,13 @@ public class VideoPlayerActivity extends AppCompatActivity {
         videoView.setOnPreparedListener(mediaPlayer -> {
             Log.d(TAG, "✅ Video prepared successfully");
             isVideoReady = true;
-            if (seekBar != null) seekBar.setMax(videoView.getDuration());
+
+            // CRITICAL: Setup seek bar with video duration
+            if (seekBar != null) {
+                seekBar.setMax(videoView.getDuration());
+                Log.d(TAG, "📊 Seek bar max set to: " + videoView.getDuration());
+            }
+
             updateTimeDisplay();
         });
 
@@ -878,4 +914,5 @@ public class VideoPlayerActivity extends AppCompatActivity {
             updatePlayPauseButton();
         }
     }
+
 }
