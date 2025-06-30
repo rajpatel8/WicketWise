@@ -301,24 +301,26 @@ public class AnnotationOverlay extends View {
         currentPath.reset();
         currentStroke.clear();
 
+        // CRITICAL FIX: Set lastTouchPoint for ALL tools to prevent drawing from (0,0)
+        lastTouchPoint.set(x, y);
+
         // Handle different tools
         switch (activeTool) {
             case PEN:
             case HIGHLIGHTER:
+                // Move to starting point (no line drawn yet)
                 currentPath.moveTo(x, y);
                 currentStroke.add(new PointF(x, y));
                 break;
 
             case ARROW:
                 // Store start point for arrow
-                lastTouchPoint.set(x, y);
                 currentStroke.add(new PointF(x, y));
                 break;
 
             case CIRCLE:
             case RECTANGLE:
                 // Store center/start point for shapes
-                lastTouchPoint.set(x, y);
                 currentStroke.add(new PointF(x, y));
                 break;
         }
@@ -341,36 +343,36 @@ public class AnnotationOverlay extends View {
         switch (activeTool) {
             case PEN:
             case HIGHLIGHTER:
-                // Smooth curve drawing
-                currentPath.quadTo(lastTouchPoint.x, lastTouchPoint.y,
-                        (x + lastTouchPoint.x) / 2, (y + lastTouchPoint.y) / 2);
+                // SAFE APPROACH: Use lineTo for predictable drawing
+                // This ensures we draw from the last known position to current position
+                currentPath.lineTo(x, y);
                 currentStroke.add(new PointF(x, y));
+                lastTouchPoint.set(x, y); // Update for next move
                 break;
 
             case ARROW:
                 // Redraw arrow from start to current point
                 currentPath.reset();
-                drawArrow(currentPath, lastTouchPoint.x, lastTouchPoint.y, x, y);
+                drawArrow(currentPath, currentStroke.get(0).x, currentStroke.get(0).y, x, y);
                 break;
 
             case CIRCLE:
                 // Draw circle with radius from center to current point
                 currentPath.reset();
-                float radius = (float) Math.sqrt(Math.pow(x - lastTouchPoint.x, 2) +
-                        Math.pow(y - lastTouchPoint.y, 2));
-                currentPath.addCircle(lastTouchPoint.x, lastTouchPoint.y, radius, Path.Direction.CW);
+                float radius = (float) Math.sqrt(Math.pow(x - currentStroke.get(0).x, 2) +
+                        Math.pow(y - currentStroke.get(0).y, 2));
+                currentPath.addCircle(currentStroke.get(0).x, currentStroke.get(0).y, radius, Path.Direction.CW);
                 break;
 
             case RECTANGLE:
                 // Draw rectangle from start point to current point
                 currentPath.reset();
-                currentPath.addRect(Math.min(lastTouchPoint.x, x), Math.min(lastTouchPoint.y, y),
-                        Math.max(lastTouchPoint.x, x), Math.max(lastTouchPoint.y, y),
+                currentPath.addRect(Math.min(currentStroke.get(0).x, x), Math.min(currentStroke.get(0).y, y),
+                        Math.max(currentStroke.get(0).x, x), Math.max(currentStroke.get(0).y, y),
                         Path.Direction.CW);
                 break;
         }
 
-        lastTouchPoint.set(x, y);
         invalidate();
         return true;
     }

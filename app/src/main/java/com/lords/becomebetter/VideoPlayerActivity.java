@@ -83,6 +83,9 @@ public class VideoPlayerActivity extends AppCompatActivity {
     private int currentColor = android.graphics.Color.GREEN;
     private float currentStrokeWidth = 8f;
 
+    private ImageButton frameBackwardButton;
+    private ImageButton frameForwardButton;
+    private static final int FRAME_DURATION_MS = 33;
 
 
     @Override
@@ -315,6 +318,11 @@ public class VideoPlayerActivity extends AppCompatActivity {
         ballPathTool = findViewById(R.id.ballPathTool);
         notesTool = findViewById(R.id.notesTool);
 
+        frameBackwardButton = findViewById(R.id.frameBackwardButton);
+        frameForwardButton = findViewById(R.id.frameForwardButton);
+
+        saveButton = findViewById(R.id.saveButton);
+
         // Configure view-only mode
         if (viewOnly) {
             drawingToolsPanel.setVisibility(View.GONE);
@@ -375,6 +383,7 @@ public class VideoPlayerActivity extends AppCompatActivity {
     private void setupVideoControls() {
         playPauseButton.setOnClickListener(v -> togglePlayPause());
 
+        // Existing 10-second controls
         backwardButton.setOnClickListener(v -> {
             if (isVideoReady) {
                 int newPosition = Math.max(0, videoView.getCurrentPosition() - 10000); // 10 seconds back
@@ -394,24 +403,16 @@ public class VideoPlayerActivity extends AppCompatActivity {
             }
         });
 
-        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser && isVideoReady) {
-                    videoView.seekTo(progress);
-                    updateAnnotationOverlay();
-                    updateTimeDisplay();
-                }
+        // ADD THESE NEW FRAME-BY-FRAME CONTROLS
+        frameBackwardButton.setOnClickListener(v -> {
+            if (isVideoReady) {
+                seekOneFrameBackward();
             }
+        });
 
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                // Pause updates while user is seeking
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                // Resume updates
+        frameForwardButton.setOnClickListener(v -> {
+            if (isVideoReady) {
+                seekOneFrameForward();
             }
         });
 
@@ -421,6 +422,52 @@ public class VideoPlayerActivity extends AppCompatActivity {
     /**
      * Setup drawing tool buttons
      */
+
+    private void seekOneFrameBackward() {
+        if (!isVideoReady) return;
+
+        // Pause video if playing for precise control
+        if (isPlaying) {
+            videoView.pause();
+            isPlaying = false;
+            updatePlayPauseButton();
+        }
+
+        int currentPos = videoView.getCurrentPosition();
+        int newPosition = Math.max(0, currentPos - FRAME_DURATION_MS);
+
+        videoView.seekTo(newPosition);
+        seekBar.setProgress(newPosition);
+        updateAnnotationOverlay();
+        updateTimeDisplay();
+
+        Log.d(TAG, "⏪ Frame backward: " + currentPos + " -> " + newPosition);
+    }
+
+    /**
+     * Seek one frame forward
+     */
+    private void seekOneFrameForward() {
+        if (!isVideoReady) return;
+
+        // Pause video if playing for precise control
+        if (isPlaying) {
+            videoView.pause();
+            isPlaying = false;
+            updatePlayPauseButton();
+        }
+
+        int currentPos = videoView.getCurrentPosition();
+        int newPosition = Math.min(videoView.getDuration(), currentPos + FRAME_DURATION_MS);
+
+        videoView.seekTo(newPosition);
+        seekBar.setProgress(newPosition);
+        updateAnnotationOverlay();
+        updateTimeDisplay();
+
+        Log.d(TAG, "⏩ Frame forward: " + currentPos + " -> " + newPosition);
+    }
+
     private void setupDrawingTools() {
         if (viewOnly) return;
 
