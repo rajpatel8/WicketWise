@@ -3,6 +3,7 @@ package com.lords.becomebetter;
 import android.app.AlertDialog;
 import java.io.File;
 import android.media.MediaMetadataRetriever;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,6 +20,15 @@ import android.widget.VideoView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import java.util.List;
+
+// ADD THESE MISSING IMPORTS:
+import android.widget.EditText;
+import android.widget.RatingBar;
+import android.graphics.PointF;
+import java.util.ArrayList;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 /**
  * Enhanced VideoPlayerActivity with rebuilt annotation system
@@ -88,6 +98,7 @@ public class VideoPlayerActivity extends AppCompatActivity {
     private static final int FRAME_DURATION_MS = 33;
 
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -116,7 +127,9 @@ public class VideoPlayerActivity extends AppCompatActivity {
         loadVideoAndAnnotations();
 
         // Start update timer
-        startUpdateTimer();
+//        startUpdateTimer();
+
+        startVideoStateMonitor();
     }
 
     /**
@@ -381,8 +394,10 @@ public class VideoPlayerActivity extends AppCompatActivity {
      * Setup video control buttons
      */
     private void setupVideoControls() {
-        playPauseButton.setOnClickListener(v -> togglePlayPause());
-
+        playPauseButton.setOnClickListener(v -> {
+            Log.d(TAG, "🎯 Play button clicked - Current state: isPlaying = " + isPlaying);
+            togglePlayPause();
+        });
         // Existing 10-second controls
         backwardButton.setOnClickListener(v -> {
             if (isVideoReady) {
@@ -405,9 +420,9 @@ public class VideoPlayerActivity extends AppCompatActivity {
             }
         });
 
-        // ADD FRAME CONTROL LISTENERS
         if (frameBackwardButton != null) {
             frameBackwardButton.setOnClickListener(v -> {
+                Log.d(TAG, "🎯 Frame backward clicked");
                 if (isVideoReady) {
                     seekOneFrameBackward();
                 }
@@ -416,6 +431,7 @@ public class VideoPlayerActivity extends AppCompatActivity {
 
         if (frameForwardButton != null) {
             frameForwardButton.setOnClickListener(v -> {
+                Log.d(TAG, "🎯 Frame forward clicked");
                 if (isVideoReady) {
                     seekOneFrameForward();
                 }
@@ -430,19 +446,15 @@ public class VideoPlayerActivity extends AppCompatActivity {
                     videoView.seekTo(progress);
                     updateAnnotationOverlay();
                     updateTimeDisplay();
-                    Log.d(TAG, "🎯 Seek to: " + progress);
+                    Log.d(TAG, "🎯 Manual seek to: " + progress);
                 }
             }
 
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                // Pause updates while seeking
-            }
+            public void onStartTrackingTouch(SeekBar seekBar) {}
 
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                // Resume updates
-            }
+            public void onStopTrackingTouch(SeekBar seekBar) {}
         });
 
         saveButton.setOnClickListener(v -> saveAnnotations());
@@ -454,13 +466,21 @@ public class VideoPlayerActivity extends AppCompatActivity {
      */
 
     private void seekOneFrameBackward() {
-        if (!isVideoReady) return;
+        if (!isVideoReady) {
+            Log.w(TAG, "Video not ready for frame control");
+            return;
+        }
 
-        // Pause video if playing for precise control
+        // Pause video for precise control
         if (isPlaying) {
             videoView.pause();
             isPlaying = false;
-            updatePlayPauseButton();
+            updatePlayPauseButton(); // IMPORTANT: Update button state
+
+            // Stop update timer
+            if (updateHandler != null && updateRunnable != null) {
+                updateHandler.removeCallbacks(updateRunnable);
+            }
         }
 
         int currentPos = videoView.getCurrentPosition();
@@ -478,17 +498,26 @@ public class VideoPlayerActivity extends AppCompatActivity {
      * Seek one frame forward
      */
     private void seekOneFrameForward() {
-        if (!isVideoReady) return;
+        if (!isVideoReady) {
+            Log.w(TAG, "Video not ready for frame control");
+            return;
+        }
 
-        // Pause video if playing for precise control
+        // Pause video for precise control
         if (isPlaying) {
             videoView.pause();
             isPlaying = false;
-            updatePlayPauseButton();
+            updatePlayPauseButton(); // IMPORTANT: Update button state
+
+            // Stop update timer
+            if (updateHandler != null && updateRunnable != null) {
+                updateHandler.removeCallbacks(updateRunnable);
+            }
         }
 
         int currentPos = videoView.getCurrentPosition();
-        int newPosition = Math.min(videoView.getDuration(), currentPos + FRAME_DURATION_MS);
+        int duration = videoView.getDuration();
+        int newPosition = Math.min(duration, currentPos + FRAME_DURATION_MS);
 
         videoView.seekTo(newPosition);
         seekBar.setProgress(newPosition);
@@ -497,6 +526,7 @@ public class VideoPlayerActivity extends AppCompatActivity {
 
         Log.d(TAG, "⏩ Frame forward: " + currentPos + " -> " + newPosition);
     }
+
 
     private void setupDrawingTools() {
         if (viewOnly) return;
@@ -563,13 +593,59 @@ public class VideoPlayerActivity extends AppCompatActivity {
             Log.d(TAG, "✅ Video prepared successfully");
             isVideoReady = true;
 
-            // CRITICAL: Setup seek bar with video duration
+            // Setup seek bar with video duration
             if (seekBar != null) {
                 seekBar.setMax(videoView.getDuration());
                 Log.d(TAG, "📊 Seek bar max set to: " + videoView.getDuration());
             }
 
             updateTimeDisplay();
+
+            // IMPORTANT: Prepare the timer
+            if (updateHandler == null) {
+                updateHandler = new Handler();
+            }
+
+            updateRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    if (isVideoReady && isPlaying) {
+                        updateVideoProgress();
+                        Log.d(TAG, "🔄 Progress updated: " + videoView.getCurrentPosition());
+                    } else {
+                        Log.d(TAG, "⏸️ Timer tick skipped - isVideoReady: " + isVideoReady + ", isPlaying: " + isPlaying);
+                    }
+
+                    // Schedule next update
+                    if (updateHandler != null) {
+                        updateHandler.postDelayed(this, UPDATE_INTERVAL);
+                    }
+                }
+            };
+
+            // DON'T auto-start the video - wait for user to click play
+            Log.d(TAG, "⏰ Update timer prepared (waiting for user to click play)");
+        });
+
+        // ADD: Listen for when video actually starts playing
+        videoView.setOnInfoListener((mp, what, extra) -> {
+            if (what == MediaPlayer.MEDIA_INFO_VIDEO_RENDERING_START) {
+                Log.d(TAG, "🎬 Video rendering started - checking play state");
+
+                // If video started but we don't know about it, update our state
+                if (videoView.isPlaying() && !isPlaying) {
+                    isPlaying = true;
+                    updatePlayPauseButton();
+
+                    // Start the timer if it's not running
+                    if (updateHandler != null && updateRunnable != null) {
+                        updateHandler.removeCallbacks(updateRunnable);
+                        updateHandler.post(updateRunnable);
+                        Log.d(TAG, "⏰ Timer started due to auto-play detection");
+                    }
+                }
+            }
+            return false;
         });
 
         videoView.setOnErrorListener((mp, what, extra) -> {
@@ -582,7 +658,54 @@ public class VideoPlayerActivity extends AppCompatActivity {
             Log.d(TAG, "🏁 Video completed");
             isPlaying = false;
             updatePlayPauseButton();
+
+            // Stop update timer when video completes
+            if (updateHandler != null && updateRunnable != null) {
+                updateHandler.removeCallbacks(updateRunnable);
+            }
         });
+    }
+
+    private void startVideoStateMonitor() {
+        Handler stateHandler = new Handler();
+        Runnable stateRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (isVideoReady && videoView != null) {
+                    boolean videoIsPlaying = videoView.isPlaying();
+
+                    if (videoIsPlaying != isPlaying) {
+                        Log.d(TAG, "🔄 Video state mismatch detected - videoView.isPlaying(): " + videoIsPlaying + ", our isPlaying: " + isPlaying);
+
+                        // Sync our state with actual video state
+                        isPlaying = videoIsPlaying;
+                        updatePlayPauseButton();
+
+                        if (isPlaying) {
+                            // Start timer if video is playing
+                            if (updateHandler != null && updateRunnable != null) {
+                                updateHandler.removeCallbacks(updateRunnable);
+                                updateHandler.post(updateRunnable);
+                                Log.d(TAG, "⏰ Timer started due to state sync");
+                            }
+                        } else {
+                            // Stop timer if video is paused
+                            if (updateHandler != null && updateRunnable != null) {
+                                updateHandler.removeCallbacks(updateRunnable);
+                                Log.d(TAG, "⏰ Timer stopped due to state sync");
+                            }
+                        }
+                    }
+                }
+
+                // Check again in 1 second
+                stateHandler.postDelayed(this, 1000);
+            }
+        };
+
+        // Start monitoring after a short delay
+        stateHandler.postDelayed(stateRunnable, 2000);
+        Log.d(TAG, "🔍 Started video state monitoring");
     }
 
     /**
@@ -662,28 +785,52 @@ public class VideoPlayerActivity extends AppCompatActivity {
      * Start the update timer for video progress
      */
     private void startUpdateTimer() {
-        updateHandler = new Handler();
+        if (updateHandler == null) {
+            updateHandler = new Handler();
+        }
+
         updateRunnable = new Runnable() {
             @Override
             public void run() {
+                Log.d(TAG, "⏰ Timer tick - isVideoReady: " + isVideoReady + ", isPlaying: " + isPlaying);
+
                 if (isVideoReady && isPlaying) {
                     updateVideoProgress();
+                    Log.d(TAG, "🔄 Progress updated: " + videoView.getCurrentPosition());
+                } else {
+                    Log.d(TAG, "⏸️ Timer tick skipped - not ready or not playing");
                 }
-                updateHandler.postDelayed(this, UPDATE_INTERVAL);
+
+                // Schedule next update
+                if (updateHandler != null) {
+                    updateHandler.postDelayed(this, UPDATE_INTERVAL);
+                }
             }
         };
+
+        // Start the timer
         updateHandler.post(updateRunnable);
+        Log.d(TAG, "⏰ Update timer started with initial state - isVideoReady: " + isVideoReady + ", isPlaying: " + isPlaying);
     }
+
 
     /**
      * Update video progress and annotation overlay
      */
     private void updateVideoProgress() {
-        if (isVideoReady) {
+        if (isVideoReady && seekBar != null && timeDisplay != null) {
             int currentPosition = videoView.getCurrentPosition();
+
+            // Update seek bar progress
             seekBar.setProgress(currentPosition);
+
+            // Update time display
             updateTimeDisplay();
+
+            // Update annotation overlay
             updateAnnotationOverlay();
+
+            // Update undo/redo buttons
             updateUndoRedoButtons();
         }
     }
@@ -701,7 +848,7 @@ public class VideoPlayerActivity extends AppCompatActivity {
      * Update time display
      */
     private void updateTimeDisplay() {
-        if (isVideoReady) {
+        if (isVideoReady && timeDisplay != null) {
             int current = videoView.getCurrentPosition();
             int duration = videoView.getDuration();
             timeDisplay.setText(formatTime(current) + " / " + formatTime(duration));
@@ -722,14 +869,32 @@ public class VideoPlayerActivity extends AppCompatActivity {
      * Toggle play/pause
      */
     private void togglePlayPause() {
-        if (!isVideoReady) return;
+        if (!isVideoReady) {
+            Log.w(TAG, "Video not ready");
+            return;
+        }
 
         if (isPlaying) {
             videoView.pause();
             isPlaying = false;
+            Log.d(TAG, "⏸️ Video paused, isPlaying = " + isPlaying);
+
+            // Stop update timer when paused
+            if (updateHandler != null && updateRunnable != null) {
+                updateHandler.removeCallbacks(updateRunnable);
+                Log.d(TAG, "⏰ Timer stopped on pause");
+            }
         } else {
             videoView.start();
-            isPlaying = true;
+            isPlaying = true;  // CRITICAL: Set this BEFORE starting timer
+            Log.d(TAG, "▶️ Video started, isPlaying = " + isPlaying);
+
+            // CRITICAL: Restart timer immediately when playing starts
+            if (updateHandler != null && updateRunnable != null) {
+                updateHandler.removeCallbacks(updateRunnable);
+                updateHandler.post(updateRunnable);
+                Log.d(TAG, "⏰ Timer restarted on play");
+            }
         }
 
         updatePlayPauseButton();
@@ -739,12 +904,20 @@ public class VideoPlayerActivity extends AppCompatActivity {
      * Update play/pause button icon
      */
     private void updatePlayPauseButton() {
-        if (isPlaying) {
-            playPauseButton.setImageResource(R.drawable.ic_pause);
+        if (playPauseButton != null) {
+            if (isPlaying) {
+                playPauseButton.setImageResource(R.drawable.ic_pause);
+                Log.d(TAG, "🔄 Button updated to PAUSE icon");
+            } else {
+                playPauseButton.setImageResource(R.drawable.ic_play_arrow);
+                Log.d(TAG, "🔄 Button updated to PLAY icon");
+            }
         } else {
-            playPauseButton.setImageResource(R.drawable.ic_play);
+            Log.e(TAG, "❌ playPauseButton is null!");
         }
     }
+
+
 
     /**
      * Pause video (called by annotation overlay)
@@ -843,11 +1016,33 @@ public class VideoPlayerActivity extends AppCompatActivity {
             return;
         }
 
-        // Convert to database format
-        List<Annotation> dbAnnotations = annotationOverlay.convertToDbAnnotations(videoId, coachId);
+        // Show save options dialog
+        showSaveOptionsDialog();
+    }
 
-        // Delete existing annotations for this video
-        databaseHelper.deleteAnnotationsByVideoId(videoId);
+    private void showSaveOptionsDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Save Annotations")
+                .setMessage("Choose how to save your annotations:")
+                .setPositiveButton("Save & Send to Student", (dialog, which) -> {
+                    saveAndSendAnnotations();
+                })
+                .setNeutralButton("Save Only", (dialog, which) -> {
+                    saveAnnotationsOnly();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void saveAnnotationsOnly() {
+        List<AnnotationOverlay.DrawnAnnotation> currentAnnotations =
+                annotationOverlay.getCurrentSessionAnnotations();
+
+        // Convert to database format with timestamps
+        List<Annotation> dbAnnotations = convertToTimestampedAnnotations(currentAnnotations);
+
+        // Delete existing annotations for this video by this coach
+        databaseHelper.deleteAnnotationsByVideoAndCoach(videoId, coachId);
 
         // Save new annotations
         int savedCount = 0;
@@ -859,16 +1054,176 @@ public class VideoPlayerActivity extends AppCompatActivity {
         }
 
         if (savedCount > 0) {
-            // Update video status
-            databaseHelper.updateVideoStatus(videoId, "annotated");
-
-            Toast.makeText(this, savedCount + " annotations saved successfully!",
+            Toast.makeText(this, savedCount + " annotations saved locally!",
                     Toast.LENGTH_SHORT).show();
-
-            Log.d(TAG, "💾 Saved " + savedCount + " annotations");
+            Log.d(TAG, "💾 Saved " + savedCount + " annotations locally");
         } else {
             Toast.makeText(this, "Error saving annotations", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    /**
+     * Save and send annotations to student with feedback
+     */
+    private void saveAndSendAnnotations() {
+        // First save annotations
+        saveAnnotationsOnly();
+
+        // Then show feedback dialog
+        showFeedbackDialog();
+    }
+
+    /**
+     * Show dialog to get coach's feedback comments
+     */
+    private void showFeedbackDialog() {
+        // Create custom dialog for feedback
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        // Inflate custom layout for feedback
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_coach_feedback, null);
+
+        EditText feedbackEdit = dialogView.findViewById(R.id.feedbackEdit);
+        RatingBar ratingBar = dialogView.findViewById(R.id.ratingBar);
+        TextView timestampText = dialogView.findViewById(R.id.timestampText);
+
+        // Show current video timestamp
+        timestampText.setText("Feedback for annotations at: " + formatTime((int)getCurrentVideoPosition()));
+
+        builder.setView(dialogView)
+                .setTitle("Send Feedback to Student")
+                .setPositiveButton("Send", (dialog, which) -> {
+                    String feedbackText = feedbackEdit.getText().toString().trim();
+                    float rating = ratingBar.getRating();
+
+                    if (feedbackText.isEmpty()) {
+                        Toast.makeText(this, "Please enter feedback comments", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    sendFeedbackToStudent(feedbackText, rating);
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    /**
+     * Send feedback to student using database
+     */
+    private void sendFeedbackToStudent(String feedbackText, float rating) {
+        try {
+            // Create video feedback object
+            VideoFeedback feedback = new VideoFeedback();
+            feedback.setSubmissionId(videoId);
+            feedback.setCoachId(coachId);
+            feedback.setFeedbackText(feedbackText);
+            feedback.setRating((int)rating);
+            feedback.setStatus("sent");
+            feedback.setFeedbackDate(getCurrentTimestamp());
+
+            // Add annotation data
+            List<AnnotationOverlay.DrawnAnnotation> annotations = annotationOverlay.getCurrentSessionAnnotations();
+            String annotationData = serializeAnnotations(annotations);
+            feedback.setAnnotationData(annotationData);
+
+            // Save feedback to database
+            long result = databaseHelper.addVideoFeedback(feedback);
+
+            if (result != -1) {
+                // Update video submission status
+                updateVideoSubmissionStatus("reviewed");
+
+                Toast.makeText(this, "✅ Feedback sent to student successfully!",
+                        Toast.LENGTH_LONG).show();
+
+                Log.d(TAG, "📤 Feedback sent - Rating: " + rating + ", Text: " + feedbackText);
+
+                // Clear current annotations after sending
+                annotationOverlay.clearCurrentSession();
+
+                // Optionally finish activity or show confirmation
+                showFeedbackSentConfirmation();
+            } else {
+                Toast.makeText(this, "❌ Error sending feedback", Toast.LENGTH_SHORT).show();
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error sending feedback", e);
+            Toast.makeText(this, "Error sending feedback: " + e.getMessage(),
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Convert current annotations to database format with timestamps
+     */
+    private List<Annotation> convertToTimestampedAnnotations(List<AnnotationOverlay.DrawnAnnotation> drawnAnnotations) {
+        List<Annotation> dbAnnotations = new ArrayList<>();
+
+        for (AnnotationOverlay.DrawnAnnotation drawn : drawnAnnotations) {
+            for (PointF point : drawn.points) {
+                Annotation annotation = new Annotation();
+                annotation.setVideoId(videoId);
+                annotation.setCoachId(coachId);
+                annotation.setTimestamp(drawn.timestamp); // CRITICAL: Use annotation's timestamp
+                annotation.setAnnotationType(drawn.tool.name());
+                annotation.setAnnotationData(drawn.serializedPath);
+                annotation.setXPosition(point.x);
+                annotation.setYPosition(point.y);
+                annotation.setCreatedAt(getCurrentTimestamp());
+
+                dbAnnotations.add(annotation);
+            }
+        }
+
+        return dbAnnotations;
+    }
+
+    /**
+     * Serialize annotations for storage
+     */
+    private String serializeAnnotations(List<AnnotationOverlay.DrawnAnnotation> annotations) {
+        StringBuilder sb = new StringBuilder();
+        for (AnnotationOverlay.DrawnAnnotation annotation : annotations) {
+            sb.append("timestamp:").append(annotation.timestamp).append(";");
+            sb.append("tool:").append(annotation.tool.name()).append(";");
+            sb.append("points:").append(annotation.serializedPath).append("|");
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Update video submission status
+     */
+    private void updateVideoSubmissionStatus(String status) {
+        try {
+            databaseHelper.updateVideoSubmissionStatus(videoId, status);
+            Log.d(TAG, "📊 Video submission status updated to: " + status);
+        } catch (Exception e) {
+            Log.e(TAG, "Error updating video status", e);
+        }
+    }
+
+    /**
+     * Show confirmation that feedback was sent
+     */
+    private void showFeedbackSentConfirmation() {
+        new AlertDialog.Builder(this)
+                .setTitle("Feedback Sent! ✅")
+                .setMessage("Your annotations and feedback have been sent to the student. They will receive a notification to review your coaching tips.")
+                .setPositiveButton("Continue Coaching", null)
+                .setNeutralButton("Return to Videos", (dialog, which) -> {
+                    finish(); // Return to video list
+                })
+                .show();
+    }
+
+    /**
+     * Get current timestamp
+     */
+    private String getCurrentTimestamp() {
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                .format(new Date());
     }
 
     // Cricket-specific tool methods (placeholder implementations)
@@ -895,6 +1250,7 @@ public class VideoPlayerActivity extends AppCompatActivity {
         // Stop update timer
         if (updateHandler != null && updateRunnable != null) {
             updateHandler.removeCallbacks(updateRunnable);
+            Log.d(TAG, "⏰ Update timer stopped");
         }
 
         // Close database

@@ -1,5 +1,6 @@
 package com.lords.becomebetter;
 
+
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -16,6 +17,11 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
+import java.util.Map;
+import java.util.HashMap;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 /**
  * AnnotationOverlay - Complete rewrite for Cricket Coaching App
@@ -74,36 +80,6 @@ public class AnnotationOverlay extends View {
     /**
      * Class to represent a single annotation drawing
      */
-    public static class DrawnAnnotation {
-        public Path path;
-        public Paint paint;
-        public long timestamp;
-        public long duration;
-        public DrawingTool tool;
-        public String serializedPath;
-        public List<PointF> points;
-        public String text; // For text annotations
-        public PointF textPosition; // For text annotations
-
-        public DrawnAnnotation(DrawingTool tool, Paint paint, long timestamp) {
-            this.tool = tool;
-            this.paint = new Paint(paint);
-            this.timestamp = timestamp;
-            this.duration = 5000; // Default 5 seconds
-            this.path = new Path();
-            this.points = new ArrayList<>();
-        }
-
-        public DrawnAnnotation(String text, PointF position, Paint paint, long timestamp) {
-            this.tool = DrawingTool.TEXT;
-            this.text = text;
-            this.textPosition = new PointF(position.x, position.y);
-            this.paint = new Paint(paint);
-            this.timestamp = timestamp;
-            this.duration = 5000;
-            this.points = new ArrayList<>();
-        }
-    }
 
     // Constructors
     public AnnotationOverlay(Context context) {
@@ -221,14 +197,17 @@ public class AnnotationOverlay extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        // Draw all video annotations that should be visible at current time
+        // Get current video timestamp from parent
+        long currentTime = getCurrentVideoTimestamp();
+
+        // Draw video annotations that should be visible at current time
         for (DrawnAnnotation annotation : allVideoAnnotations) {
-            if (shouldDisplayAnnotation(annotation)) {
+            if (annotation.shouldDisplayAtTime(currentTime)) {
                 drawAnnotation(canvas, annotation);
             }
         }
 
-        // Draw current session annotations
+        // Always draw current session annotations (being created now)
         for (DrawnAnnotation annotation : currentSessionAnnotations) {
             drawAnnotation(canvas, annotation);
         }
@@ -239,12 +218,19 @@ public class AnnotationOverlay extends View {
         }
     }
 
+    private long getCurrentVideoTimestamp() {
+        if (parentActivity != null) {
+            return parentActivity.getCurrentVideoPosition();
+        }
+        return currentVideoTimestamp;
+    }
+
     /**
      * Check if annotation should be displayed at current video time
      */
     private boolean shouldDisplayAnnotation(DrawnAnnotation annotation) {
         long timeDiff = currentVideoTimestamp - annotation.timestamp;
-        return timeDiff >= 0 && timeDiff <= annotation.duration;
+        return timeDiff >= 0 && timeDiff <= annotation.displayDuration;
     }
 
     /**
@@ -639,4 +625,33 @@ public class AnnotationOverlay extends View {
     public int getActiveColor() { return activeColor; }
     public float getStrokeWidth() { return activeStrokeWidth; }
     public int getCurrentSessionAnnotationCount() { return currentSessionAnnotations.size(); }
+
+    public static class DrawnAnnotation {
+        public DrawingTool tool;
+        public Paint paint;
+        public Path path;
+        public List<PointF> points;
+        public String serializedPath;
+        public long timestamp;          // When annotation was created
+        public long displayDuration;    // How long to show (default 5 seconds)
+        public String text;
+        public PointF textPosition;
+
+        public DrawnAnnotation(DrawingTool tool, Paint paint, long timestamp) {
+            this.tool = tool;
+            this.paint = new Paint(paint);
+            this.timestamp = timestamp;
+            this.displayDuration = 5000; // 5 seconds default
+            this.points = new ArrayList<>();
+        }
+
+        // Check if annotation should be visible at current video time
+        public boolean shouldDisplayAtTime(long currentVideoTime) {
+            long timeDifference = Math.abs(currentVideoTime - timestamp);
+            return timeDifference <= displayDuration; // Show within 5 seconds of timestamp
+        }
+    }
+
+
 }
+

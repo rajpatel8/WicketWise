@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Create this file: app/src/main/res/layout/dialog_coach_feedback.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="@drawable/rounded_background"
+    android:backgroundTint="@color/white">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp">
+
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_feedback"
+            android:layout_marginEnd="12dp"
+            app:tint="@color/cricket_green_primary" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Send Feedback to Student"
+            android:textColor="@color/cricket_green_primary"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <!-- Timestamp Info -->
+    <TextView
+        android:id="@+id/timestampText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Feedback for annotations at: 02:15"
+        android:textColor="@color/text_secondary"
+        android:textSize="14sp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/rounded_background"
+        android:backgroundTint="@color/cricket_green_light"
+        android:padding="12dp"
+        android:drawableStart="@drawable/ic_schedule"
+        android:drawableTint="@color/cricket_green_primary"
+        android:drawablePadding="8dp"
+        android:gravity="center_vertical" />
+
+    <!-- Rating Section -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Rate this performance:"
+        android:textColor="@color/text_primary"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+
+    <RatingBar
+        android:id="@+id/ratingBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:numStars="5"
+        android:rating="4"
+        android:stepSize="0.5"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:progressTint="@color/cricket_green_primary"
+        android:secondaryProgressTint="@color/cricket_green_light" />
+
+    <!-- Feedback Text Input -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        app:boxStrokeColor="@color/cricket_green_primary"
+        app:hintTextColor="@color/cricket_green_primary"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/feedbackEdit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Enter your coaching feedback and tips..."
+            android:inputType="textMultiLine"
+            android:minLines="4"
+            android:maxLines="8"
+            android:gravity="top"
+            android:textSize="16sp" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Feedback Tips -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="💡 Tips for effective feedback:\n• Be specific about what to improve\n• Highlight good techniques\n• Suggest practice drills\n• Use positive, encouraging language"
+        android:textColor="@color/cricket_green_dark"
+        android:textSize="12sp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/rounded_background"
+        android:backgroundTint="@color/cricket_green_light"
+        android:padding="12dp" />
+
+    <!-- Action Buttons Area (will be handled by dialog) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Student will be notified immediately"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="16dp"
+            android:drawableStart="@drawable/ic_notification"
+            android:drawableTint="@color/cricket_green_primary"
+            android:drawablePadding="4dp" />
+
+    </LinearLayout>
+
+</LinearLayout>
