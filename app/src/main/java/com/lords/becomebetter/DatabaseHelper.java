@@ -14,7 +14,7 @@ import android.util.Log;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "CricketCoaching.db";
-    private static final int DATABASE_VERSION = 5; // Updated version for new tables
+    private static final int DATABASE_VERSION = 6; // Updated version for new tables
 
     // Table names
     private static final String TABLE_COACHES = "coaches";
@@ -261,50 +261,113 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
 // Also, make sure you have these missing methods defined:
 
+//    public List<VideoFeedback> getVideoFeedbacks(int submissionId) {
+//        List<VideoFeedback> feedbacks = new ArrayList<>();
+//        SQLiteDatabase db = this.getReadableDatabase();
+//
+//        // Check if table exists first
+//        if (!tableExists(db, TABLE_VIDEO_FEEDBACKS)) {
+//            Log.w("DatabaseHelper", "video_feedbacks table does not exist, returning empty list");
+//            return feedbacks;
+//        }
+//
+//        String query = "SELECT vf.*, c.name as coach_name, c.email as coach_email " +
+//                "FROM " + TABLE_VIDEO_FEEDBACKS + " vf " +
+//                "INNER JOIN " + TABLE_COACHES + " c ON vf." + COLUMN_FEEDBACK_COACH_ID + " = c." + COLUMN_ID + " " +
+//                "WHERE vf." + COLUMN_SUBMISSION_ID + " = ? " +
+//                "ORDER BY vf." + COLUMN_FEEDBACK_DATE + " DESC";
+//
+//        try {
+//            Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(submissionId)});
+//
+//            if (cursor.moveToFirst()) {
+//                do {
+//                    VideoFeedback feedback = new VideoFeedback();
+//                    feedback.setFeedbackId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_ID)));
+//                    feedback.setSubmissionId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_SUBMISSION_ID)));
+//                    feedback.setCoachId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_COACH_ID)));
+//                    feedback.setFeedbackText(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_TEXT)));
+//                    feedback.setFeedbackDate(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_DATE)));
+//                    feedback.setAnnotationData(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_ANNOTATION_DATA)));
+//                    feedback.setVoiceRecordingPath(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_VOICE_RECORDING_PATH)));
+//                    feedback.setRating(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_RATING)));
+//                    feedback.setStatus(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_STATUS)));
+//
+//                    // Set coach info
+//                    feedback.setCoachName(cursor.getString(cursor.getColumnIndexOrThrow("coach_name")));
+//                    feedback.setCoachEmail(cursor.getString(cursor.getColumnIndexOrThrow("coach_email")));
+//
+//                    feedbacks.add(feedback);
+//                } while (cursor.moveToNext());
+//            }
+//            cursor.close();
+//        } catch (Exception e) {
+//            Log.e("DatabaseHelper", "Error getting video feedbacks", e);
+//        }
+//
+//        return feedbacks;
+//    }
+
+    // Add this complete method to your DatabaseHelper.java if it's not complete:
+
+    public List<VideoSubmission> getSubmissionsWithFeedbackForStudent(int studentId) {
+        List<VideoSubmission> submissions = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        if (!tableExists(db, TABLE_VIDEO_SUBMISSIONS) || !tableExists(db, TABLE_VIDEO_FEEDBACKS)) {
+            return submissions;
+        }
+
+        String query = "SELECT DISTINCT vs.*, s." + COLUMN_NAME + " as student_name " +
+                "FROM " + TABLE_VIDEO_SUBMISSIONS + " vs " +
+                "INNER JOIN " + TABLE_STUDENTS + " s ON vs." + COLUMN_SUBMISSION_STUDENT_ID + " = s." + COLUMN_ID + " " +
+                "INNER JOIN " + TABLE_VIDEO_FEEDBACKS + " vf ON vs." + COLUMN_SUBMISSION_ID + " = vf." + COLUMN_SUBMISSION_ID + " " +
+                "WHERE vs." + COLUMN_SUBMISSION_STUDENT_ID + " = ? " +
+                "ORDER BY vs." + COLUMN_SUBMISSION_DATE + " DESC";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(studentId)});
+
+        if (cursor.moveToFirst()) {
+            do {
+                VideoSubmission submission = cursorToVideoSubmission(cursor);
+
+                // Load feedbacks for this submission
+                List<VideoFeedback> feedbacks = getVideoFeedbacks(submission.getSubmissionId());
+                submission.setFeedbacks(feedbacks);
+
+                submissions.add(submission);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        return submissions;
+    }
+
+    // Add this method to get feedbacks for a submission:
     public List<VideoFeedback> getVideoFeedbacks(int submissionId) {
         List<VideoFeedback> feedbacks = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
 
-        // Check if table exists first
         if (!tableExists(db, TABLE_VIDEO_FEEDBACKS)) {
-            Log.w("DatabaseHelper", "video_feedbacks table does not exist, returning empty list");
             return feedbacks;
         }
 
-        String query = "SELECT vf.*, c.name as coach_name, c.email as coach_email " +
+        String query = "SELECT vf.*, c." + COLUMN_NAME + " as coach_name, c." + COLUMN_EMAIL + " as coach_email " +
                 "FROM " + TABLE_VIDEO_FEEDBACKS + " vf " +
                 "INNER JOIN " + TABLE_COACHES + " c ON vf." + COLUMN_FEEDBACK_COACH_ID + " = c." + COLUMN_ID + " " +
                 "WHERE vf." + COLUMN_SUBMISSION_ID + " = ? " +
                 "ORDER BY vf." + COLUMN_FEEDBACK_DATE + " DESC";
 
-        try {
-            Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(submissionId)});
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(submissionId)});
 
-            if (cursor.moveToFirst()) {
-                do {
-                    VideoFeedback feedback = new VideoFeedback();
-                    feedback.setFeedbackId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_ID)));
-                    feedback.setSubmissionId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_SUBMISSION_ID)));
-                    feedback.setCoachId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_COACH_ID)));
-                    feedback.setFeedbackText(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_TEXT)));
-                    feedback.setFeedbackDate(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_DATE)));
-                    feedback.setAnnotationData(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_ANNOTATION_DATA)));
-                    feedback.setVoiceRecordingPath(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_VOICE_RECORDING_PATH)));
-                    feedback.setRating(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_RATING)));
-                    feedback.setStatus(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_FEEDBACK_STATUS)));
-
-                    // Set coach info
-                    feedback.setCoachName(cursor.getString(cursor.getColumnIndexOrThrow("coach_name")));
-                    feedback.setCoachEmail(cursor.getString(cursor.getColumnIndexOrThrow("coach_email")));
-
-                    feedbacks.add(feedback);
-                } while (cursor.moveToNext());
-            }
-            cursor.close();
-        } catch (Exception e) {
-            Log.e("DatabaseHelper", "Error getting video feedbacks", e);
+        if (cursor.moveToFirst()) {
+            do {
+                VideoFeedback feedback = cursorToVideoFeedback(cursor);
+                feedbacks.add(feedback);
+            } while (cursor.moveToNext());
         }
 
+        cursor.close();
         return feedbacks;
     }
 
@@ -625,6 +688,257 @@ public long addAnnotation(Annotation annotation) {
         return coachName;
     }
 
+    // Add these methods to your DatabaseHelper.java
+
+    /**
+     * Get annotations associated with a specific feedback
+     */
+    public List<Annotation> getAnnotationsForFeedback(int feedbackId) {
+        List<Annotation> annotations = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        if (!tableExists(db, TABLE_ANNOTATIONS)) {
+            Log.w("DatabaseHelper", "annotations table does not exist");
+            return annotations;
+        }
+
+        // First try to get annotations directly linked to feedback
+        String query = "SELECT * FROM " + TABLE_ANNOTATIONS +
+                " WHERE " + COLUMN_ANNOTATION_FEEDBACK_ID + " = ? " +
+                " ORDER BY " + COLUMN_ANNOTATION_TIMESTAMP + " ASC";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(feedbackId)});
+
+        if (cursor.moveToFirst()) {
+            do {
+                Annotation annotation = cursorToAnnotation(cursor);
+                annotations.add(annotation);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+
+        // If no direct links found, try to get by submission and coach (fallback)
+        if (annotations.isEmpty()) {
+            VideoFeedback feedback = getVideoFeedbackById(feedbackId);
+            if (feedback != null) {
+                annotations = getAnnotationsBySubmissionAndCoach(feedback.getSubmissionId(), feedback.getCoachId());
+            }
+        }
+
+        Log.d("DatabaseHelper", "Found " + annotations.size() + " annotations for feedback " + feedbackId);
+        return annotations;
+    }
+
+    /**
+     * Get annotations by submission and coach (fallback method)
+     */
+    public List<Annotation> getAnnotationsBySubmissionAndCoach(int submissionId, int coachId) {
+        List<Annotation> annotations = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        if (!tableExists(db, TABLE_ANNOTATIONS) || !tableExists(db, TABLE_VIDEO_SUBMISSIONS)) {
+            return annotations;
+        }
+
+        // Get video submission to find the associated video
+        VideoSubmission submission = getVideoSubmissionById(submissionId);
+        if (submission == null) {
+            return annotations;
+        }
+
+        // Get annotations for this video by this coach
+        String query = "SELECT * FROM " + TABLE_ANNOTATIONS +
+                " WHERE " + COLUMN_ANNOTATION_VIDEO_ID + " = ? " +
+                " AND " + COLUMN_ANNOTATION_COACH_ID + " = ? " +
+                " ORDER BY " + COLUMN_ANNOTATION_TIMESTAMP + " ASC";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(submissionId), String.valueOf(coachId)});
+
+        if (cursor.moveToFirst()) {
+            do {
+                Annotation annotation = cursorToAnnotation(cursor);
+                annotations.add(annotation);
+            } while (cursor.moveToNext());
+        }
+        cursor.close();
+
+        return annotations;
+    }
+
+    /**
+     * Get a specific video feedback by ID
+     */
+    public VideoFeedback getVideoFeedbackById(int feedbackId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        if (!tableExists(db, TABLE_VIDEO_FEEDBACKS)) {
+            return null;
+        }
+
+        String query = "SELECT vf.*, c." + COLUMN_NAME + " as coach_name, c." + COLUMN_EMAIL + " as coach_email " +
+                "FROM " + TABLE_VIDEO_FEEDBACKS + " vf " +
+                "LEFT JOIN " + TABLE_COACHES + " c ON vf." + COLUMN_FEEDBACK_COACH_ID + " = c." + COLUMN_ID + " " +
+                "WHERE vf." + COLUMN_FEEDBACK_ID + " = ?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(feedbackId)});
+        VideoFeedback feedback = null;
+
+        if (cursor.moveToFirst()) {
+            feedback = cursorToVideoFeedback(cursor);
+        }
+
+        cursor.close();
+        return feedback;
+    }
+
+    /**
+     * Convert cursor to Annotation object (if not already exists)
+     */
+    private Annotation cursorToAnnotation(Cursor cursor) {
+        Annotation annotation = new Annotation();
+
+        annotation.setAnnotationId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ANNOTATION_ID)));
+        annotation.setVideoId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ANNOTATION_VIDEO_ID)));
+        annotation.setCoachId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ANNOTATION_COACH_ID)));
+        annotation.setTimestamp(cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_ANNOTATION_TIMESTAMP)));
+        annotation.setAnnotationType(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ANNOTATION_TYPE)));
+        annotation.setAnnotationData(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ANNOTATION_DATA)));
+        annotation.setXPosition(cursor.getFloat(cursor.getColumnIndexOrThrow(COLUMN_ANNOTATION_X_POSITION)));
+        annotation.setYPosition(cursor.getFloat(cursor.getColumnIndexOrThrow(COLUMN_ANNOTATION_Y_POSITION)));
+        annotation.setCreatedAt(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_ANNOTATION_CREATED_AT)));
+
+        // Handle feedback ID if column exists
+        try {
+            int feedbackIdIndex = cursor.getColumnIndex(COLUMN_ANNOTATION_FEEDBACK_ID);
+            if (feedbackIdIndex >= 0) {
+                annotation.setFeedbackId(cursor.getInt(feedbackIdIndex));
+            }
+        } catch (Exception e) {
+            // Column might not exist in older database versions
+        }
+
+        return annotation;
+    }
+
+    // Add this to your DatabaseHelper.java
+
+    // Update the column definition
+    private static final String COLUMN_ANNOTATION_FEEDBACK_ID = "feedback_id";
+
+    // Update the CREATE_ANNOTATIONS table SQL (in onCreate method):
+    private static final String CREATE_ANNOTATIONS = "CREATE TABLE " + TABLE_ANNOTATIONS + "("
+            + COLUMN_ANNOTATION_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+            + COLUMN_ANNOTATION_VIDEO_ID + " INTEGER,"
+            + COLUMN_ANNOTATION_COACH_ID + " INTEGER,"
+            + COLUMN_ANNOTATION_FEEDBACK_ID + " INTEGER," // ADD THIS LINE
+            + COLUMN_ANNOTATION_TIMESTAMP + " INTEGER,"
+            + COLUMN_ANNOTATION_TYPE + " TEXT,"
+            + COLUMN_ANNOTATION_DATA + " TEXT,"
+            + COLUMN_ANNOTATION_X_POSITION + " REAL,"
+            + COLUMN_ANNOTATION_Y_POSITION + " REAL,"
+            + COLUMN_ANNOTATION_CREATED_AT + " TEXT,"
+            + "FOREIGN KEY(" + COLUMN_ANNOTATION_VIDEO_ID + ") REFERENCES " + TABLE_VIDEOS + "(" + COLUMN_ID + "),"
+            + "FOREIGN KEY(" + COLUMN_ANNOTATION_COACH_ID + ") REFERENCES " + TABLE_COACHES + "(" + COLUMN_ID + "),"
+            + "FOREIGN KEY(" + COLUMN_ANNOTATION_FEEDBACK_ID + ") REFERENCES " + TABLE_VIDEO_FEEDBACKS + "(" + COLUMN_FEEDBACK_ID + ")"
+            + ")";
+
+    // Add this method to handle database upgrades
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        Log.d("DatabaseHelper", "Upgrading database from version " + oldVersion + " to " + newVersion);
+
+        if (oldVersion < 2) {
+            // Add feedback_id column to annotations table if it doesn't exist
+            try {
+                db.execSQL("ALTER TABLE " + TABLE_ANNOTATIONS + " ADD COLUMN " + COLUMN_ANNOTATION_FEEDBACK_ID + " INTEGER");
+                Log.d("DatabaseHelper", "Added feedback_id column to annotations table");
+            } catch (Exception e) {
+                Log.w("DatabaseHelper", "Column feedback_id might already exist", e);
+            }
+        }
+    }
+
+    // Update the DATABASE_VERSION (change from 1 to 2)
+    private static final int DATABASE_VERSION = 2;
+
+    /**
+     * Link annotations to feedback when coach saves feedback
+     */
+    public void linkAnnotationsToFeedback(int feedbackId, int submissionId, int coachId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        try {
+            // Update annotations that belong to this coach and submission to link them to the feedback
+            String updateSql = "UPDATE " + TABLE_ANNOTATIONS +
+                    " SET " + COLUMN_ANNOTATION_FEEDBACK_ID + " = ? " +
+                    " WHERE " + COLUMN_ANNOTATION_VIDEO_ID + " = ? " +
+                    " AND " + COLUMN_ANNOTATION_COACH_ID + " = ? " +
+                    " AND (" + COLUMN_ANNOTATION_FEEDBACK_ID + " IS NULL OR " + COLUMN_ANNOTATION_FEEDBACK_ID + " = 0)";
+
+            db.execSQL(updateSql, new Object[]{feedbackId, submissionId, coachId});
+
+            Log.d("DatabaseHelper", "Linked annotations to feedback " + feedbackId + " for submission " + submissionId);
+
+        } catch (Exception e) {
+            Log.e("DatabaseHelper", "Error linking annotations to feedback", e);
+        }
+    }
+
+    /**
+     * Updated saveVideoFeedback method to link annotations
+     */
+    public boolean saveVideoFeedback(VideoFeedback feedback) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.beginTransaction();
+
+        try {
+            ContentValues values = new ContentValues();
+            values.put(COLUMN_SUBMISSION_ID, feedback.getSubmissionId());
+            values.put(COLUMN_FEEDBACK_COACH_ID, feedback.getCoachId());
+            values.put(COLUMN_FEEDBACK_TEXT, feedback.getFeedbackText());
+            values.put(COLUMN_FEEDBACK_DATE, getCurrentTimestamp());
+            values.put(COLUMN_FEEDBACK_ANNOTATION_DATA, feedback.getAnnotationData());
+            values.put(COLUMN_FEEDBACK_VOICE_RECORDING_PATH, feedback.getVoiceRecordingPath());
+            values.put(COLUMN_FEEDBACK_RATING, feedback.getRating());
+            values.put(COLUMN_FEEDBACK_STATUS, feedback.getStatus());
+
+            long feedbackId;
+
+            if (feedback.getFeedbackId() > 0) {
+                // Update existing feedback
+                int rowsUpdated = db.update(TABLE_VIDEO_FEEDBACKS, values,
+                        COLUMN_FEEDBACK_ID + " = ?",
+                        new String[]{String.valueOf(feedback.getFeedbackId())});
+                feedbackId = feedback.getFeedbackId();
+            } else {
+                // Insert new feedback
+                feedbackId = db.insert(TABLE_VIDEO_FEEDBACKS, null, values);
+                feedback.setFeedbackId((int)feedbackId);
+            }
+
+            if (feedbackId > 0) {
+                // Link annotations to this feedback
+                linkAnnotationsToFeedback((int)feedbackId, feedback.getSubmissionId(), feedback.getCoachId());
+
+                // Save voice recordings
+                saveVoiceRecordings((int)feedbackId, feedback.getVoiceRecordings());
+
+                // Update submission status
+                updateSubmissionStatus(feedback.getSubmissionId(), "reviewed");
+
+                db.setTransactionSuccessful();
+                return true;
+            }
+
+        } catch (Exception e) {
+            Log.e("DatabaseHelper", "Error saving video feedback", e);
+        } finally {
+            db.endTransaction();
+        }
+
+        return false;
+    }
+
     // Get students assigned to a specific coach
     public List<Student> getStudentsByCoachId(int coachId) {
         List<Student> students = new ArrayList<>();
@@ -801,52 +1115,52 @@ public long addAnnotation(Annotation annotation) {
 
 // 4. Add method to save complete video feedback
 
-    public boolean saveVideoFeedback(VideoFeedback feedback) {
-        SQLiteDatabase db = this.getWritableDatabase();
-
-        try {
-            db.beginTransaction();
-
-            ContentValues values = new ContentValues();
-            values.put(COLUMN_SUBMISSION_ID, feedback.getSubmissionId());
-            values.put(COLUMN_FEEDBACK_COACH_ID, feedback.getCoachId());
-            values.put(COLUMN_FEEDBACK_TEXT, feedback.getFeedbackText());
-            values.put(COLUMN_FEEDBACK_ANNOTATION_DATA, feedback.getAnnotationData());
-            values.put(COLUMN_FEEDBACK_RATING, feedback.getRating());
-            values.put(COLUMN_FEEDBACK_STATUS, feedback.getStatus());
-
-            long feedbackId;
-            if (feedback.getFeedbackId() > 0) {
-                // Update existing feedback
-                int rows = db.update(TABLE_VIDEO_FEEDBACKS, values,
-                        COLUMN_FEEDBACK_ID + " = ?",
-                        new String[]{String.valueOf(feedback.getFeedbackId())});
-                feedbackId = feedback.getFeedbackId();
-            } else {
-                // Insert new feedback
-                feedbackId = db.insert(TABLE_VIDEO_FEEDBACKS, null, values);
-                feedback.setFeedbackId((int)feedbackId);
-            }
-
-            if (feedbackId > 0) {
-                // Save voice recordings
-                saveVoiceRecordings((int)feedbackId, feedback.getVoiceRecordings());
-
-                // Update submission status
-                updateSubmissionStatus(feedback.getSubmissionId(), "reviewed");
-
-                db.setTransactionSuccessful();
-                return true;
-            }
-
-        } catch (Exception e) {
-            Log.e("DatabaseHelper", "Error saving video feedback", e);
-        } finally {
-            db.endTransaction();
-        }
-
-        return false;
-    }
+//    public boolean saveVideoFeedback(VideoFeedback feedback) {
+//        SQLiteDatabase db = this.getWritableDatabase();
+//
+//        try {
+//            db.beginTransaction();
+//
+//            ContentValues values = new ContentValues();
+//            values.put(COLUMN_SUBMISSION_ID, feedback.getSubmissionId());
+//            values.put(COLUMN_FEEDBACK_COACH_ID, feedback.getCoachId());
+//            values.put(COLUMN_FEEDBACK_TEXT, feedback.getFeedbackText());
+//            values.put(COLUMN_FEEDBACK_ANNOTATION_DATA, feedback.getAnnotationData());
+//            values.put(COLUMN_FEEDBACK_RATING, feedback.getRating());
+//            values.put(COLUMN_FEEDBACK_STATUS, feedback.getStatus());
+//
+//            long feedbackId;
+//            if (feedback.getFeedbackId() > 0) {
+//                // Update existing feedback
+//                int rows = db.update(TABLE_VIDEO_FEEDBACKS, values,
+//                        COLUMN_FEEDBACK_ID + " = ?",
+//                        new String[]{String.valueOf(feedback.getFeedbackId())});
+//                feedbackId = feedback.getFeedbackId();
+//            } else {
+//                // Insert new feedback
+//                feedbackId = db.insert(TABLE_VIDEO_FEEDBACKS, null, values);
+//                feedback.setFeedbackId((int)feedbackId);
+//            }
+//
+//            if (feedbackId > 0) {
+//                // Save voice recordings
+//                saveVoiceRecordings((int)feedbackId, feedback.getVoiceRecordings());
+//
+//                // Update submission status
+//                updateSubmissionStatus(feedback.getSubmissionId(), "reviewed");
+//
+//                db.setTransactionSuccessful();
+//                return true;
+//            }
+//
+//        } catch (Exception e) {
+//            Log.e("DatabaseHelper", "Error saving video feedback", e);
+//        } finally {
+//            db.endTransaction();
+//        }
+//
+//        return false;
+//    }
 
 // 5. Add method to update submission status
 
@@ -1533,23 +1847,23 @@ public long addAnnotation(Annotation annotation) {
 //        return student;
 //    }
 
-    @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // Drop all tables in correct order
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_VOICE_RECORDINGS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_VIDEO_FEEDBACKS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACH_SELECTIONS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_VIDEO_SUBMISSIONS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_ANNOTATIONS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_VIDEOS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACH_REQUESTS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACH_CODES);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_STUDENTS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACHES);
-
-        // Recreate all tables
-        onCreate(db);
-    }
+//    @Override
+//    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+//        // Drop all tables in correct order
+//        db.execSQL("DROP TABLE IF EXISTS " + TABLE_VOICE_RECORDINGS);
+//        db.execSQL("DROP TABLE IF EXISTS " + TABLE_VIDEO_FEEDBACKS);
+//        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACH_SELECTIONS);
+//        db.execSQL("DROP TABLE IF EXISTS " + TABLE_VIDEO_SUBMISSIONS);
+//        db.execSQL("DROP TABLE IF EXISTS " + TABLE_ANNOTATIONS);
+//        db.execSQL("DROP TABLE IF EXISTS " + TABLE_VIDEOS);
+//        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACH_REQUESTS);
+//        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACH_CODES);
+//        db.execSQL("DROP TABLE IF EXISTS " + TABLE_STUDENTS);
+//        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACHES);
+//
+//        // Recreate all tables
+//        onCreate(db);
+//    }
 // 5. COACH REQUEST METHODS
 
     // Send coach request
@@ -1981,34 +2295,34 @@ public long addAnnotation(Annotation annotation) {
 //        return student;
 //    }
 
-    public List<VideoSubmission> getSubmissionsWithFeedbackForStudent(int studentId) {
-        List<VideoSubmission> submissions = new ArrayList<>();
-        SQLiteDatabase db = this.getReadableDatabase();
-
-        String query = "SELECT DISTINCT vs.*, s.name as student_name " +
-                "FROM " + TABLE_VIDEO_SUBMISSIONS + " vs " +
-                "INNER JOIN " + TABLE_STUDENTS + " s ON vs." + COLUMN_SUBMISSION_STUDENT_ID + " = s." + COLUMN_ID + " " +
-                "INNER JOIN " + TABLE_VIDEO_FEEDBACKS + " vf ON vs." + COLUMN_SUBMISSION_ID + " = vf." + COLUMN_SUBMISSION_ID + " " +
-                "WHERE vs." + COLUMN_SUBMISSION_STUDENT_ID + " = ? " +
-                "ORDER BY vf." + COLUMN_FEEDBACK_DATE + " DESC";
-
-        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(studentId)});
-
-        if (cursor.moveToFirst()) {
-            do {
-                VideoSubmission submission = cursorToVideoSubmission(cursor);
-
-                // Load feedbacks for this submission
-                List<VideoFeedback> feedbacks = getVideoFeedbacks(submission.getSubmissionId());
-                submission.setFeedbacks(feedbacks);
-
-                submissions.add(submission);
-            } while (cursor.moveToNext());
-        }
-
-        cursor.close();
-        return submissions;
-    }
+//    public List<VideoSubmission> getSubmissionsWithFeedbackForStudent(int studentId) {
+//        List<VideoSubmission> submissions = new ArrayList<>();
+//        SQLiteDatabase db = this.getReadableDatabase();
+//
+//        String query = "SELECT DISTINCT vs.*, s.name as student_name " +
+//                "FROM " + TABLE_VIDEO_SUBMISSIONS + " vs " +
+//                "INNER JOIN " + TABLE_STUDENTS + " s ON vs." + COLUMN_SUBMISSION_STUDENT_ID + " = s." + COLUMN_ID + " " +
+//                "INNER JOIN " + TABLE_VIDEO_FEEDBACKS + " vf ON vs." + COLUMN_SUBMISSION_ID + " = vf." + COLUMN_SUBMISSION_ID + " " +
+//                "WHERE vs." + COLUMN_SUBMISSION_STUDENT_ID + " = ? " +
+//                "ORDER BY vf." + COLUMN_FEEDBACK_DATE + " DESC";
+//
+//        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(studentId)});
+//
+//        if (cursor.moveToFirst()) {
+//            do {
+//                VideoSubmission submission = cursorToVideoSubmission(cursor);
+//
+//                // Load feedbacks for this submission
+//                List<VideoFeedback> feedbacks = getVideoFeedbacks(submission.getSubmissionId());
+//                submission.setFeedbacks(feedbacks);
+//
+//                submissions.add(submission);
+//            } while (cursor.moveToNext());
+//        }
+//
+//        cursor.close();
+//        return submissions;
+//    }
 
     public Student getStudentById(int studentId) {
         SQLiteDatabase db = this.getReadableDatabase();

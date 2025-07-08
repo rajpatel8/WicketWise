@@ -315,12 +315,12 @@ public class EnhancedVideoPlayerActivity extends AppCompatActivity {
         saveFeedbackBtn.setOnClickListener(v -> saveFeedback());
     }
 
-    private void hideEditingControls() {
-        recordVoiceBtn.setVisibility(View.GONE);
-        saveAnnotationBtn.setVisibility(View.GONE);
-        saveFeedbackBtn.setVisibility(View.GONE);
-        feedbackTextEdit.setEnabled(false);
-    }
+//    private void hideEditingControls() {
+//        recordVoiceBtn.setVisibility(View.GONE);
+//        saveAnnotationBtn.setVisibility(View.GONE);
+//        saveFeedbackBtn.setVisibility(View.GONE);
+//        feedbackTextEdit.setEnabled(false);
+//    }
 
     private void togglePlayPause() {
         try {
@@ -524,32 +524,32 @@ public class EnhancedVideoPlayerActivity extends AppCompatActivity {
         }
     }
 
-    private void setupStudentView(int studentId, boolean showFeedback) {
-        // Student can only view, not edit
-        isViewOnly = true;
+//    private void setupStudentView(int studentId, boolean showFeedback) {
+//        // Student can only view, not edit
+//        isViewOnly = true;
+//
+//        if (showFeedback) {
+//            showFeedbackOverlay();
+//        }
+//    }
 
-        if (showFeedback) {
-            showFeedbackOverlay();
-        }
-    }
-
-    private void showFeedbackOverlay() {
-        // Create a semi-transparent overlay showing feedback info
-        if (currentFeedback != null) {
-            // Update feedback text display
-            if (feedbackTextEdit != null && currentFeedback.getFeedbackText() != null) {
-                feedbackTextEdit.setText(currentFeedback.getFeedbackText());
-            }
-
-            // Show voice recordings with play buttons
-            updateVoiceRecordingsDisplay();
-
-            // Show coach info in title or as toast since we don't have a dedicated TextView
-            if (currentFeedback.getCoachName() != null) {
-                Toast.makeText(this, "Feedback from: " + currentFeedback.getCoachName(), Toast.LENGTH_LONG).show();
-            }
-        }
-    }
+//    private void showFeedbackOverlay() {
+//        // Create a semi-transparent overlay showing feedback info
+//        if (currentFeedback != null) {
+//            // Update feedback text display
+//            if (feedbackTextEdit != null && currentFeedback.getFeedbackText() != null) {
+//                feedbackTextEdit.setText(currentFeedback.getFeedbackText());
+//            }
+//
+//            // Show voice recordings with play buttons
+//            updateVoiceRecordingsDisplay();
+//
+//            // Show coach info in title or as toast since we don't have a dedicated TextView
+//            if (currentFeedback.getCoachName() != null) {
+//                Toast.makeText(this, "Feedback from: " + currentFeedback.getCoachName(), Toast.LENGTH_LONG).show();
+//            }
+//        }
+//    }
 
     // Removed applyTransformation() and gesture listener classes
 
@@ -588,4 +588,227 @@ public class EnhancedVideoPlayerActivity extends AppCompatActivity {
             updateHandler.removeCallbacks(updateRunnable);
         }
     }
+
+    // Add these updated methods to your EnhancedVideoPlayerActivity.java
+
+    private void setupStudentView(int studentId, boolean showFeedback) {
+        Log.d(TAG, "Setting up student view for student: " + studentId + ", showFeedback: " + showFeedback);
+
+        // Student can only view, not edit
+        isViewOnly = true;
+        hideEditingControls();
+
+        if (showFeedback) {
+            loadAndShowFeedback(studentId);
+        }
+    }
+
+    private void loadAndShowFeedback(int studentId) {
+        try {
+            DatabaseHelper databaseHelper = new DatabaseHelper(this);
+
+            // Load all feedbacks for this submission
+            List<VideoFeedback> feedbacks = databaseHelper.getVideoFeedbacks(submissionId);
+            Log.d(TAG, "Found " + feedbacks.size() + " feedbacks for submission: " + submissionId);
+
+            if (!feedbacks.isEmpty()) {
+                // Use the most recent feedback
+                currentFeedback = feedbacks.get(0);
+
+                // Load and display the feedback
+                displayFeedbackForStudent();
+
+                // Load and display annotations associated with this feedback
+                loadFeedbackAnnotations();
+
+                // Load and display voice recordings
+                loadVoiceRecordings();
+
+            } else {
+                Log.w(TAG, "No feedback found for submission: " + submissionId);
+                Toast.makeText(this, "No feedback available for this video", Toast.LENGTH_LONG).show();
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error loading feedback for student", e);
+            Toast.makeText(this, "Error loading feedback", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void displayFeedbackForStudent() {
+        if (currentFeedback == null) return;
+
+        try {
+            // Show feedback text if available
+            if (feedbackTextEdit != null && currentFeedback.getFeedbackText() != null) {
+                feedbackTextEdit.setText(currentFeedback.getFeedbackText());
+                feedbackTextEdit.setEnabled(false); // Read-only for students
+            }
+
+            // Show coach information
+            if (currentFeedback.getCoachName() != null) {
+                String feedbackInfo = String.format("Feedback from Coach %s (Rating: %d/5)",
+                        currentFeedback.getCoachName(),
+                        currentFeedback.getRating());
+                Toast.makeText(this, feedbackInfo, Toast.LENGTH_LONG).show();
+            }
+
+            // Update title to show this is feedback view
+            if (videoTitleText != null) {
+                String originalTitle = videoTitleText.getText().toString();
+                videoTitleText.setText(originalTitle + " - Coach Feedback");
+            }
+
+            Log.d(TAG, "Displayed feedback for student from coach: " + currentFeedback.getCoachName());
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error displaying feedback", e);
+        }
+    }
+
+    private void loadFeedbackAnnotations() {
+        if (currentFeedback == null) return;
+
+        try {
+            DatabaseHelper databaseHelper = new DatabaseHelper(this);
+
+            // Load annotations associated with this feedback
+            List<Annotation> annotations = databaseHelper.getAnnotationsForFeedback(currentFeedback.getFeedbackId());
+            Log.d(TAG, "Loading " + annotations.size() + " annotations for feedback: " + currentFeedback.getFeedbackId());
+
+            if (!annotations.isEmpty()) {
+                // Convert annotations to display format and show them on the overlay
+                if (annotationOverlay != null) {
+                    displayAnnotationsOnOverlay(annotations);
+                }
+            }
+
+            // Also try to load from annotation data string (fallback)
+            String annotationData = currentFeedback.getAnnotationData();
+            if (annotationData != null && !annotationData.isEmpty()) {
+                Log.d(TAG, "Loading annotations from annotation data string");
+                displaySerializedAnnotations(annotationData);
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error loading feedback annotations", e);
+        }
+    }
+
+    private void displayAnnotationsOnOverlay(List<Annotation> annotations) {
+        // This method converts saved annotations back to overlay format
+        // You'll need to implement this based on your annotation overlay system
+
+        for (Annotation annotation : annotations) {
+            Log.d(TAG, "Displaying annotation at timestamp: " + annotation.getTimestamp() +
+                    ", type: " + annotation.getAnnotationType());
+
+            // TODO: Convert annotation back to overlay format
+            // This depends on your AnnotationOverlay implementation
+            // You may need to create a method like:
+            // annotationOverlay.addSavedAnnotation(annotation);
+        }
+    }
+
+    private void displaySerializedAnnotations(String annotationData) {
+        try {
+            // Parse the serialized annotation data
+            // Format: "timestamp:12345;tool:PEN;points:x1,y1;x2,y2|timestamp:67890;tool:HIGHLIGHT;points:x3,y3"
+
+            String[] annotationParts = annotationData.split("\\|");
+            Log.d(TAG, "Parsing " + annotationParts.length + " serialized annotations");
+
+            for (String part : annotationParts) {
+                if (part.trim().isEmpty()) continue;
+
+                try {
+                    parseAndDisplayAnnotation(part);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error parsing annotation part: " + part, e);
+                }
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error displaying serialized annotations", e);
+        }
+    }
+
+    private void parseAndDisplayAnnotation(String annotationPart) {
+        // Parse individual annotation
+        // Format: "timestamp:12345;tool:PEN;points:x1,y1;x2,y2"
+
+        String[] components = annotationPart.split(";");
+        long timestamp = 0;
+        String tool = "";
+        String points = "";
+
+        for (String component : components) {
+            String[] keyValue = component.split(":");
+            if (keyValue.length == 2) {
+                switch (keyValue[0]) {
+                    case "timestamp":
+                        timestamp = Long.parseLong(keyValue[1]);
+                        break;
+                    case "tool":
+                        tool = keyValue[1];
+                        break;
+                    case "points":
+                        points = keyValue[1];
+                        break;
+                }
+            }
+        }
+
+        Log.d(TAG, "Parsed annotation - Timestamp: " + timestamp + ", Tool: " + tool + ", Points: " + points);
+
+        // TODO: Add this annotation to the overlay for display
+        // You'll need to implement this based on your annotation overlay system
+    }
+
+    private void loadVoiceRecordings() {
+        if (currentFeedback == null) return;
+
+        try {
+            DatabaseHelper databaseHelper = new DatabaseHelper(this);
+            List<VoiceRecording> recordings = databaseHelper.getVoiceRecordings(currentFeedback.getFeedbackId());
+
+            Log.d(TAG, "Loading " + recordings.size() + " voice recordings for feedback");
+
+            if (!recordings.isEmpty()) {
+                voiceRecordings.clear();
+                voiceRecordings.addAll(recordings);
+                updateVoiceRecordingsDisplay();
+            }
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error loading voice recordings", e);
+        }
+    }
+
+    private void hideEditingControls() {
+        // Hide all editing controls for students
+        if (recordVoiceBtn != null) recordVoiceBtn.setVisibility(View.GONE);
+        if (saveAnnotationBtn != null) saveAnnotationBtn.setVisibility(View.GONE);
+        if (saveFeedbackBtn != null) saveFeedbackBtn.setVisibility(View.GONE);
+
+        // Make feedback text read-only
+        if (feedbackTextEdit != null) {
+            feedbackTextEdit.setEnabled(false);
+            feedbackTextEdit.setFocusable(false);
+        }
+
+        Log.d(TAG, "Hidden editing controls for student view");
+    }
+
+    // Also update the existing showFeedbackOverlay method:
+    private void showFeedbackOverlay() {
+        if (currentFeedback != null) {
+            displayFeedbackForStudent();
+            loadFeedbackAnnotations();
+            loadVoiceRecordings();
+        } else {
+            Log.w(TAG, "No current feedback to show overlay");
+        }
+    }
+
 }

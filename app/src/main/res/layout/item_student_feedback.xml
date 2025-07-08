@@ -3,10 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="12dp"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="8dp"
     app:cardElevation="4dp"
-    app:cardBackgroundColor="@color/card_background">
+    app:cardBackgroundColor="@color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -14,73 +14,119 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Video Title -->
-        <TextView
-            android:id="@+id/videoTitleText"
+        <!-- Header Section -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Video Title"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            android:textColor="@color/text_primary"
-            android:layout_marginBottom="8dp" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
 
-        <!-- Coach Info -->
-        <TextView
-            android:id="@+id/coachNameText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Coach: John Doe"
-            android:textSize="14sp"
-            android:textColor="@color/text_secondary"
-            android:layout_marginBottom="4dp" />
+            <!-- Video Icon -->
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_video_play"
+                android:background="@drawable/circular_background"
+                android:backgroundTint="@color/cricket_green_primary"
+                android:padding="6dp"
+                app:tint="@color/white"
+                android:layout_marginEnd="12dp" />
 
-        <!-- Feedback Date -->
-        <TextView
-            android:id="@+id/feedbackDateText"
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/videoTitleText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Video Title"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:maxLines="2"
+                    android:ellipsize="end" />
+
+                <TextView
+                    android:id="@+id/coachNameText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Coach: John Doe"
+                    android:textSize="12sp"
+                    android:textColor="@color/cricket_green_primary"
+                    android:textStyle="bold"
+                    android:layout_marginTop="2dp" />
+
+                <TextView
+                    android:id="@+id/feedbackDateText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Reviewed: 2025-07-08"
+                    android:textSize="11sp"
+                    android:textColor="@color/text_secondary"
+                    android:layout_marginTop="1dp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Rating Section -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Reviewed: Jan 15, 2025"
-            android:textSize="12sp"
-            android:textColor="@color/text_hint"
-            android:layout_marginBottom="12dp" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Rating:"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginEnd="8dp" />
+
+            <RatingBar
+                android:id="@+id/feedbackRatingBar"
+                style="@style/Widget.AppCompat.RatingBar.Small"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:numStars="5"
+                android:stepSize="1"
+                android:isIndicator="true"
+                android:progressTint="@color/cricket_green_primary"
+                android:secondaryProgressTint="@color/cricket_green_light" />
+
+        </LinearLayout>
 
         <!-- Feedback Snippet -->
         <TextView
             android:id="@+id/feedbackSnippetText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Great improvement in your technique! Keep practicing the follow-through..."
-            android:textSize="14sp"
+            android:text="Great improvement in your batting stance. Keep practicing the follow-through..."
+            android:textSize="13sp"
             android:textColor="@color/text_secondary"
-            android:layout_marginBottom="12dp"
-            android:background="@drawable/rounded_background"
-            android:backgroundTint="@color/feedback_background"
+            android:background="@drawable/feedback_snippet_background"
             android:padding="12dp"
+            android:layout_marginBottom="12dp"
             android:maxLines="3"
             android:ellipsize="end" />
 
-        <!-- Actions -->
-        <LinearLayout
+        <!-- Action Button -->
+        <Button
+            android:id="@+id/viewFeedbackBtn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="end">
-
-            <Button
-                android:id="@+id/viewFeedbackBtn"
-                style="@style/Widget.Material3.Button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="View Feedback"
-                android:textSize="12sp"
-                android:backgroundTint="@color/cricket_green_primary"
-                android:drawableStart="@drawable/ic_play"
-                android:drawableTint="@color/white"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="8dp" />
-
-        </LinearLayout>
+            android:text="Watch Annotated Video"
+            android:textColor="@color/white"
+            android:background="@drawable/button_primary"
+            android:padding="12dp"
+            android:textAllCaps="false"
+            android:textStyle="bold" />
 
     </LinearLayout>
 

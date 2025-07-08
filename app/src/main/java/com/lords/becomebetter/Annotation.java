@@ -10,6 +10,7 @@ public class Annotation {
     private float xPosition;
     private float yPosition;
     private String createdAt;
+    private int feedbackId;
 
     // Annotation types constants
     public static final String TYPE_TEXT = "text";
@@ -18,6 +19,15 @@ public class Annotation {
 
     // Default constructor
     public Annotation() {}
+
+    public int getFeedbackId() {
+        return feedbackId;
+    }
+
+    public void setFeedbackId(int feedbackId) {
+        this.feedbackId = feedbackId;
+    }
+
 
     // Constructor for new annotation
     public Annotation(int videoId, int coachId, long timestamp, String annotationType,

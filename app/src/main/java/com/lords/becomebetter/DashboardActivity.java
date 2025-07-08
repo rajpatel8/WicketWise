@@ -161,11 +161,26 @@ public class DashboardActivity extends AppCompatActivity {
         }
     }
 
+//    private void viewMyFeedback() {
+//        Intent intent = new Intent(this, StudentFeedbackListActivity.class);
+//        intent.putExtra("studentEmail", userEmail);
+//        startActivity(intent);
+//    }
+
     private void viewMyFeedback() {
-        Intent intent = new Intent(this, StudentFeedbackListActivity.class);
-        intent.putExtra("studentEmail", userEmail);
-        startActivity(intent);
+        DatabaseHelper databaseHelper = new DatabaseHelper(this);
+        Student student = databaseHelper.getStudentByEmail(userEmail);
+
+        if (student != null) {
+            Intent intent = new Intent(this, StudentFeedbackListActivity.class);
+            intent.putExtra("studentEmail", userEmail);
+            intent.putExtra("studentId", student.getId());
+            startActivity(intent);
+        } else {
+            Toast.makeText(this, "Student profile not found", Toast.LENGTH_SHORT).show();
+        }
     }
+
 
     private void updateStudentDashboard() {
         if ("student".equals(userType)) {
