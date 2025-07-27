@@ -14,7 +14,7 @@ import android.util.Log;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "CricketCoaching.db";
-    private static final int DATABASE_VERSION = 8;
+    private static final int DATABASE_VERSION = 9;
 
     // Table names
     private static final String TABLE_COACHES = "coaches";
@@ -131,6 +131,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         createCoachSelectionsTable(db);
         createVideoFeedbacksTable(db);
         createVoiceRecordingsTable(db);
+        createMessagesTable(db);
 
         insertDefaultCoachCodes(db);
         Log.d("DatabaseHelper", "All tables created successfully!");
