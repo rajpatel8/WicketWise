@@ -211,6 +211,12 @@
             android:theme="@style/Theme.BecomeBetter"
             android:parentActivityName=".DashboardActivity" />
 
+        <activity
+            android:name=".ChatActivity"
+            android:label="Chat"
+            android:parentActivityName=".StudentDetailsActivity"
+            android:theme="@style/Theme.BecomeBetter" />
+
     </application>
 
 

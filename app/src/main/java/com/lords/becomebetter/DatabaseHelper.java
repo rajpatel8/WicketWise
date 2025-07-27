@@ -14,7 +14,7 @@ import android.util.Log;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "CricketCoaching.db";
-    private static final int DATABASE_VERSION = 6;
+    private static final int DATABASE_VERSION = 7;
 
     // Table names
     private static final String TABLE_COACHES = "coaches";
@@ -1362,6 +1362,113 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         recording.setVideoTimestamp(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_RECORDING_TIMESTAMP)));
         recording.setTitle(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_RECORDING_TITLE)));
         return recording;
+    }
+
+    // Add these constants to your DatabaseHelper.java class
+
+    // Messages table
+    private static final String TABLE_MESSAGES = "messages";
+    private static final String COLUMN_MESSAGE_ID = "message_id";
+    private static final String COLUMN_SENDER_ID = "sender_id";
+    private static final String COLUMN_RECEIVER_ID = "receiver_id";
+    private static final String COLUMN_SENDER_TYPE = "sender_type"; // "student" or "coach"
+    private static final String COLUMN_MESSAGE_TEXT = "message_text";
+    private static final String COLUMN_MESSAGE_TIMESTAMP = "message_timestamp";
+    private static final String COLUMN_IS_READ = "is_read";
+
+    // Add this to your onCreate method in DatabaseHelper.java
+    private void createMessagesTable(SQLiteDatabase db) {
+        String CREATE_MESSAGES_TABLE = "CREATE TABLE " + TABLE_MESSAGES + "("
+                + COLUMN_MESSAGE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + COLUMN_SENDER_ID + " INTEGER NOT NULL,"
+                + COLUMN_RECEIVER_ID + " INTEGER NOT NULL,"
+                + COLUMN_SENDER_TYPE + " TEXT NOT NULL,"
+                + COLUMN_MESSAGE_TEXT + " TEXT NOT NULL,"
+                + COLUMN_MESSAGE_TIMESTAMP + " DATETIME DEFAULT CURRENT_TIMESTAMP,"
+                + COLUMN_IS_READ + " INTEGER DEFAULT 0"
+                + ")";
+
+        db.execSQL(CREATE_MESSAGES_TABLE);
+    }
+
+// Add these CRUD methods to DatabaseHelper.java
+
+    // Send a message
+    public long sendMessage(int senderId, int receiverId, String senderType, String messageText) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_SENDER_ID, senderId);
+        values.put(COLUMN_RECEIVER_ID, receiverId);
+        values.put(COLUMN_SENDER_TYPE, senderType);
+        values.put(COLUMN_MESSAGE_TEXT, messageText);
+
+        return db.insert(TABLE_MESSAGES, null, values);
+    }
+
+    // Get all messages between student and coach
+    public List<Message> getMessagesBetweenUsers(int studentId, int coachId) {
+        List<Message> messages = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query = "SELECT * FROM " + TABLE_MESSAGES + " WHERE " +
+                "(" + COLUMN_SENDER_ID + " = ? AND " + COLUMN_RECEIVER_ID + " = ?) OR " +
+                "(" + COLUMN_SENDER_ID + " = ? AND " + COLUMN_RECEIVER_ID + " = ?) " +
+                "ORDER BY " + COLUMN_MESSAGE_TIMESTAMP + " ASC";
+
+        Cursor cursor = db.rawQuery(query, new String[]{
+                String.valueOf(studentId), String.valueOf(coachId),
+                String.valueOf(coachId), String.valueOf(studentId)
+        });
+
+        if (cursor.moveToFirst()) {
+            do {
+                Message message = new Message();
+                message.setMessageId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_MESSAGE_ID)));
+                message.setSenderId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_SENDER_ID)));
+                message.setReceiverId(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_RECEIVER_ID)));
+                message.setSenderType(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_SENDER_TYPE)));
+                message.setMessageText(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MESSAGE_TEXT)));
+                message.setTimestamp(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MESSAGE_TIMESTAMP)));
+                message.setRead(cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_IS_READ)) == 1);
+
+                messages.add(message);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        return messages;
+    }
+
+    // Mark messages as read
+    public void markMessagesAsRead(int senderId, int receiverId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_IS_READ, 1);
+
+        db.update(TABLE_MESSAGES, values,
+                COLUMN_SENDER_ID + " = ? AND " + COLUMN_RECEIVER_ID + " = ? AND " + COLUMN_IS_READ + " = 0",
+                new String[]{String.valueOf(senderId), String.valueOf(receiverId)});
+    }
+
+    // Get unread message count
+    public int getUnreadMessageCount(int receiverId, int senderId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query = "SELECT COUNT(*) FROM " + TABLE_MESSAGES + " WHERE " +
+                COLUMN_RECEIVER_ID + " = ? AND " + COLUMN_SENDER_ID + " = ? AND " + COLUMN_IS_READ + " = 0";
+
+        Cursor cursor = db.rawQuery(query, new String[]{
+                String.valueOf(receiverId), String.valueOf(senderId)
+        });
+
+        int count = 0;
+        if (cursor.moveToFirst()) {
+            count = cursor.getInt(0);
+        }
+        cursor.close();
+        return count;
     }
 
     private CoachRequest cursorToCoachRequest(Cursor cursor) {

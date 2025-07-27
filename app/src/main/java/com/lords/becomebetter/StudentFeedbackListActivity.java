@@ -209,7 +209,7 @@ public class StudentFeedbackListActivity extends AppCompatActivity {
                     // Set click listener safely
                     if (viewFeedbackBtn != null) {
                         viewFeedbackBtn.setOnClickListener(v -> {
-                            Intent intent = new Intent(StudentFeedbackListActivity.this, EnhancedVideoPlayerActivity.class);
+                            Intent intent = new Intent(StudentFeedbackListActivity.this, VideoPlayerActivity.class);
                             intent.putExtra("submissionId", submission.getSubmissionId());
                             intent.putExtra("studentId", studentId);
                             intent.putExtra("viewOnly", true);

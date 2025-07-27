@@ -2,6 +2,7 @@ package com.lords.becomebetter;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -34,6 +35,7 @@ public class StudentDetailsActivity extends AppCompatActivity {
         initializeViews();
         loadStudentData();
         setupClickListeners();
+        updateMessageButtonWithCount();
     }
 
     private void initializeViews() {
@@ -73,11 +75,38 @@ public class StudentDetailsActivity extends AppCompatActivity {
         });
 
         sendMessageBtn.setOnClickListener(v -> {
-            // TODO: Implement messaging feature
-            // For now, just show a placeholder
-            android.widget.Toast.makeText(this, "Messaging feature coming soon!",
-                    android.widget.Toast.LENGTH_SHORT).show();
+            // Open chat with this student
+            Intent chatIntent = new Intent(this, ChatActivity.class);
+
+            // Current user (coach) info
+            chatIntent.putExtra("currentUserEmail", coachEmail);
+            chatIntent.putExtra("currentUserType", "coach");
+
+            // Other user (student) info
+            chatIntent.putExtra("otherUserId", studentId);
+            chatIntent.putExtra("otherUserType", "student");
+            chatIntent.putExtra("otherUserName", student.getName());
+
+            startActivity(chatIntent);
         });
+
+    }
+
+    private void updateMessageButtonWithCount() {
+        if (student != null) {
+            // Get current coach ID
+            Coach coach = databaseHelper.getCoachByEmail(coachEmail);
+            if (coach != null) {
+                int unreadCount = databaseHelper.getUnreadMessageCount(coach.getId(), studentId);
+
+                if (unreadCount > 0) {
+                    // You can add a badge or update button text to show unread count
+                    // For example: sendMessageBtn could show a red dot or number
+                    sendMessageBtn.setVisibility(View.VISIBLE);
+                    // Add visual indicator for unread messages
+                }
+            }
+        }
     }
 
     private String formatDate(String dateString) {
