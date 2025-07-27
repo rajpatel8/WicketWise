@@ -324,6 +324,41 @@
 
             </LinearLayout>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp"
+                android:visibility="gone"
+                android:id="@+id/coachChatLayout">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+                    app:cardBackgroundColor="@color/card_background"
+                    app:strokeWidth="0dp">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/coachChatBtn"
+                        android:layout_width="match_parent"
+                        android:layout_height="100dp"
+                        android:text="My Chats"
+                        android:textColor="@color/brand_primary"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        app:backgroundTint="@color/brand_light"
+                        app:cornerRadius="16dp"
+                        app:icon="@drawable/ic_chat"
+                        app:iconTint="@color/brand_primary"
+                        app:iconGravity="top"
+                        app:iconPadding="8dp" />
+
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+
             <!-- Student Actions Section -->
             <LinearLayout
                 android:id="@+id/studentActionsLayout"
@@ -451,6 +486,39 @@
                             app:cornerRadius="16dp"
                             app:icon="@drawable/ic_calendar"
                             app:iconTint="@color/white"
+                            app:iconGravity="top"
+                            app:iconPadding="8dp" />
+
+                    </com.google.android.material.card.MaterialCardView>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="16dp">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="@color/card_background"
+                        app:strokeWidth="0dp">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/studentChatBtn"
+                            android:layout_width="match_parent"
+                            android:layout_height="100dp"
+                            android:text="My Chats"
+                            android:textColor="@color/brand_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            app:backgroundTint="@color/brand_light"
+                            app:cornerRadius="16dp"
+                            app:icon="@drawable/ic_chat"
+                            app:iconTint="@color/brand_primary"
                             app:iconGravity="top"
                             app:iconPadding="8dp" />
 

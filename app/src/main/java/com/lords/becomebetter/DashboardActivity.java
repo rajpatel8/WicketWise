@@ -19,6 +19,9 @@ public class DashboardActivity extends AppCompatActivity {
     private Button logoutBtn, viewProfileBtn, editProfileBtn;
     private Button viewStudentsBtn, manageSessionsBtn, findCoachBtn, bookSessionBtn;
 
+    private Button coachChatBtn, studentChatBtn;
+    private LinearLayout coachChatLayout;
+
     // ADD THESE MISSING STUDENT VIDEO BUTTONS:
     private Button uploadVideoBtn, viewFeedbackBtn;
 
@@ -82,6 +85,10 @@ public class DashboardActivity extends AppCompatActivity {
         // Layouts for conditional visibility
         coachActionsLayout = findViewById(R.id.coachActionsLayout);
         studentActionsLayout = findViewById(R.id.studentActionsLayout);
+
+        coachChatBtn = findViewById(R.id.coachChatBtn);
+        studentChatBtn = findViewById(R.id.studentChatBtn);
+        coachChatLayout = findViewById(R.id.coachChatLayout);
     }
 
     private void setupUserInterface() {
@@ -97,9 +104,40 @@ public class DashboardActivity extends AppCompatActivity {
         if ("coach".equals(userType)) {
             coachActionsLayout.setVisibility(View.VISIBLE);
             studentActionsLayout.setVisibility(View.GONE);
+            // ADD THIS LINE:
+            if (coachChatLayout != null) coachChatLayout.setVisibility(View.VISIBLE);
         } else {
             coachActionsLayout.setVisibility(View.GONE);
             studentActionsLayout.setVisibility(View.VISIBLE);
+            // ADD THIS LINE:
+            if (coachChatLayout != null) coachChatLayout.setVisibility(View.GONE);
+        }
+    }
+    private void openCoachChats() {
+        DatabaseHelper databaseHelper = new DatabaseHelper(this);
+        Coach coach = databaseHelper.getCoachByEmail(userEmail);
+
+        if (coach != null) {
+            Intent intent = new Intent(this, CoachChatsActivity.class);
+            intent.putExtra("coachEmail", userEmail);
+            intent.putExtra("coachId", coach.getId());
+            startActivity(intent);
+        } else {
+            Toast.makeText(this, "Coach profile not found", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void openStudentChats() {
+        DatabaseHelper databaseHelper = new DatabaseHelper(this);
+        Student student = databaseHelper.getStudentByEmail(userEmail);
+
+        if (student != null) {
+            Intent intent = new Intent(this, StudentChatsActivity.class);
+            intent.putExtra("studentEmail", userEmail);
+            intent.putExtra("studentId", student.getId());
+            startActivity(intent);
+        } else {
+            Toast.makeText(this, "Student profile not found", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -131,6 +169,15 @@ public class DashboardActivity extends AppCompatActivity {
         }
         if (viewFeedbackBtn != null) {
             viewFeedbackBtn.setOnClickListener(v -> viewMyFeedback());
+        }
+
+        if (coachChatBtn != null) {
+            coachChatBtn.setOnClickListener(v -> openCoachChats());
+        }
+
+// Student chat functionality
+        if (studentChatBtn != null) {
+            studentChatBtn.setOnClickListener(v -> openStudentChats());
         }
     }
 

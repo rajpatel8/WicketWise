@@ -217,6 +217,24 @@
             android:parentActivityName=".StudentDetailsActivity"
             android:theme="@style/Theme.BecomeBetter" />
 
+        <activity
+            android:name=".CoachListActivity"
+            android:label="Choose Coach"
+            android:parentActivityName=".DashboardActivity"
+            android:theme="@style/Theme.BecomeBetter" />
+
+        <activity
+            android:name=".StudentChatsActivity"
+            android:label="My Chats"
+            android:parentActivityName=".DashboardActivity"
+            android:theme="@style/Theme.BecomeBetter" />
+
+        <activity
+            android:name=".CoachChatsActivity"
+            android:label="My Chats"
+            android:parentActivityName=".DashboardActivity"
+            android:theme="@style/Theme.BecomeBetter" />
+
     </application>
 
 

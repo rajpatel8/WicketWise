@@ -14,7 +14,7 @@ import android.util.Log;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "CricketCoaching.db";
-    private static final int DATABASE_VERSION = 7;
+    private static final int DATABASE_VERSION = 8;
 
     // Table names
     private static final String TABLE_COACHES = "coaches";
@@ -290,16 +290,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Drop all tables
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_VOICE_RECORDINGS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_VIDEO_FEEDBACKS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACH_SELECTIONS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_VIDEO_SUBMISSIONS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_ANNOTATIONS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_VIDEOS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACH_REQUESTS);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACH_CODES);
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_STUDENTS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACHES);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_STUDENTS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACH_CODES);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_VIDEOS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_ANNOTATIONS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_VIDEO_SUBMISSIONS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACH_SELECTIONS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_VIDEO_FEEDBACKS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_VOICE_RECORDINGS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_COACH_REQUESTS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_MESSAGES);
         onCreate(db);
     }
 
@@ -314,6 +315,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         cursor.close();
         return isValid;
     }
+
+
 
     public void markCoachCodeAsUsed(String code) {
         SQLiteDatabase db = this.getWritableDatabase();
