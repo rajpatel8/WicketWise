@@ -147,8 +147,7 @@ public class ChatActivity extends AppCompatActivity {
         if (messageId > 0) {
             message.setMessageId((int) messageId);
 
-            // Add to list and update UI
-            messagesList.add(message);
+            // FIXED: Only use adapter method to add message
             messagesAdapter.addMessage(message);
 
             // Clear input and scroll to bottom

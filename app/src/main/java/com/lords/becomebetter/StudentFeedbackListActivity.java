@@ -210,14 +210,19 @@ public class StudentFeedbackListActivity extends AppCompatActivity {
                     if (viewFeedbackBtn != null) {
                         viewFeedbackBtn.setOnClickListener(v -> {
                             Intent intent = new Intent(StudentFeedbackListActivity.this, VideoPlayerActivity.class);
-                            intent.putExtra("submissionId", submission.getSubmissionId());
+
+                            // FIXED: Use the parameter names that VideoPlayerActivity expects
+                            intent.putExtra(VideoPlayerActivity.EXTRA_VIDEO_ID, submission.getSubmissionId()); // "video_id"
+                            intent.putExtra(VideoPlayerActivity.EXTRA_COACH_ID, -1); // "coach_id" (not needed for student)
+                            intent.putExtra(VideoPlayerActivity.EXTRA_VIEW_ONLY, true); // "view_only"
+
+                            // Additional parameters for student viewing
                             intent.putExtra("studentId", studentId);
-                            intent.putExtra("viewOnly", true);
                             intent.putExtra("showFeedback", true);
+
                             startActivity(intent);
                         });
                     }
-
                 } catch (Exception e) {
                     Log.e(TAG, "Error binding feedback item", e);
                 }
