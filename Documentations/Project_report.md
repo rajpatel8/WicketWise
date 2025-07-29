@@ -18,7 +18,7 @@
 |------|------------|------|-------------------------|
 | Rajkumar | 110184076 | Project Lead & Backend Developer | Database architecture, authentication system, project coordination |
 | Aum | 110XXXXX2 | Frontend Developer & UI/UX Designer | User interface design, activity development, user experience optimization |
-| Sagar | 110XXXXX3 | Video Systems Developer | Video recording, playback, compression, media handling |
+| Sagar |  110163877 | Video Systems Developer | Video recording, playback, compression, media handling |
 | Sakshi | 110XXXXX4 | Annotation Systems Developer | Drawing tools, cricket-specific annotations, overlay systems |
 | Deep | 110XXXXX5 | Quality Assurance & Documentation | Testing, documentation, deployment, user manual creation |
 | Neel | 110XXXXX5 | Performance & Security Specialist| Performance optimization, security testing, cloud integration, data analytics |
