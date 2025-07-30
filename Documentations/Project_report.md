@@ -467,7 +467,7 @@ Thanks to the open-source community whose libraries, frameworks, and documentati
 
 ### Appendix A: GitHub Repository Information
 
-**Repository Access**: [https://github.com/university-windsor/cricket-coaching-app](https://github.com/university-windsor/cricket-coaching-app)
+**Repository Access**: [https://github.com/rajpatel8/WicketWise](https://github.com/rajpatel8/WicketWise)
 
 *Note: This repository link is configured for access by business representatives and faculty members. The repository contains complete source code, documentation, and deployment instructions for the Become Better Cricket Academy application.*
 
