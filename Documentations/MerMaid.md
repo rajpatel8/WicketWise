@@ -138,18 +138,18 @@ erDiagram
 timeline
     title Become Better App Development Timeline
     
-    October 2024 : v1.0 Beta
+    June 2025 : v1.0 Beta
                  : Authentication System
                  : Basic Video Upload
                  : Profile Management
     
-    November 2024 : v1.0 Stable
+    July 2025 : v1.0 Stable
                   : Video Annotation Tools
                   : Voice Feedback System
                   : Coach Dashboard
                   : Student Video Player
     
-    December 2024 : v1.1 Stable
+    July 2025 : v1.1 Stable
                   : Real-time Chat System
                   : Enhanced Video Player
                   : Push Notifications
