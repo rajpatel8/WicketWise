@@ -245,19 +245,23 @@ graph TD
 ## 9. Video Processing Pipeline
 
 ```mermaid
-flowchart LR
-    A[Video Recording/<br/>Upload] --> B[File Validation]
-    B --> C[Compression &<br/>Optimization]
-    C --> D[Metadata<br/>Extraction]
-    D --> E[Local Storage]
-    E --> F[Coach Review<br/>Interface]
-    F --> G[Annotation<br/>Processing]
-    G --> H[Voice Feedback<br/>Integration]
-    H --> I[Student Playback<br/>with Annotations]
+flowchart TD
+    A[📱 Video Recording/<br/>Upload] --> B[✅ File Validation<br/>& Format Check]
+    B --> C[🗜️ Compression &<br/>Optimization]
+    C --> D[📊 Metadata<br/>Extraction]
+    D --> E[💾 Local Storage<br/>SQLite Database]
+    
+    E --> F[👨‍🏫 Coach Review<br/>Interface]
+    F --> G[✏️ Annotation<br/>Processing]
+    F --> H[🎤 Voice Feedback<br/>Recording]
+    
+    G --> I[📱 Student Playback<br/>with Annotations]
+    H --> I
     
     style A fill:#ffcdd2
     style E fill:#c8e6c9
     style I fill:#e1f5fe
+    style F fill:#fff3e0
 ```
 
 ## 10. Communication Flow
